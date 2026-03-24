@@ -28,13 +28,14 @@ const COURSES = [
 
   // =====================================================
   //  ローズゴルフクラブ（滋賀県）
+  //  GDO調査済みpar: OUT 5-4-3-4-4-4-5-3-4 (PAR36)
   // =====================================================
   {
     name:  'ローズゴルフクラブ',
     pref:  '滋賀県',
     gcid:  970,             // ShotNavi ゴルフ場ID
-    lat:   34.8924,         // コース中心（地図初期表示用）
-    lng:   136.0535,
+    lat:   34.8923,         // コース中心（地図初期表示用）
+    lng:   136.0564,
     courses: [
 
       // ── アウト ──────────────────────────
@@ -43,55 +44,141 @@ const COURSES = [
         cid:  1312,         // ShotNavi コースID
         holes: [
           {
-            no: 1, par: 5,
-            tee:    { lat: 34.892567, lng: 136.051814 },
-            front:  { lat: 34.892015, lng: 136.056338 },
-            center: { lat: 34.892025, lng: 136.056534 },
-            back:   { lat: 34.892010, lng: 136.056733 },
+            no: 1, par: 5,  // ← PAR5（GDO調査済み）
+            tee:    { lat: 34.892557, lng: 136.051814 },
+            front:  { lat: 34.892008, lng: 136.056338 },
+            center: { lat: 34.892022, lng: 136.056532 },
+            back:   { lat: 34.892032, lng: 136.056728 },
           },
           {
             no: 2, par: 4,
-            tee:    { lat: 34.892468, lng: 136.057524 },
-            front:  { lat: 34.893836, lng: 136.055347 },
-            center: { lat: 34.893976, lng: 136.055313 },
-            back:   { lat: 34.894094, lng: 136.055283 },
+            tee:    { lat: 34.892543, lng: 136.057726 },
+            front:  { lat: 34.893847, lng: 136.055354 },
+            center: { lat: 34.893971, lng: 136.055291 },
+            back:   { lat: 34.894094, lng: 136.055260 },
           },
           {
-            no: 3, par: 3,
-            tee:    { lat: 34.894491, lng: 136.055709 },
-            front:  { lat: 34.893656, lng: 136.056758 },
-            center: { lat: 34.893573, lng: 136.056885 },
-            back:   { lat: 34.893475, lng: 136.056991 },
+            no: 3, par: 3,  // ← PAR3（GDO調査済み）
+            tee:    { lat: 34.894512, lng: 136.055679 },
+            front:  { lat: 34.893665, lng: 136.056761 },
+            center: { lat: 34.893575, lng: 136.056880 },
+            back:   { lat: 34.893478, lng: 136.056976 },
           },
           {
             no: 4, par: 4,
-            tee:    { lat: 34.894440, lng: 136.057040 },
-            front:  { lat: 34.892230, lng: 136.059981 },
-            center: { lat: 34.892151, lng: 136.060141 },
-            back:   { lat: 34.892084, lng: 136.060289 },
+            tee:    { lat: 34.894447, lng: 136.057011 },
+            front:  { lat: 34.892226, lng: 136.059990 },
+            center: { lat: 34.892155, lng: 136.060135 },
+            back:   { lat: 34.892067, lng: 136.060277 },
           },
-          { no: 5, par: 4, tee: null, front: null, center: null, back: null },
-          { no: 6, par: 4, tee: null, front: null, center: null, back: null },
-          { no: 7, par: 5, tee: null, front: null, center: null, back: null },
-          { no: 8, par: 3, tee: null, front: null, center: null, back: null },
-          { no: 9, par: 4, tee: null, front: null, center: null, back: null },
+          {
+            no: 5, par: 4,
+            tee:    { lat: 34.891890, lng: 136.061297 },
+            front:  { lat: 34.890125, lng: 136.058121 },
+            center: { lat: 34.890034, lng: 136.058003 },
+            back:   { lat: 34.889974, lng: 136.057874 },
+          },
+          {
+            no: 6, par: 4,
+            tee:    { lat: 34.890077, lng: 136.056992 },
+            front:  { lat: 34.892050, lng: 136.059078 },
+            center: { lat: 34.892202, lng: 136.059070 },
+            back:   { lat: 34.892338, lng: 136.059022 },
+          },
+          {
+            no: 7, par: 5,  // ← PAR5（GDO調査済み）
+            tee:    { lat: 34.892221, lng: 136.058293 },
+            front:  { lat: 34.890505, lng: 136.053527 },
+            center: { lat: 34.890527, lng: 136.053323 },
+            back:   { lat: 34.890534, lng: 136.053092 },
+          },
+          {
+            no: 8, par: 3,  // ← PAR3（GDO調査済み）
+            tee:    { lat: 34.890849, lng: 136.053551 },
+            front:  { lat: 34.891159, lng: 136.055181 },
+            center: { lat: 34.891176, lng: 136.055344 },
+            back:   { lat: 34.891177, lng: 136.055495 },
+          },
+          {
+            no: 9, par: 4,
+            tee:    { lat: 34.891551, lng: 136.054928 },
+            front:  { lat: 34.891654, lng: 136.051545 },
+            center: { lat: 34.891749, lng: 136.051414 },
+            back:   { lat: 34.891817, lng: 136.051274 },
+          },
         ],
       },
 
       // ── イン ────────────────────────────
+      // ShotNavi調査済みpar: 5-4-3-5-4-4-4-3-4 (PAR36)
+      // 実際の番号: 10-11-12-13-14-15-16-17-18番
       {
         name: 'イン',
         cid:  1313,
         holes: [
-          { no: 1, par: 4, tee: null, front: null, center: null, back: null },
-          { no: 2, par: 4, tee: null, front: null, center: null, back: null },
-          { no: 3, par: 4, tee: null, front: null, center: null, back: null },
-          { no: 4, par: 4, tee: null, front: null, center: null, back: null },
-          { no: 5, par: 4, tee: null, front: null, center: null, back: null },
-          { no: 6, par: 4, tee: null, front: null, center: null, back: null },
-          { no: 7, par: 4, tee: null, front: null, center: null, back: null },
-          { no: 8, par: 4, tee: null, front: null, center: null, back: null },
-          { no: 9, par: 4, tee: null, front: null, center: null, back: null },
+          {
+            no: 1, par: 5,  // 10番
+            tee:    { lat: 34.891497, lng: 136.049818 },
+            front:  { lat: 34.889098, lng: 136.053927 },
+            center: { lat: 34.889071, lng: 136.054099 },
+            back:   { lat: 34.889027, lng: 136.054260 },
+          },
+          {
+            no: 2, par: 4,  // 11番
+            tee:    { lat: 34.888578, lng: 136.053366 },
+            front:  { lat: 34.888191, lng: 136.057051 },
+            center: { lat: 34.888173, lng: 136.057228 },
+            back:   { lat: 34.888160, lng: 136.057392 },
+          },
+          {
+            no: 3, par: 3,  // 12番
+            tee:    { lat: 34.887904, lng: 136.057766 },
+            front:  { lat: 34.887502, lng: 136.056390 },
+            center: { lat: 34.887462, lng: 136.056224 },
+            back:   { lat: 34.887422, lng: 136.056090 },
+          },
+          {
+            no: 4, par: 5,  // 13番 ← PAR5（ShotNavi調査済み・600yd超）
+            tee:    { lat: 34.887833, lng: 136.056068 },
+            front:  { lat: 34.889143, lng: 136.050440 },
+            center: { lat: 34.889211, lng: 136.050279 },
+            back:   { lat: 34.889286, lng: 136.050121 },
+          },
+          {
+            no: 5, par: 4,  // 14番
+            tee:    { lat: 34.888639, lng: 136.050067 },
+            front:  { lat: 34.887209, lng: 136.052943 },
+            center: { lat: 34.887209, lng: 136.053066 },
+            back:   { lat: 34.887227, lng: 136.053190 },
+          },
+          {
+            no: 6, par: 4,  // 15番
+            tee:    { lat: 34.886664, lng: 136.052720 },
+            front:  { lat: 34.886536, lng: 136.049019 },
+            center: { lat: 34.886474, lng: 136.048858 },
+            back:   { lat: 34.886430, lng: 136.048718 },
+          },
+          {
+            no: 7, par: 4,  // 16番
+            tee:    { lat: 34.887119, lng: 136.049261 },
+            front:  { lat: 34.889816, lng: 136.049019 },
+            center: { lat: 34.889918, lng: 136.048955 },
+            back:   { lat: 34.890032, lng: 136.048880 },
+          },
+          {
+            no: 8, par: 3,  // 17番
+            tee:    { lat: 34.889819, lng: 136.048171 },
+            front:  { lat: 34.888569, lng: 136.048117 },
+            center: { lat: 34.888433, lng: 136.048144 },
+            back:   { lat: 34.888296, lng: 136.048176 },
+          },
+          {
+            no: 9, par: 4,  // 18番
+            tee:    { lat: 34.888768, lng: 136.047432 },
+            front:  { lat: 34.891525, lng: 136.048747 },
+            center: { lat: 34.891662, lng: 136.048752 },
+            back:   { lat: 34.891772, lng: 136.048741 },
+          },
         ],
       },
 

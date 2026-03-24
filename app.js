@@ -174,6 +174,44 @@ function updateCupBtn() {
 }
 
 // ============================================================
+// ヤード情報パネル描画
+// ============================================================
+function renderYardageInfo(h) {
+  const el = document.getElementById('yardageInfo');
+  if (!h || !hasData(h)) { el.style.display = 'none'; return; }
+
+  // 座標から計算：ティー→フロントエッジ、ティー→センター
+  const teeToFront  = Math.round(haversine(h.tee.lat, h.tee.lng, h.front.lat,  h.front.lng)  * 1.09361);
+  const teeToCenter = Math.round(haversine(h.tee.lat, h.tee.lng, h.center.lat, h.center.lng) * 1.09361);
+
+  // ShotNaviヤード（登録済みの場合のみ）
+  const yd = h.yards;
+  const ydRow = yd
+    ? `<div class="yi-row yi-shotnavi">
+        <div class="yi-cell"><div class="yi-label">バック</div><div class="yi-val sn">${yd.back}<span>yd</span></div></div>
+        <div class="yi-cell"><div class="yi-label">レギュラー</div><div class="yi-val sn">${yd.reg}<span>yd</span></div></div>
+        <div class="yi-cell"><div class="yi-label">レディース</div><div class="yi-val sn">${yd.ladies}<span>yd</span></div></div>
+      </div>`
+    : '';
+
+  el.innerHTML = `
+    <div class="yi-title">H${h.no} <span class="yi-par">PAR ${h.par}</span></div>
+    <div class="yi-row">
+      <div class="yi-cell">
+        <div class="yi-label">ティー → フロント</div>
+        <div class="yi-val blue">${teeToFront}<span>yd</span></div>
+      </div>
+      <div class="yi-cell">
+        <div class="yi-label">ティー → センター</div>
+        <div class="yi-val green">${teeToCenter}<span>yd</span></div>
+      </div>
+    </div>
+    ${ydRow}
+  `;
+  el.style.display = 'block';
+}
+
+// ============================================================
 // 地図ロード
 // ============================================================
 function loadHole() {
@@ -193,6 +231,7 @@ function loadHole() {
   document.getElementById('map').style.display = 'block';
   document.getElementById('legend').style.display = 'block';
   document.getElementById('reviewBtn').style.display = 'flex';
+  renderYardageInfo(h);
   clearMeasure(); clearPending();
   if (!mapsLoaded) return;
   if (!map) {

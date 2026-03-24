@@ -134,7 +134,35 @@ header {
 }
 #emptyMap .ico { font-size: 46px; }
 
-/* ===== 凡例 ===== */
+/* ===== ヤード情報パネル ===== */
+#yardageInfo {
+  position: absolute; top: 8px; right: 8px; z-index: 5;
+  background: rgba(10,22,10,.92); border: 1px solid var(--g4);
+  border-radius: 10px; padding: 10px 12px; min-width: 200px;
+  pointer-events: none;
+}
+.yi-title {
+  font-size: 13px; font-weight: 700; color: var(--acc);
+  margin-bottom: 8px; letter-spacing: 1px;
+}
+.yi-par { font-size: 11px; color: var(--gr); font-weight: 400; margin-left: 4px; }
+.yi-row {
+  display: flex; gap: 8px; margin-bottom: 6px;
+}
+.yi-row:last-child { margin-bottom: 0; }
+.yi-shotnavi {
+  border-top: 1px solid var(--g3); padding-top: 6px; margin-top: 2px;
+}
+.yi-cell { flex: 1; text-align: center; }
+.yi-label { font-size: 9px; color: var(--gr); letter-spacing: 1px; margin-bottom: 2px; }
+.yi-val {
+  font-family: 'Bebas Neue', sans-serif; font-size: 22px; line-height: 1;
+  color: var(--w);
+}
+.yi-val span { font-size: 10px; color: var(--gr); margin-left: 1px; }
+.yi-val.blue  { color: var(--blue); }
+.yi-val.green { color: var(--gv); }
+.yi-val.sn    { color: var(--acc); font-size: 18px; }
 #legend {
   position: absolute; top: 8px; left: 8px; z-index: 5;
   background: rgba(10,22,10,.88); border: 1px solid var(--g4);

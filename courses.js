@@ -5,46 +5,43 @@
  *
  *  ★ このファイルだけ編集すればコースを追加・修正できます ★
  *
- *  【座標の取得方法】
- *  1. Google Maps を衛星写真で開く
- *  2. 各地点を右クリック（スマホは長押し）
- *  3. 表示された緯度, 経度をコピーして貼り付ける
- *
  *  【各ホールのデータ構造】
  *  {
  *    no:     ホール番号（1〜9）
  *    par:    パー数
+ *    yards:  { back: X, reg: X, ladies: X }  ← ShotNaviのヤード数
  *    tee:    { lat: XX.XXXXX, lng: XXX.XXXXX }  ← ティーグラウンド
  *    front:  { lat: XX.XXXXX, lng: XXX.XXXXX }  ← フロントエッジ（赤F）
  *    center: { lat: XX.XXXXX, lng: XXX.XXXXX }  ← グリーン中央（紫C）
  *    back:   { lat: XX.XXXXX, lng: XXX.XXXXX }  ← バックエッジ（黄B）
  *  }
- *
- *  【座標未登録のホールは null のままでOK】
- *  tee: null, front: null, center: null, back: null
  */
 
 const COURSES = [
 
   // =====================================================
   //  ローズゴルフクラブ（滋賀県）
-  //  GDO調査済みpar: OUT 5-4-3-4-4-4-5-3-4 (PAR36)
+  //  OUT: 5-4-3-4-4-4-5-3-4 PAR36 / Back:3396 Reg:3215
+  //  IN:  5-4-3-5-4-4-4-3-4 PAR36 / Back:3431 Reg:3183
+  //  合計: PAR72 / Back:6827 Reg:6398
+  //  ※ヤード数はShotNavi調査済み
   // =====================================================
   {
     name:  'ローズゴルフクラブ',
     pref:  '滋賀県',
-    gcid:  970,             // ShotNavi ゴルフ場ID
-    lat:   34.8923,         // コース中心（地図初期表示用）
+    gcid:  970,
+    lat:   34.8923,
     lng:   136.0564,
     courses: [
 
-      // ── アウト ──────────────────────────
+      // ── アウト ──────────────────────────────────────
       {
         name: 'アウト',
-        cid:  1312,         // ShotNavi コースID
+        cid:  1312,
         holes: [
           {
-            no: 1, par: 5,  // ← PAR5（GDO調査済み）
+            no: 1, par: 5,
+            yards: { back: 518, reg: 491, ladies: 418 },
             tee:    { lat: 34.892557, lng: 136.051814 },
             front:  { lat: 34.892008, lng: 136.056338 },
             center: { lat: 34.892022, lng: 136.056532 },
@@ -52,13 +49,15 @@ const COURSES = [
           },
           {
             no: 2, par: 4,
+            yards: { back: 348, reg: 330, ladies: 242 },
             tee:    { lat: 34.892543, lng: 136.057726 },
             front:  { lat: 34.893847, lng: 136.055354 },
             center: { lat: 34.893971, lng: 136.055291 },
             back:   { lat: 34.894094, lng: 136.055260 },
           },
           {
-            no: 3, par: 3,  // ← PAR3（GDO調査済み）
+            no: 3, par: 3,
+            yards: { back: 178, reg: 155, ladies: 133 },
             tee:    { lat: 34.894512, lng: 136.055679 },
             front:  { lat: 34.893665, lng: 136.056761 },
             center: { lat: 34.893575, lng: 136.056880 },
@@ -66,6 +65,7 @@ const COURSES = [
           },
           {
             no: 4, par: 4,
+            yards: { back: 430, reg: 410, ladies: 286 },
             tee:    { lat: 34.894447, lng: 136.057011 },
             front:  { lat: 34.892226, lng: 136.059990 },
             center: { lat: 34.892155, lng: 136.060135 },
@@ -73,6 +73,7 @@ const COURSES = [
           },
           {
             no: 5, par: 4,
+            yards: { back: 408, reg: 390, ladies: 257 },
             tee:    { lat: 34.891890, lng: 136.061297 },
             front:  { lat: 34.890125, lng: 136.058121 },
             center: { lat: 34.890034, lng: 136.058003 },
@@ -80,20 +81,23 @@ const COURSES = [
           },
           {
             no: 6, par: 4,
+            yards: { back: 343, reg: 325, ladies: 295 },
             tee:    { lat: 34.890077, lng: 136.056992 },
             front:  { lat: 34.892050, lng: 136.059078 },
             center: { lat: 34.892202, lng: 136.059070 },
             back:   { lat: 34.892338, lng: 136.059022 },
           },
           {
-            no: 7, par: 5,  // ← PAR5（GDO調査済み）
+            no: 7, par: 5,
+            yards: { back: 602, reg: 584, ladies: 450 },
             tee:    { lat: 34.892221, lng: 136.058293 },
             front:  { lat: 34.890505, lng: 136.053527 },
             center: { lat: 34.890527, lng: 136.053323 },
             back:   { lat: 34.890534, lng: 136.053092 },
           },
           {
-            no: 8, par: 3,  // ← PAR3（GDO調査済み）
+            no: 8, par: 3,
+            yards: { back: 184, reg: 170, ladies: 138 },
             tee:    { lat: 34.890849, lng: 136.053551 },
             front:  { lat: 34.891159, lng: 136.055181 },
             center: { lat: 34.891176, lng: 136.055344 },
@@ -101,6 +105,7 @@ const COURSES = [
           },
           {
             no: 9, par: 4,
+            yards: { back: 385, reg: 360, ladies: 308 },
             tee:    { lat: 34.891551, lng: 136.054928 },
             front:  { lat: 34.891654, lng: 136.051545 },
             center: { lat: 34.891749, lng: 136.051414 },
@@ -109,15 +114,15 @@ const COURSES = [
         ],
       },
 
-      // ── イン ────────────────────────────
-      // ShotNavi調査済みpar: 5-4-3-5-4-4-4-3-4 (PAR36)
-      // 実際の番号: 10-11-12-13-14-15-16-17-18番
+      // ── イン ────────────────────────────────────────
+      // 実際の番号: 10〜18番
       {
         name: 'イン',
         cid:  1313,
         holes: [
           {
             no: 1, par: 5,  // 10番
+            yards: { back: 503, reg: 477, ladies: 461 },
             tee:    { lat: 34.891497, lng: 136.049818 },
             front:  { lat: 34.889098, lng: 136.053927 },
             center: { lat: 34.889071, lng: 136.054099 },
@@ -125,6 +130,7 @@ const COURSES = [
           },
           {
             no: 2, par: 4,  // 11番
+            yards: { back: 395, reg: 371, ladies: 251 },
             tee:    { lat: 34.888578, lng: 136.053366 },
             front:  { lat: 34.888191, lng: 136.057051 },
             center: { lat: 34.888173, lng: 136.057228 },
@@ -132,13 +138,15 @@ const COURSES = [
           },
           {
             no: 3, par: 3,  // 12番
+            yards: { back: 165, reg: 149, ladies: 135 },
             tee:    { lat: 34.887904, lng: 136.057766 },
             front:  { lat: 34.887502, lng: 136.056390 },
             center: { lat: 34.887462, lng: 136.056224 },
             back:   { lat: 34.887422, lng: 136.056090 },
           },
           {
-            no: 4, par: 5,  // 13番 ← PAR5（ShotNavi調査済み・600yd超）
+            no: 4, par: 5,  // 13番（600yd超）
+            yards: { back: 632, reg: 558, ladies: 409 },
             tee:    { lat: 34.887833, lng: 136.056068 },
             front:  { lat: 34.889143, lng: 136.050440 },
             center: { lat: 34.889211, lng: 136.050279 },
@@ -146,6 +154,7 @@ const COURSES = [
           },
           {
             no: 5, par: 4,  // 14番
+            yards: { back: 379, reg: 354, ladies: 303 },
             tee:    { lat: 34.888639, lng: 136.050067 },
             front:  { lat: 34.887209, lng: 136.052943 },
             center: { lat: 34.887209, lng: 136.053066 },
@@ -153,6 +162,7 @@ const COURSES = [
           },
           {
             no: 6, par: 4,  // 15番
+            yards: { back: 425, reg: 400, ladies: 277 },
             tee:    { lat: 34.886664, lng: 136.052720 },
             front:  { lat: 34.886536, lng: 136.049019 },
             center: { lat: 34.886474, lng: 136.048858 },
@@ -160,6 +170,7 @@ const COURSES = [
           },
           {
             no: 7, par: 4,  // 16番
+            yards: { back: 345, reg: 325, ladies: 219 },
             tee:    { lat: 34.887119, lng: 136.049261 },
             front:  { lat: 34.889816, lng: 136.049019 },
             center: { lat: 34.889918, lng: 136.048955 },
@@ -167,6 +178,7 @@ const COURSES = [
           },
           {
             no: 8, par: 3,  // 17番
+            yards: { back: 175, reg: 157, ladies: 126 },
             tee:    { lat: 34.889819, lng: 136.048171 },
             front:  { lat: 34.888569, lng: 136.048117 },
             center: { lat: 34.888433, lng: 136.048144 },
@@ -174,6 +186,7 @@ const COURSES = [
           },
           {
             no: 9, par: 4,  // 18番
+            yards: { back: 412, reg: 392, ladies: 329 },
             tee:    { lat: 34.888768, lng: 136.047432 },
             front:  { lat: 34.891525, lng: 136.048747 },
             center: { lat: 34.891662, lng: 136.048752 },
@@ -186,21 +199,17 @@ const COURSES = [
   },
 
   // =====================================================
-  //  ゴルフ場を追加する場合はここにコピーして貼り付ける
+  //  ゴルフ場を追加する場合はここにコピー
   // =====================================================
   // {
-  //   name:  'ゴルフ場名',
-  //   pref:  '○○県',
-  //   gcid:  XXXX,
-  //   lat:   XX.XXXX,
-  //   lng:   XXX.XXXX,
+  //   name: 'ゴルフ場名', pref: '○○県', gcid: XXXX,
+  //   lat: XX.XXXX, lng: XXX.XXXX,
   //   courses: [
   //     {
-  //       name: 'アウト',
-  //       cid:  XXXX,
+  //       name: 'アウト', cid: XXXX,
   //       holes: [
-  //         { no:1, par:4, tee:null, front:null, center:null, back:null },
-  //         // ... 9ホール分
+  //         { no:1, par:4, yards:{back:400,reg:380,ladies:280},
+  //           tee:null, front:null, center:null, back:null },
   //       ],
   //     },
   //   ],

@@ -24,10 +24,10 @@ function showDists(pos) {
   const origin = prevIsTee
     ? { lat: h.tee.lat, lng: h.tee.lng }
     : { lat: shots[shots.length-1].lat, lng: shots[shots.length-1].lng };
-  const originLabel = prevIsTee ? 'ティーから' : `${shots.length}打目地点から`;
+  const originLabel = prevIsTee ? 'ティーから' : `第${shots.length + 1}打から`;
   const originYd = Math.round(haversine(origin.lat, origin.lng, pos.lat(), pos.lng()) * 1.09361);
 
-  // ターゲットピン
+  // ターゲットピン：選択済みがあればそれ、デフォルトはセンター
   const pinMap     = { front: h.front, center: h.center, back: h.back };
   const pinNameMap = { front: 'フロント', center: 'センター', back: 'バック' };
   let targetKey, targetPos, targetName;
@@ -36,20 +36,9 @@ function showDists(pos) {
     targetPos  = pinMap[measureSelectedPin];
     targetName = pinNameMap[measureSelectedPin];
   } else {
-    const targets = [
-      { key: 'front',  pos: h.front,  name: 'フロント' },
-      { key: 'center', pos: h.center, name: 'センター' },
-      { key: 'back',   pos: h.back,   name: 'バック'   },
-    ];
-    let near = targets[0];
-    let minD  = haversine(pos.lat(), pos.lng(), near.pos.lat, near.pos.lng);
-    targets.slice(1).forEach(t => {
-      const d = haversine(pos.lat(), pos.lng(), t.pos.lat, t.pos.lng);
-      if (d < minD) { minD = d; near = t; }
-    });
-    targetKey  = near.key;
-    targetPos  = near.pos;
-    targetName = near.name;
+    targetKey  = 'center';
+    targetPos  = h.center;
+    targetName = 'センター';
   }
   const pinYd = Math.round(haversine(pos.lat(), pos.lng(), targetPos.lat, targetPos.lng) * 1.09361);
 

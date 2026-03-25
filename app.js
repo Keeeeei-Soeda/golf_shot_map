@@ -3,7 +3,27 @@
    ===================================================== */
 
 // クラブ一覧
-const CLUBS = ['1W','3W','4H','5I','6I','7I','8I','9I','PW','AW','SW','PT'];
+// デフォルトクラブセット（9本・14スロット分、空は''）
+const DEFAULT_CLUBS = ['1W','UT','7I','8I','9I','56°','PW','SW','PT','','','','',''];
+
+function loadClubs() {
+  try {
+    const saved = localStorage.getItem('golfClubSet');
+    if (saved) {
+      const arr = JSON.parse(saved);
+      // 14スロットに正規化
+      const normalized = Array.from({length:14}, (_, i) => arr[i] || '');
+      return normalized;
+    }
+  } catch(e) {}
+  return [...DEFAULT_CLUBS];
+}
+
+function saveClubs(arr) {
+  localStorage.setItem('golfClubSet', JSON.stringify(arr));
+}
+
+let CLUBS = loadClubs();
 
 // スコア定義
 const SCORE_DEFS = [
@@ -156,8 +176,10 @@ function renderStrip() {
     const meta = roundShots[`${key}_meta`] || {};
     let badge = '';
     if (meta.cupIn) {
-      const sd = scoreDef(meta.scoreDiff);
-      const label = meta.scoreDiff === 0 ? 'E' : meta.scoreDiff > 0 ? `+${meta.scoreDiff}` : String(meta.scoreDiff);
+      const shots = meta.totalShots || (meta.par + (meta.scoreDiff || 0));
+      const diff  = shots - meta.par;
+      const sd    = scoreDef(diff);
+      const label = diff === 0 ? 'E' : diff > 0 ? `+${diff}` : String(diff);
       badge = `<span class="sbadge ${sd.cls}">${label}</span>`;
     } else if (shots.length) {
       badge = `<span class="sbadge cupin">${shots.length}打</span>`;
@@ -335,6 +357,107 @@ function loadHole() {
   window._currentBearing = bearing;
   console.log('_currentBearing set to:', bearing);
   placePins(h); renderShotLayer(); updateInfo(); updateRecBanner();
+}
+
+// ============================================================
+// クラブセット編集パネル
+// ============================================================
+const CLUB_PRESETS = {
+  'ドライバー':    ['1W'],
+  'フェアウェイウッド': ['3W','5W'],
+  'ユーティリティ': ['4UT','5UT'],
+  'アイアン':     ['3I','4I','5I','6I','7I','8I','9I'],
+  'ウェッジ':     ['SW','PW','AW','50°','52°','54°','55°','56°','57°','58°','60°'],
+  'パター':       ['PT'],
+};
+
+let editingClubs = []; // 編集中の一時クラブ配列
+
+function openClubEditor() {
+  editingClubs = [...CLUBS];
+  renderClubEditor();
+  document.getElementById('clubEditorPanel').classList.add('open');
+  closeMenu();
+}
+
+function closeClubEditor() {
+  document.getElementById('clubEditorPanel').classList.remove('open');
+}
+
+function renderClubEditor() {
+  // 選択済みスロット表示
+  const count = editingClubs.filter(c => c !== '').length;
+  document.getElementById('ceCount').textContent = `${count} / 14本`;
+  document.getElementById('ceCountBar').style.width = `${(count/14)*100}%`;
+  document.getElementById('ceCountBar').style.background = count > 14 ? 'var(--red)' : 'var(--gv)';
+
+  // スロット表示
+  const slotsEl = document.getElementById('ceSlots');
+  slotsEl.innerHTML = editingClubs.map((c, i) =>
+    c ? `<div class="ce-slot filled" onclick="removeClubSlot(${i})">
+           ${c}<span class="ce-rm">✕</span>
+         </div>`
+      : `<div class="ce-slot empty">—</div>`
+  ).join('');
+
+  // プリセットボタン
+  const presetsEl = document.getElementById('cePresets');
+  presetsEl.innerHTML = Object.entries(CLUB_PRESETS).map(([cat, clubs]) => `
+    <div class="ce-cat">
+      <div class="ce-cat-label">${cat}</div>
+      <div class="ce-cat-clubs">
+        ${clubs.map(c => {
+          const sel = editingClubs.includes(c);
+          return `<button class="ce-club-btn ${sel ? 'sel' : ''}" onclick="toggleClubPreset('${c}')">${c}</button>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  // その他（自由入力）
+  document.getElementById('ceOtherInput').value = '';
+}
+
+function toggleClubPreset(club) {
+  const idx = editingClubs.findIndex(c => c === club);
+  if (idx !== -1) {
+    editingClubs[idx] = '';
+  } else {
+    const emptyIdx = editingClubs.findIndex(c => c === '');
+    if (emptyIdx === -1) return; // 14本満
+    editingClubs[emptyIdx] = club;
+  }
+  renderClubEditor();
+}
+
+function removeClubSlot(i) {
+  editingClubs[i] = '';
+  // 詰める（空を後ろに）
+  const filled = editingClubs.filter(c => c !== '');
+  editingClubs = Array.from({length:14}, (_, i) => filled[i] || '');
+  renderClubEditor();
+}
+
+function addOtherClub() {
+  const val = document.getElementById('ceOtherInput').value.trim();
+  if (!val) return;
+  const emptyIdx = editingClubs.findIndex(c => c === '');
+  if (emptyIdx === -1) { alert('14本が上限です'); return; }
+  editingClubs[emptyIdx] = val;
+  renderClubEditor();
+}
+
+function saveClubEditor() {
+  const count = editingClubs.filter(c => c !== '').length;
+  if (count < 1) { alert('最低1本は選択してください'); return; }
+  CLUBS = [...editingClubs];
+  saveClubs(CLUBS);
+  closeClubEditor();
+}
+
+function resetClubEditor() {
+  editingClubs = [...DEFAULT_CLUBS];
+  renderClubEditor();
 }
 
 // ============================================================
@@ -570,8 +693,10 @@ function clearPending() {
 function openShotPanelUI() {
   const n = curShots().length + 1;
   document.getElementById('spShotNo').textContent = `${n}打目を登録`;
-  document.getElementById('clubGrid').innerHTML = CLUBS.map(c =>
-    `<button class="cb" onclick="selectClub('${c}')">${c}</button>`).join('');
+  document.getElementById('clubGrid').innerHTML = CLUBS.map((c, i) =>
+    c ? `<button class="cb" onclick="selectClub('${c}')">${c}</button>`
+      : `<div class="cb-empty"></div>`
+  ).join('');
   document.getElementById('spOkBtn').disabled = true;
   selectedClub = null;
   // デフォルトは「記録」タブ
@@ -745,20 +870,27 @@ function buildScoreCard() {
     const mk = `${st.gcIdx}_${st.cIdx}_${i}_meta`;
     const meta = roundShots[mk] || {};
     if (!meta.cupIn) return '<td class="sc-empty">—</td>';
-    const sd = scoreDef(meta.scoreDiff);
-    const label = meta.scoreDiff === 0 ? 'E' : meta.scoreDiff > 0 ? `+${meta.scoreDiff}` : String(meta.scoreDiff);
-    return `<td class="sc-cell ${sd.cls}">${meta.totalShots || '?'}<br><small>${label}</small></td>`;
+    // totalShotsとparから差を再計算（手動変更との整合性を保つ）
+    const shots = meta.totalShots || (meta.par + (meta.scoreDiff || 0));
+    const diff  = shots - meta.par;
+    const sd    = scoreDef(diff);
+    const label = diff === 0 ? 'E' : diff > 0 ? `+${diff}` : String(diff);
+    return `<td class="sc-cell ${sd.cls}">${shots}<br><small>${label}</small></td>`;
   }).join('');
   const totalPar   = holes.reduce((a, h) => a + h.par, 0);
   const totalDiff  = holes.reduce((a, h, i) => {
     const mk = `${st.gcIdx}_${st.cIdx}_${i}_meta`;
     const meta = roundShots[mk] || {};
-    return meta.cupIn ? a + (meta.scoreDiff || 0) : a;
+    if (!meta.cupIn) return a;
+    const shots = meta.totalShots || (meta.par + (meta.scoreDiff || 0));
+    return a + (shots - meta.par);
   }, 0);
   const totalScore = holes.reduce((a, h, i) => {
     const mk = `${st.gcIdx}_${st.cIdx}_${i}_meta`;
     const meta = roundShots[mk] || {};
-    return meta.cupIn && meta.totalShots ? a + meta.totalShots : a;
+    if (!meta.cupIn) return a;
+    const shots = meta.totalShots || (meta.par + (meta.scoreDiff || 0));
+    return a + shots;
   }, 0);
   const totalLabel = totalDiff === 0 ? 'Even' : totalDiff > 0 ? `+${totalDiff}` : String(totalDiff);
 

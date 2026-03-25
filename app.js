@@ -314,6 +314,7 @@ function loadHole() {
     map = new google.maps.Map(document.getElementById('map'), {
       center: { lat: midLat, lng: midLng }, zoom,
       mapTypeId: 'hybrid',
+      mapId: 'c041c97b58243474e5cf18cb',   // ← カスタムMap ID（ベクター・ローテーション有効）
       disableDefaultUI: true, zoomControl: true,
       gestureHandling: 'greedy',
       rotateControl: false,

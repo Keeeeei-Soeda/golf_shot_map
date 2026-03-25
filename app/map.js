@@ -118,8 +118,8 @@ function loadHole() {
       h ? `${h.no}番ホールの座標はまだ登録されていません` : 'コースを選択してください';
     
     document.getElementById('recBanner').style.display = 'none';
-    const btn = document.getElementById('yiToggleBtn');
-    if (btn) btn.style.display = 'none';
+    const mapBtns = document.getElementById('mapBtns');
+    if (mapBtns) mapBtns.style.display = 'none';
     clearMeasure(); clearPending(); clearShotLayer(); updateInfo(); return;
   }
   document.getElementById('emptyMap').style.display = 'none';

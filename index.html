@@ -45,6 +45,38 @@
     </div>
     <div class="menu-label">ホール選択</div>
     <div id="holeStrip"></div>
+    <!-- クラブセット編集 -->
+    <div class="menu-divider"></div>
+    <button class="menu-club-btn" onclick="openClubEditor()">🏌️ クラブセット編集</button>
+  </div>
+</div>
+
+<!-- ===== クラブセット編集パネル（全画面） ===== -->
+<div id="clubEditorPanel">
+  <div class="ce-header">
+    <button class="ce-back" onclick="closeClubEditor()">← 戻る</button>
+    <div class="ce-title">クラブセット編集</div>
+    <button class="ce-save" onclick="saveClubEditor()">保存</button>
+  </div>
+  <div class="ce-body">
+    <!-- 本数インジケーター -->
+    <div class="ce-count-wrap">
+      <div class="ce-count-bar-bg"><div class="ce-count-bar" id="ceCountBar"></div></div>
+      <div class="ce-count" id="ceCount">0 / 14本</div>
+    </div>
+    <!-- 現在のスロット（14マス） -->
+    <div class="ce-slots-label">現在のセット（タップで削除）</div>
+    <div class="ce-slots" id="ceSlots"></div>
+    <!-- プリセット選択 -->
+    <div class="ce-slots-label" style="margin-top:12px">クラブを選択（タップで追加/削除）</div>
+    <div id="cePresets"></div>
+    <!-- その他 -->
+    <div class="ce-other-wrap">
+      <input id="ceOtherInput" class="ce-other-input" placeholder="その他（例：48°）" maxlength="6">
+      <button class="ce-other-add" onclick="addOtherClub()">追加</button>
+    </div>
+    <!-- リセット -->
+    <button class="ce-reset" onclick="resetClubEditor()">デフォルトに戻す</button>
   </div>
 </div>
 
@@ -180,7 +212,18 @@
 
 <!-- ===== JS ===== -->
 <script src="courses.js"></script>
-<script src="app.js"></script>
+<script src="app/core.js"></script>
+<script src="app/sidebar.js"></script>
+<script src="app/map.js"></script>
+<script src="app/measure.js"></script>
+<script src="app/shot.js"></script>
+<script src="app/clubs.js"></script>
+<script src="app/history.js"></script>
+<script>
+  // 初期化
+  initSelects();
+  updateBadge();
+</script>
 <script
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBryPip32SP4e5y2RBSDyKLbxoz313JAgU&callback=initMap&loading=async&libraries=marker&language=ja">
 </script>

@@ -142,6 +142,28 @@ header{height:52px;flex-shrink:0;background:linear-gradient(135deg,#0a160a,var(-
 
 /* マップラッパー */
 #mapWrap{flex:1;position:relative;}
+
+/* 検索ボックス */
+#searchBox{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  z-index:10;display:flex;align-items:center;gap:0;
+  background:rgba(10,22,10,.95);border:1px solid var(--org);
+  border-radius:24px;padding:4px 6px 4px 14px;
+  box-shadow:0 2px 12px rgba(0,0,0,.5);
+  width:min(360px, 90vw);
+}
+#searchInput{
+  flex:1;background:transparent;border:none;outline:none;
+  color:#fff;font-size:14px;font-family:inherit;
+  padding:6px 0;
+}
+#searchInput::placeholder{color:var(--gr);}
+#searchClear{
+  background:none;border:none;color:var(--gr);
+  font-size:14px;cursor:pointer;padding:4px 8px;
+  line-height:1;
+}
+#searchClear:hover{color:#fff;}
 </style>
 </head>
 <body>
@@ -223,6 +245,11 @@ header{height:52px;flex-shrink:0;background:linear-gradient(135deg,#0a160a,var(-
   <div id="mapWrap">
     <div id="map"></div>
     <div id="indicator"></div>
+    <!-- 検索ボックス -->
+    <div id="searchBox">
+      <input id="searchInput" type="text" placeholder="🔍 ゴルフ場名で検索..." autocomplete="off"/>
+      <button id="searchClear" onclick="clearSearch()" title="クリア">✕</button>
+    </div>
   </div>
 </div>
 
@@ -362,7 +389,33 @@ window.initMap = function () {
   });
   map.addListener('click', onMapClick);
   updateIndicator();
+
+  // Places Autocomplete（検索ボックス）
+  const input = document.getElementById('searchInput');
+  const autocomplete = new google.maps.places.Autocomplete(input, {
+    types: ['establishment'],
+    componentRestrictions: { country: 'jp' },
+    fields: ['geometry', 'name'],
+  });
+  autocomplete.addListener('place_changed', () => {
+    const place = autocomplete.getPlace();
+    if (!place.geometry || !place.geometry.location) return;
+    map.setCenter(place.geometry.location);
+    map.setZoom(17);
+    // ゴルフ場名を自動入力（空欄の場合のみ）
+    const gcNameEl = document.getElementById('gcName');
+    if (!gcNameEl.value) {
+      gcNameEl.value = place.name;
+      updateOutput();
+    }
+    document.getElementById('searchClear').style.display = 'inline';
+  });
 };
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').style.display = 'none';
+}
 
 // ============================================================
 // 地図クリック → 座標登録
@@ -504,7 +557,7 @@ init();
 </script>
 
 <script async defer
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBryPip32SP4e5y2RBSDyKLbxoz313JAgU&callback=initMap&language=ja">
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBryPip32SP4e5y2RBSDyKLbxoz313JAgU&callback=initMap&loading=async&libraries=places&language=ja">
 </script>
 </body>
 </html>

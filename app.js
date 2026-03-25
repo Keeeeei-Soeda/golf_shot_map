@@ -416,15 +416,11 @@ function showDists(pos) {
   }
   const pinYd = Math.round(haversine(pos.lat(), pos.lng(), targetPos.lat, targetPos.lng) * 1.09361);
 
-  // 距離パネル表示
-  document.getElementById('dpFromLabel').textContent = originLabel;
-  document.getElementById('dpTeeYd').innerHTML   = `${originYd}<span>yd</span>`;
-  document.getElementById('dpPinYd').innerHTML   = `${pinYd}<span>yd</span>`;
-  document.getElementById('dpPinLabel').textContent = `${targetName}まで`;
-  document.getElementById('distPanel').classList.add('show');
-
-  // ③ ヤード情報パネルにも追加表示
+  // ヤード情報パネルに測定距離を表示（distPanelは削除済みのためこちらのみ）
   updateYardageMeasure(originLabel, originYd, targetName, pinYd);
+
+  // パネルが閉じていれば自動で開く
+  if (!yardageInfoOpen) toggleYardageInfo();
 
   // ライン描画
   if (teeLine) teeLine.setMap(null);
@@ -442,7 +438,6 @@ function clearMeasure() {
   if (teeLine) { teeLine.setMap(null); teeLine = null; }
   if (pinLine)  { pinLine.setMap(null);  pinLine = null; }
   measureSelectedPin = null;
-  document.getElementById('distPanel').classList.remove('show');
   // ヤード情報パネルの測定欄をクリア
   const mEl = document.getElementById('yiMeasure');
   if (mEl) mEl.innerHTML = '';

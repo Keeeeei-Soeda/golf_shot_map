@@ -416,11 +416,8 @@ function showDists(pos) {
   }
   const pinYd = Math.round(haversine(pos.lat(), pos.lng(), targetPos.lat, targetPos.lng) * 1.09361);
 
-  // ヤード情報パネルに測定距離を表示（distPanelは削除済みのためこちらのみ）
+  // ヤード情報パネルに測定距離を表示（開閉はボタンのみ・自動開閉しない）
   updateYardageMeasure(originLabel, originYd, targetName, pinYd);
-
-  // パネルが閉じていれば自動で開く
-  if (!yardageInfoOpen) toggleYardageInfo();
 
   // ライン描画
   if (teeLine) teeLine.setMap(null);
@@ -456,10 +453,10 @@ function updatePendingPos(pos) {
     : { lat: shots[shots.length-1].lat, lng: shots[shots.length-1].lng };
   const carryYd = Math.round(haversine(prevPos.lat, prevPos.lng, pos.lat(), pos.lng()) * 1.09361);
   const remYd   = Math.round(haversine(pos.lat(), pos.lng(), h.center.lat, h.center.lng) * 1.09361);
+  const fromLabel = prevIsTee ? 'ティーから' : `${shots.length}打目から`;
 
-  document.getElementById('spCarry').innerHTML  = `${carryYd}<span>yd</span>`;
-  document.getElementById('spRemain').innerHTML = `${remYd}<span>yd</span>`;
-  document.getElementById('spCarryFrom').textContent = prevIsTee ? 'ティーから' : `${shots.length}打目地点から`;
+  // 飛距離タブの内容を更新
+  updateSpDistTab(carryYd, remYd, fromLabel);
 
   // マーカー
   if (pendingMarker) pendingMarker.setPosition(pos);
@@ -517,16 +514,46 @@ function clearPending() {
 }
 
 // ============================================================
-// ショット登録パネル
+// ショット登録パネル（タブ式）
 // ============================================================
 function openShotPanelUI() {
-  document.getElementById('spShotNo').textContent = `${curShots().length + 1}打目を登録`;
+  const n = curShots().length + 1;
+  document.getElementById('spShotNo').textContent = `${n}打目を登録`;
   document.getElementById('clubGrid').innerHTML = CLUBS.map(c =>
     `<button class="cb" onclick="selectClub('${c}')">${c}</button>`).join('');
   document.getElementById('spOkBtn').disabled = true;
   selectedClub = null;
+  // デフォルトは「記録」タブ
+  switchSpTab('record');
   document.getElementById('shotPanel').classList.add('open');
   document.getElementById('recBanner').style.display = 'none';
+}
+
+function switchSpTab(tab) {
+  document.getElementById('spTabRecord').classList.toggle('active', tab === 'record');
+  document.getElementById('spTabDist').classList.toggle('active', tab === 'dist');
+  document.getElementById('spBodyRecord').style.display = tab === 'record' ? 'block' : 'none';
+  document.getElementById('spBodyDist').style.display   = tab === 'dist'   ? 'block' : 'none';
+}
+
+// 飛距離タブの内容を更新
+function updateSpDistTab(carryYd, remYd, fromLabel) {
+  const el = document.getElementById('spBodyDist');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="sp-dists">
+      <div class="sp-dist-card carry">
+        <div class="sdc-label">carry</div>
+        <div class="sdc-from">${fromLabel}</div>
+        <div class="sdc-val blue">${carryYd}<span>yd</span></div>
+      </div>
+      <div class="sp-dist-card remain">
+        <div class="sdc-label">remaining</div>
+        <div class="sdc-from">センターまで</div>
+        <div class="sdc-val yellow">${remYd}<span>yd</span></div>
+      </div>
+    </div>
+  `;
 }
 
 function selectClub(c) {

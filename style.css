@@ -246,6 +246,23 @@ header{
 }
 .cb:hover{background:var(--g4);}
 .cb.sel{background:var(--org);border-color:var(--org);color:#000;}
+/* ショットパネル タブ */
+.sp-tabs{
+  display:flex;gap:4px;margin-bottom:8px;
+  background:var(--g2);border-radius:8px;padding:3px;
+}
+.sp-tab{
+  flex:1;padding:7px 4px;border-radius:6px;border:none;
+  background:transparent;color:var(--gr);font-size:12px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.sp-tab.active{background:var(--g1);color:var(--w);}
+#spTabRecord.active{color:var(--org);}
+#spTabDist.active{color:var(--blue);}
+.sp-hint-small{
+  font-size:10px;color:var(--gr);text-align:center;
+  padding:6px 0 2px;
+}
 .sp-btns{display:flex;gap:8px;}
 .sp-ok{
   flex:1;padding:10px;border-radius:8px;background:var(--gv);border:none;

@@ -12,40 +12,65 @@
 </head>
 <body>
 
-<!-- ===== HEADER ===== -->
+<!-- ===== HEADER（スリム版） ===== -->
 <header>
-  <div class="logo">⛳ GOLF<small>TRACKER</small></div>
-  <div class="hdr-sel">
-    <select id="gcSel" onchange="onGCSel()"><option value="">-- ゴルフ場 --</option></select>
-  </div>
-  <div class="hdr-sel">
-    <select id="courseSel" onchange="onCourseSel()"><option value="">-- コース --</option></select>
-  </div>
-  <button class="hdr-btn" id="gpsBtn" onclick="onGpsBtn()">📍</button>
-  <a class="hdr-btn" id="snLink" href="#" target="_blank">🗺</a>
-  <button class="hdr-btn" id="histBtn" onclick="openHistory()">
-    📋<span class="hist-badge" id="histBadge"></span>
+  <button class="hbg-btn" id="hbgBtn" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
   </button>
+  <div class="logo">⛳ GOLF<small>TRACKER</small></div>
+  <div class="hdr-right">
+    <button class="hdr-btn" id="gpsBtn" onclick="onGpsBtn()">📍</button>
+    <a class="hdr-btn" id="snLink" href="#" target="_blank">🗺</a>
+    <button class="hdr-btn" id="histBtn" onclick="openHistory()">
+      📋<span class="hist-badge" id="histBadge"></span>
+    </button>
+  </div>
 </header>
 
-<!-- ===== HOLE STRIP ===== -->
-<div id="holeStrip"></div>
+<!-- ===== ハンバーガーメニュー ===== -->
+<div id="menuOverlay" onclick="closeMenu()"></div>
+<div id="menuPanel">
+  <div class="menu-header">
+    <span class="menu-title">コース設定</span>
+    <button class="menu-close" onclick="closeMenu()">✕</button>
+  </div>
+  <div class="menu-body">
+    <div class="menu-label">ゴルフ場</div>
+    <div class="menu-sel-wrap">
+      <select id="gcSel" onchange="onGCSel()"><option value="">-- ゴルフ場を選択 --</option></select>
+    </div>
+    <div class="menu-label">コース</div>
+    <div class="menu-sel-wrap">
+      <select id="courseSel" onchange="onCourseSel()"><option value="">-- コース --</option></select>
+    </div>
+    <div class="menu-label">ホール選択</div>
+    <div id="holeStrip"></div>
+  </div>
+</div>
 
 <!-- ===== MAP ===== -->
 <div id="mapWrap">
-  <div id="emptyMap"><div class="ico">⛳</div><p>ゴルフ場・コースを選択してください</p></div>
+  <div id="emptyMap"><div class="ico">⛳</div><p>メニューからゴルフ場・コースを選択してください</p></div>
   <div id="map"></div>
+
+  <!-- 凡例 -->
   <div id="legend">
-    <div class="leg-r"><div class="leg-dot" style="background:#4a9fd4"></div>ティー (T)</div>
-    <div class="leg-r"><div class="leg-dot" style="background:#e05252"></div>フロント (F)</div>
-    <div class="leg-r"><div class="leg-dot" style="background:#a78bfa"></div>センター (C)</div>
-    <div class="leg-r"><div class="leg-dot" style="background:#e8c84a"></div>バック (B)</div>
+    <div class="leg-r"><div class="leg-dot" style="background:#4a9fd4"></div>T</div>
+    <div class="leg-r"><div class="leg-dot" style="background:#e05252"></div>F</div>
+    <div class="leg-r"><div class="leg-dot" style="background:#a78bfa"></div>C</div>
+    <div class="leg-r"><div class="leg-dot" style="background:#e8c84a"></div>B</div>
     <div class="leg-r" id="legShot" style="display:none">
-      <div class="leg-dot" style="background:#4caf50"></div>ショット軌跡
+      <div class="leg-dot" style="background:#4caf50"></div>軌跡
     </div>
   </div>
-  <!-- ヤード情報パネル -->
+
+  <!-- ヤード情報トグルボタン（地図上右上） -->
+  <button class="yi-toggle-btn" id="yiToggleBtn" onclick="toggleYardageInfo()" style="display:none">📐</button>
+
+  <!-- ヤード情報パネル（開閉式） -->
   <div id="yardageInfo" style="display:none"></div>
+
+  <!-- 記録モードバナー -->
   <div id="recBanner"></div>
 </div>
 
@@ -55,28 +80,13 @@
     <button class="mtab active" id="tabMeasure" onclick="setMode('measure')">📏 測定</button>
     <button class="mtab rec"    id="tabRecord"  onclick="setMode('record')">🏌️ 記録</button>
   </div>
-  <div class="mode-info" id="modeInfo">コースを選択してください</div>
+  <div class="mode-info" id="modeInfo">メニューからコースを選択</div>
   <button id="cupBtn" onclick="openCupPanel()">⛳ IN</button>
   <button class="bb-btn" id="reviewBtn" style="display:none" onclick="toggleReview()">📋</button>
   <button class="bb-btn" onclick="clearMeasure()">↺</button>
 </div>
 
-<!-- ===== 距離パネル（測定モード） ===== -->
-<div id="distPanel">
-  <div class="dp-row">
-    <div class="dp-label" id="dpFromLabel">ティーから</div>
-    <div class="dp-yd blue" id="dpTeeYd">—<span>yd</span></div>
-    <div class="dp-to">（飛距離目安）</div>
-  </div>
-  <div class="dp-divider"></div>
-  <div class="dp-row">
-    <div class="dp-label">ここから</div>
-    <div class="dp-yd yellow" id="dpPinYd">—<span>yd</span></div>
-    <div class="dp-to" id="dpPinLabel">ピンまで</div>
-  </div>
-</div>
-
-<!-- ===== ショット登録パネル（オーバーレイなし） ===== -->
+<!-- ===== ショット登録パネル ===== -->
 <div id="shotPanel">
   <div class="sp-header">
     <div>
@@ -87,13 +97,13 @@
   </div>
   <div class="sp-dists">
     <div class="sp-dist-card carry">
-      <div class="sdc-label">carry（飛距離）</div>
+      <div class="sdc-label">carry</div>
       <div class="sdc-from" id="spCarryFrom">ティーから</div>
       <div class="sdc-val blue" id="spCarry">—<span>yd</span></div>
     </div>
     <div class="sp-dist-card remain">
-      <div class="sdc-label">remaining（残り）</div>
-      <div class="sdc-from">センターピンまで</div>
+      <div class="sdc-label">remaining</div>
+      <div class="sdc-from">センターまで</div>
       <div class="sdc-val yellow" id="spRemain">—<span>yd</span></div>
     </div>
   </div>
@@ -113,12 +123,12 @@
     <div id="cpScoreLabel" class="cup-score-label"></div>
   </div>
   <div class="cup-manual">
-    <div class="cup-manual-title">スコアを確認・変更（タップで変更）</div>
+    <div class="cup-manual-title">スコアを確認・変更</div>
     <div class="cup-manual-btns" id="cpScoreBtns"></div>
   </div>
   <div class="cup-btns">
     <button class="cup-cancel" onclick="closeCupPanel()">キャンセル</button>
-    <button class="cup-ok" onclick="confirmCupIn()">⛳ カップイン確定</button>
+    <button class="cup-ok" onclick="confirmCupIn()">⛳ 確定</button>
   </div>
 </div>
 
@@ -132,7 +142,7 @@
   </button>
 </div>
 
-<!-- ===== ホールサマリーパネル（⑤ カップイン後表示） ===== -->
+<!-- ===== ホールサマリーパネル ===== -->
 <div id="holeSummaryPanel">
   <div class="hs-header">
     <div>
@@ -157,9 +167,9 @@
   <div class="hist-list" id="histList"></div>
 </div>
 
-<!-- ===== JS（読み込み順に注意） ===== -->
-<script src="courses.js"></script>   <!-- ★ コースデータ（Keiさんが編集） -->
-<script src="app.js"></script>       <!-- アプリロジック（基本触らない） -->
+<!-- ===== JS ===== -->
+<script src="courses.js"></script>
+<script src="app.js"></script>
 <script async defer
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBryPip32SP4e5y2RBSDyKLbxoz313JAgU&callback=initMap&language=ja">
 </script>

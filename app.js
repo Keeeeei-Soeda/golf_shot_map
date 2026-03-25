@@ -65,6 +65,36 @@ function haversine(la1, lo1, la2, lo2) {
 }
 
 // ============================================================
+// ハンバーガーメニュー
+// ============================================================
+function toggleMenu() {
+  const panel = document.getElementById('menuPanel');
+  const overlay = document.getElementById('menuOverlay');
+  const btn = document.getElementById('hbgBtn');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('show', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+function closeMenu() {
+  document.getElementById('menuPanel').classList.remove('open');
+  document.getElementById('menuOverlay').classList.remove('show');
+  document.getElementById('hbgBtn').classList.remove('open');
+}
+
+// ============================================================
+// ヤード情報パネル開閉
+// ============================================================
+let yardageInfoOpen = false;
+function toggleYardageInfo() {
+  yardageInfoOpen = !yardageInfoOpen;
+  const el = document.getElementById('yardageInfo');
+  const btn = document.getElementById('yiToggleBtn');
+  el.style.display = yardageInfoOpen ? 'block' : 'none';
+  btn.classList.toggle('open', yardageInfoOpen);
+}
+
+// ============================================================
 // セレクタ初期化
 // ============================================================
 function initSelects() {
@@ -90,6 +120,7 @@ function onCourseSel() {
   const v = document.getElementById('courseSel').value;
   st.cIdx = v === '' ? null : parseInt(v); st.hIdx = 0;
   renderStrip(); loadHole(); updateSNLink();
+  closeMenu();
 }
 
 // ============================================================
@@ -136,7 +167,7 @@ function renderStrip() {
   }).join('');
 }
 
-function selectHole(i) { st.hIdx = i; renderStrip(); loadHole(); closeReview(); updateSNLink(); }
+function selectHole(i) { st.hIdx = i; renderStrip(); loadHole(); closeReview(); updateSNLink(); closeMenu(); }
 
 // ============================================================
 // モード切替
@@ -179,38 +210,41 @@ function updateCupBtn() {
 // ============================================================
 function renderYardageInfo(h) {
   const el = document.getElementById('yardageInfo');
-  if (!h || !hasData(h)) { el.style.display = 'none'; return; }
+  const btn = document.getElementById('yiToggleBtn');
+  if (!h || !hasData(h)) {
+    el.style.display = 'none';
+    if (btn) btn.style.display = 'none';
+    return;
+  }
+  if (btn) btn.style.display = 'flex';
 
-  // 座標から計算：ティー→フロントエッジ、ティー→センター
   const teeToFront  = Math.round(haversine(h.tee.lat, h.tee.lng, h.front.lat,  h.front.lng)  * 1.09361);
   const teeToCenter = Math.round(haversine(h.tee.lat, h.tee.lng, h.center.lat, h.center.lng) * 1.09361);
-
-  // ShotNaviヤード（登録済みの場合のみ）
   const yd = h.yards;
   const ydRow = yd
     ? `<div class="yi-row yi-shotnavi">
         <div class="yi-cell"><div class="yi-label">バック</div><div class="yi-val sn">${yd.back}<span>yd</span></div></div>
         <div class="yi-cell"><div class="yi-label">レギュラー</div><div class="yi-val sn">${yd.reg}<span>yd</span></div></div>
         <div class="yi-cell"><div class="yi-label">レディース</div><div class="yi-val sn">${yd.ladies}<span>yd</span></div></div>
-      </div>`
-    : '';
+      </div>` : '';
 
   el.innerHTML = `
     <div class="yi-title">H${h.no} <span class="yi-par">PAR ${h.par}</span></div>
     <div class="yi-row">
       <div class="yi-cell">
-        <div class="yi-label">ティー → フロント</div>
+        <div class="yi-label">T → フロント</div>
         <div class="yi-val blue">${teeToFront}<span>yd</span></div>
       </div>
       <div class="yi-cell">
-        <div class="yi-label">ティー → センター</div>
+        <div class="yi-label">T → センター</div>
         <div class="yi-val green">${teeToCenter}<span>yd</span></div>
       </div>
     </div>
     ${ydRow}
     <div id="yiMeasure"></div>
   `;
-  el.style.display = 'block';
+  // 開閉状態を維持
+  el.style.display = yardageInfoOpen ? 'block' : 'none';
 }
 
 // ③ 測定距離をヤード情報パネルに追加表示
@@ -233,6 +267,18 @@ function updateYardageMeasure(fromLabel, fromYd, toName, toYd) {
     <div class="yi-pin-hint">F・C・B をタップで切替</div>
   `;
 }
+// ============================================================
+// 方位角計算（ティー→センター方向が上になるよう回転）
+// ============================================================
+function calcBearing(lat1, lng1, lat2, lng2) {
+  const r = Math.PI / 180;
+  const dLng = (lng2 - lng1) * r;
+  const y = Math.sin(dLng) * Math.cos(lat2 * r);
+  const x = Math.cos(lat1 * r) * Math.sin(lat2 * r)
+          - Math.sin(lat1 * r) * Math.cos(lat2 * r) * Math.cos(dLng);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
 function loadHole() {
   const h = hole();
   document.getElementById('reviewBtn').style.display = 'none';
@@ -244,6 +290,8 @@ function loadHole() {
       h ? `${h.no}番ホールの座標はまだ登録されていません` : 'コースを選択してください';
     document.getElementById('legend').style.display = 'none';
     document.getElementById('recBanner').style.display = 'none';
+    const btn = document.getElementById('yiToggleBtn');
+    if (btn) btn.style.display = 'none';
     clearMeasure(); clearPending(); clearShotLayer(); updateInfo(); return;
   }
   document.getElementById('emptyMap').style.display = 'none';
@@ -253,11 +301,18 @@ function loadHole() {
   renderYardageInfo(h);
   clearMeasure(); clearPending();
   if (!mapsLoaded) return;
+
+  // ティー→センターの方位角（この方向が上になるよう回転）
+  const bearing = calcBearing(h.tee.lat, h.tee.lng, h.center.lat, h.center.lng);
+
   if (!map) {
     map = new google.maps.Map(document.getElementById('map'), {
       center: { lat: h.tee.lat, lng: h.tee.lng }, zoom: 17,
       mapTypeId: 'satellite', tilt: 0,
-      disableDefaultUI: true, zoomControl: true, gestureHandling: 'greedy',
+      heading: bearing,                          // ← 自動回転
+      disableDefaultUI: true, zoomControl: true,
+      gestureHandling: 'greedy',
+      rotateControl: false,                      // ← 手動回転を無効化
       zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_CENTER }
     });
     map.addListener('click', onMapClick);
@@ -265,6 +320,7 @@ function loadHole() {
     const b = new google.maps.LatLngBounds();
     [h.tee, h.front, h.back].forEach(p => b.extend(p));
     map.fitBounds(b, { top: 60, bottom: 60, left: 40, right: 40 });
+    map.setHeading(bearing);                     // ← ホール切替時も回転
   }
   placePins(h); renderShotLayer(); updateInfo(); updateRecBanner();
 }

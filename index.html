@@ -85,10 +85,18 @@
   <div id="emptyMap"><div class="ico">⛳</div><p>メニューからゴルフ場・コースを選択してください</p></div>
   <div id="map"></div>
 
-  <!-- 右上ボタン群（横並び） -->
+  <!-- 右上ボタン群（横並び：内側=回転、外側=📐） -->
   <div class="map-btns" id="mapBtns" style="display:none">
-    <button class="yi-toggle-btn" id="yiToggleBtn" onclick="toggleYardageInfo()" title="ヤード情報">📐</button>
-    <button class="rotate-btn" id="rotateBtn" onclick="rotateToHole()" title="ホール方向に回転">⛳↑</button>
+    <button class="rotate-btn" id="rotateBtn" onclick="rotateToHole();hideLegend();" title="ホール方向に回転">⛳↑</button>
+    <button class="yi-toggle-btn" id="yiToggleBtn" onclick="toggleYardageInfo();hideLegend();" title="ヤード情報">📐</button>
+  </div>
+
+  <!-- 凡例（ホール選択時に表示・操作すると消える） -->
+  <div id="legend" style="display:none">
+    <div class="leg-r"><div class="leg-dot" style="background:#4a9fd4"></div>T = ティー</div>
+    <div class="leg-r"><div class="leg-dot" style="background:#e05252"></div>F = フロント</div>
+    <div class="leg-r"><div class="leg-dot" style="background:#a78bfa"></div>C = センター</div>
+    <div class="leg-r"><div class="leg-dot" style="background:#e8c84a"></div>B = バック</div>
   </div>
 
   <!-- ヤード情報パネル（開閉式） -->
@@ -101,8 +109,8 @@
 <!-- ===== BOTTOM BAR ===== -->
 <div id="bottomBar">
   <div class="mode-tabs">
-    <button class="mtab active" id="tabMeasure" onclick="setMode('measure')">📏 測定</button>
-    <button class="mtab rec"    id="tabRecord"  onclick="setMode('record')">🏌️ 記録</button>
+    <button class="mtab active" id="tabMeasure" onclick="setMode('measure');hideLegend();">📏 測定</button>
+    <button class="mtab rec"    id="tabRecord"  onclick="setMode('record');hideLegend();">🏌️ 記録</button>
   </div>
   <div class="mode-info" id="modeInfo">メニューからコースを選択</div>
   <button id="cupBtn" onclick="openCupPanel()">⛳ IN</button>

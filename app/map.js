@@ -3,6 +3,19 @@
    ===================================================== */
 
 // ============================================================
+// 凡例 表示/非表示
+// ============================================================
+function showLegend() {
+  const el = document.getElementById('legend');
+  if (el) el.style.display = 'block';
+}
+
+function hideLegend() {
+  const el = document.getElementById('legend');
+  if (el) el.style.display = 'none';
+}
+
+// ============================================================
 // ヤード情報パネル
 // ============================================================
 function toggleYardageInfo() {
@@ -22,6 +35,7 @@ function renderYardageInfo(h) {
     return;
   }
   if (mapBtns) mapBtns.style.display = 'flex';
+  showLegend(); // ホール切替時に凡例を復活
 
   updateYardagePanel(h);
   el.style.display = yardageInfoOpen ? 'block' : 'none';
@@ -195,6 +209,7 @@ function rotateToHole() {
 // 地図タップ
 // ============================================================
 function onMapClick(e) {
+  hideLegend();
   if (appMode === 'measure') { handleMeasure(e.latLng); return; }
   updatePendingPos(e.latLng);
   if (!document.getElementById('shotPanel').classList.contains('open')) openShotPanelUI();

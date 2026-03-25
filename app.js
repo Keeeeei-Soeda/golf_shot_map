@@ -298,6 +298,7 @@ function loadHole() {
 
   // ティー→センターの方位角（この方向が上になるよう回転）
   const bearing = calcBearing(h.tee.lat, h.tee.lng, h.center.lat, h.center.lng);
+  console.log('=== loadHole ===', `H${h.no}`, 'bearing:', bearing);
 
   // ティーとグリーンの中間点をセンターに
   const midLat = (h.tee.lat + h.center.lat) / 2;
@@ -306,24 +307,32 @@ function loadHole() {
   // ホール距離からzoomレベルを算出
   const holeDistM = haversine(h.tee.lat, h.tee.lng, h.center.lat, h.center.lng);
   const zoom = holeDistM > 400 ? 16 : holeDistM > 250 ? 17 : 18;
+  console.log('holeDistM:', Math.round(holeDistM), 'zoom:', zoom);
 
   if (!map) {
+    console.log('→ 新規マップ作成');
     map = new google.maps.Map(document.getElementById('map'), {
       center: { lat: midLat, lng: midLng }, zoom,
       mapTypeId: 'hybrid',
-      // tilt:0 を削除 → headingが有効になる
       disableDefaultUI: true, zoomControl: true,
       gestureHandling: 'greedy',
       rotateControl: false,
       zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_CENTER }
     });
     map.addListener('click', onMapClick);
+    // マップ種別確認
+    map.addListener('tilesloaded', () => {
+      console.log('tilesloaded - mapTypeId:', map.getMapTypeId(), 'heading:', map.getHeading(), 'tilt:', map.getTilt());
+    });
   } else {
+    console.log('→ 既存マップ更新 mapTypeId:', map.getMapTypeId(), 'tilt:', map.getTilt());
     map.setZoom(zoom);
     map.panTo({ lat: midLat, lng: midLng });
+    console.log('panTo後のheading:', map.getHeading());
   }
   // 手動回転ボタンのbearingを更新
   window._currentBearing = bearing;
+  console.log('_currentBearing set to:', bearing);
   placePins(h); renderShotLayer(); updateInfo(); updateRecBanner();
 }
 
@@ -331,16 +340,24 @@ function loadHole() {
 // 手動回転ボタン
 // ============================================================
 function rotateToHole() {
+  console.log('=== rotateToHole ===');
+  console.log('map:', map ? 'exists' : 'null');
+  console.log('_currentBearing:', window._currentBearing);
   if (!map || window._currentBearing === undefined) return;
   const btn = document.getElementById('rotateBtn');
   const currentHeading = map.getHeading() || 0;
   const target = window._currentBearing;
+  console.log('currentHeading:', currentHeading, '→ target:', target);
   const diff = Math.min(Math.abs(currentHeading - target), 360 - Math.abs(currentHeading - target));
+  console.log('diff:', diff);
   if (diff < 10) {
+    console.log('→ 北向きにリセット');
     map.setHeading(0);
     if (btn) { btn.textContent = '⛳↑'; btn.title = 'ホール方向に回転'; }
   } else {
+    console.log('→ ホール方向に回転:', target);
     map.setHeading(target);
+    console.log('setHeading後のheading:', map.getHeading());
     if (btn) { btn.textContent = '🧭N'; btn.title = '北向きに戻す'; }
   }
 }

@@ -217,6 +217,178 @@ const COURSES = [
 
   // =====================================================
   // =====================================================
+  //  高槻ゴルフ倶楽部（大阪）アウト・イン
+  //  楽天GORA: https://booking.gora.golf.rakuten.co.jp/guide/course_info/disp/c_id/270028
+  //  OUT PAR35 / IN PAR35 / 合計PAR70（河川敷コース）
+  //  ShotNavi GCID: 1430
+  // =====================================================
+  {
+    name: '高槻ゴルフ倶楽部',
+    pref: '大阪',
+    gcid: 1430,
+    lat:  34.8151,
+    lng:  135.6248,
+    courses: [
+      {
+        name: 'アウト',
+        cid:  0,
+        holes: [
+          {
+            no:1, par:5,
+            yards: { back:485, reg:475, ladies:435 },
+            tee:    { lat: 34.816494, lng: 135.630789 },
+            front:  { lat: 34.815728, lng: 135.626832 },
+            center: { lat: 34.815673, lng: 135.626712 },
+            back:   { lat: 34.815617, lng: 135.626582 },
+          },
+          {
+            no:2, par:3,
+            yards: { back:140, reg:130, ladies:110 },
+            tee:    { lat: 34.816268, lng: 135.626049 },
+            front:  { lat: 34.816130, lng: 135.624889 },
+            center: { lat: 34.816124, lng: 135.624712 },
+            back:   { lat: 34.816108, lng: 135.624542 },
+          },
+          {
+            no:3, par:4,
+            yards: { back:325, reg:305, ladies:275 },
+            tee:    { lat: 34.815867, lng: 135.625027 },
+            front:  { lat: 34.815787, lng: 135.622439 },
+            center: { lat: 34.815781, lng: 135.622274 },
+            back:   { lat: 34.815780, lng: 135.622114 },
+          },
+          {
+            no:4, par:4,
+            yards: { back:275, reg:260, ladies:260 },
+            tee:    { lat: 34.816081, lng: 135.622366 },
+            front:  { lat: 34.815897, lng: 135.619806 },
+            center: { lat: 34.815894, lng: 135.619621 },
+            back:   { lat: 34.815867, lng: 135.619433 },
+          },
+          {
+            no:5, par:4,
+            yards: { back:240, reg:240, ladies:240 },
+            tee:    { lat: 34.815176, lng: 135.619411 },
+            front:  { lat: 34.815518, lng: 135.621601 },
+            center: { lat: 34.815558, lng: 135.621731 },
+            back:   { lat: 34.815588, lng: 135.621849 },
+          },
+          {
+            no:6, par:3,
+            yards: { back:185, reg:175, ladies:135 },
+            tee:    { lat: 34.815286, lng: 135.621930 },
+            front:  { lat: 34.814427, lng: 135.620814 },
+            center: { lat: 34.814350, lng: 135.620709 },
+            back:   { lat: 34.814269, lng: 135.620605 },
+          },
+          {
+            no:7, par:3,
+            yards: { back:155, reg:145, ladies:125 },
+            tee:    { lat: 34.813967, lng: 135.621033 },
+            front:  { lat: 34.814686, lng: 135.622033 },
+            center: { lat: 34.814754, lng: 135.622165 },
+            back:   { lat: 34.814810, lng: 135.622285 },
+          },
+          {
+            no:8, par:5,
+            yards: { back:490, reg:480, ladies:415 },
+            tee:    { lat: 34.815158, lng: 135.622224 },
+            front:  { lat: 34.815738, lng: 135.626023 },
+            center: { lat: 34.815789, lng: 135.626166 },
+            back:   { lat: 34.815869, lng: 135.626312 },
+          },
+          {
+            no:9, par:4,
+            yards: { back:365, reg:355, ladies:310 },
+            tee:    { lat: 34.816477, lng: 135.627302 },
+            front:  { lat: 34.816777, lng: 135.630495 },
+            center: { lat: 34.816782, lng: 135.630672 },
+            back:   { lat: 34.816793, lng: 135.630843 },
+          },
+        ],
+      },
+      {
+        name: 'イン',
+        cid:  0,
+        holes: [
+          {
+            no:1, par:5,
+            yards: { back:485, reg:475, ladies:425 },
+            tee:    { lat: 34.816157, lng: 135.630754 },
+            front:  { lat: 34.815107, lng: 135.626799 },
+            center: { lat: 34.815089, lng: 135.626630 },
+            back:   { lat: 34.815093, lng: 135.626456 },
+          },
+          {
+            no:2, par:3,
+            yards: { back:130, reg:120, ladies:120 },
+            tee:    { lat: 34.815407, lng: 135.626391 },
+            front:  { lat: 34.814886, lng: 135.625678 },
+            center: { lat: 34.814794, lng: 135.625573 },
+            back:   { lat: 34.814708, lng: 135.625487 },
+          },
+          {
+            no:3, par:5,
+            yards: { back:490, reg:480, ladies:400 },
+            tee:    { lat: 34.815421, lng: 135.626065 },
+            front:  { lat: 34.814085, lng: 135.622151 },
+            center: { lat: 34.814042, lng: 135.622006 },
+            back:   { lat: 34.813966, lng: 135.621903 },
+          },
+          {
+            no:4, par:3,
+            yards: { back:162, reg:135, ladies:115 },
+            tee:    { lat: 34.813658, lng: 135.621913 },
+            front:  { lat: 34.813340, lng: 135.622866 },
+            center: { lat: 34.813268, lng: 135.623110 },
+            back:   { lat: 34.813208, lng: 135.623322 },
+          },
+          {
+            no:5, par:4,
+            yards: { back:360, reg:345, ladies:300 },
+            tee:    { lat: 34.813732, lng: 135.622616 },
+            front:  { lat: 34.814397, lng: 135.624902 },
+            center: { lat: 34.814433, lng: 135.625104 },
+            back:   { lat: 34.814474, lng: 135.625302 },
+          },
+          {
+            no:6, par:3,
+            yards: { back:195, reg:180, ladies:130 },
+            tee:    { lat: 34.814277, lng: 135.625541 },
+            front:  { lat: 34.813648, lng: 135.624121 },
+            center: { lat: 34.813583, lng: 135.623971 },
+            back:   { lat: 34.813530, lng: 135.623828 },
+          },
+          {
+            no:7, par:4,
+            yards: { back:285, reg:280, ladies:280 },
+            tee:    { lat: 34.813135, lng: 135.623563 },
+            front:  { lat: 34.814179, lng: 135.626246 },
+            center: { lat: 34.814219, lng: 135.626407 },
+            back:   { lat: 34.814273, lng: 135.626552 },
+          },
+          {
+            no:8, par:4,
+            yards: { back:270, reg:260, ladies:260 },
+            tee:    { lat: 34.814405, lng: 135.625630 },
+            front:  { lat: 34.815121, lng: 135.627916 },
+            center: { lat: 34.815117, lng: 135.628095 },
+            back:   { lat: 34.815099, lng: 135.628268 },
+          },
+          {
+            no:9, par:4,
+            yards: { back:400, reg:385, ladies:285 },
+            tee:    { lat: 34.814352, lng: 135.627532 },
+            front:  { lat: 34.815716, lng: 135.630504 },
+            center: { lat: 34.815762, lng: 135.630649 },
+            back:   { lat: 34.815815, lng: 135.630784 },
+          },
+        ],
+      },
+    ],
+  },
+
+  // =====================================================
   //  れいせんゴルフ倶楽部（京都）アウト・イン
   //  楽天GORA: https://booking.gora.golf.rakuten.co.jp/guide/course_info/disp/c_id/260008
   //  OUT PAR36 / IN PAR36 / 合計PAR72

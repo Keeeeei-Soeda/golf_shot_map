@@ -28,6 +28,7 @@ let appMode = 'measure';
 
 // 測定モード
 let measureClick = null, teeLine = null, pinLine = null;
+let measureSelectedPin = null; // 'front' / 'center' / 'back' / null(自動)
 
 // ショット保存済みレイヤー
 let shotMarkers = [], shotLines = [];
@@ -207,13 +208,31 @@ function renderYardageInfo(h) {
       </div>
     </div>
     ${ydRow}
+    <div id="yiMeasure"></div>
   `;
   el.style.display = 'block';
 }
 
-// ============================================================
-// 地図ロード
-// ============================================================
+// ③ 測定距離をヤード情報パネルに追加表示
+function updateYardageMeasure(fromLabel, fromYd, toName, toYd) {
+  let mEl = document.getElementById('yiMeasure');
+  if (!mEl) return;
+  mEl.innerHTML = `
+    <div class="yi-divider"></div>
+    <div class="yi-measure-title">📍 現在地からの距離</div>
+    <div class="yi-row">
+      <div class="yi-cell">
+        <div class="yi-label">${fromLabel}</div>
+        <div class="yi-val blue">${fromYd}<span>yd</span></div>
+      </div>
+      <div class="yi-cell">
+        <div class="yi-label">${toName}まで</div>
+        <div class="yi-val yellow">${toYd}<span>yd</span></div>
+      </div>
+    </div>
+    <div class="yi-pin-hint">F・C・B をタップで切替</div>
+  `;
+}
 function loadHole() {
   const h = hole();
   document.getElementById('reviewBtn').style.display = 'none';
@@ -256,19 +275,26 @@ function loadHole() {
 function placePins(h) {
   if (window._pins) window._pins.forEach(m => m.setMap(null));
   window._pins = [];
-  const mk = (pos, color, lbl, title) => {
+  const mk = (pos, color, lbl, title, pinKey) => {
     const m = new google.maps.Marker({ position: pos, map, title,
       icon: { path: google.maps.SymbolPath.CIRCLE, scale: 11,
         fillColor: color, fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 },
       label: { text: lbl, color: '#fff', fontSize: '11px', fontWeight: 'bold' }
     });
-    m.addListener('click', () => { if (appMode === 'measure' && measureClick) showDists(measureClick.getPosition()); });
+    m.addListener('click', () => {
+      if (appMode === 'measure') {
+        if (pinKey) {
+          measureSelectedPin = pinKey;
+          if (measureClick) showDists(measureClick.getPosition());
+        }
+      }
+    });
     return m;
   };
-  window._pins.push(mk(h.tee,    '#4a9fd4', 'T', 'ティー'));
-  window._pins.push(mk(h.front,  '#e05252', 'F', 'フロント'));
-  window._pins.push(mk(h.center, '#a78bfa', 'C', 'センター'));
-  window._pins.push(mk(h.back,   '#e8c84a', 'B', 'バック'));
+  window._pins.push(mk(h.tee,    '#4a9fd4', 'T', 'ティー',   null));
+  window._pins.push(mk(h.front,  '#e05252', 'F', 'フロント', 'front'));
+  window._pins.push(mk(h.center, '#a78bfa', 'C', 'センター', 'center'));
+  window._pins.push(mk(h.back,   '#e8c84a', 'B', 'バック',   'back'));
 }
 
 // ============================================================
@@ -298,28 +324,59 @@ function handleMeasure(pos) {
 
 function showDists(pos) {
   const h = hole(); if (!h || !hasData(h)) return;
-  const teeYd = Math.round(haversine(h.tee.lat, h.tee.lng, pos.lat(), pos.lng()) * 1.09361);
-  const targets = [
-    { pos: h.front,  name: 'フロント' },
-    { pos: h.center, name: 'センター' },
-    { pos: h.back,   name: 'バック'   },
-  ];
-  let near = targets[0];
-  let minD = haversine(pos.lat(), pos.lng(), near.pos.lat, near.pos.lng);
-  targets.slice(1).forEach(t => {
-    const d = haversine(pos.lat(), pos.lng(), t.pos.lat, t.pos.lng);
-    if (d < minD) { minD = d; near = t; }
-  });
-  document.getElementById('dpTeeYd').innerHTML = `${teeYd}<span>yd</span>`;
-  document.getElementById('dpPinYd').innerHTML = `${Math.round(minD * 1.09361)}<span>yd</span>`;
-  document.getElementById('dpPinLabel').textContent = `${near.name}まで`;
+  const shots = curShots();
+
+  // ①起点：前打地点（なければティー）
+  const prevIsTee = shots.length === 0;
+  const origin = prevIsTee
+    ? { lat: h.tee.lat, lng: h.tee.lng }
+    : { lat: shots[shots.length-1].lat, lng: shots[shots.length-1].lng };
+  const originLabel = prevIsTee ? 'ティーから' : `${shots.length}打目地点から`;
+  const originYd = Math.round(haversine(origin.lat, origin.lng, pos.lat(), pos.lng()) * 1.09361);
+
+  // ②ターゲットピン：選択済みがあればそれ、なければ最近
+  const pinMap = { front: h.front, center: h.center, back: h.back };
+  const pinNameMap = { front: 'フロント', center: 'センター', back: 'バック' };
+  let targetKey, targetPos, targetName;
+  if (measureSelectedPin && pinMap[measureSelectedPin]) {
+    targetKey  = measureSelectedPin;
+    targetPos  = pinMap[measureSelectedPin];
+    targetName = pinNameMap[measureSelectedPin];
+  } else {
+    const targets = [
+      { key: 'front',  pos: h.front,  name: 'フロント' },
+      { key: 'center', pos: h.center, name: 'センター' },
+      { key: 'back',   pos: h.back,   name: 'バック'   },
+    ];
+    let near = targets[0];
+    let minD  = haversine(pos.lat(), pos.lng(), near.pos.lat, near.pos.lng);
+    targets.slice(1).forEach(t => {
+      const d = haversine(pos.lat(), pos.lng(), t.pos.lat, t.pos.lng);
+      if (d < minD) { minD = d; near = t; }
+    });
+    targetKey  = near.key;
+    targetPos  = near.pos;
+    targetName = near.name;
+  }
+  const pinYd = Math.round(haversine(pos.lat(), pos.lng(), targetPos.lat, targetPos.lng) * 1.09361);
+
+  // 距離パネル表示
+  document.getElementById('dpFromLabel').textContent = originLabel;
+  document.getElementById('dpTeeYd').innerHTML   = `${originYd}<span>yd</span>`;
+  document.getElementById('dpPinYd').innerHTML   = `${pinYd}<span>yd</span>`;
+  document.getElementById('dpPinLabel').textContent = `${targetName}まで`;
   document.getElementById('distPanel').classList.add('show');
+
+  // ③ ヤード情報パネルにも追加表示
+  updateYardageMeasure(originLabel, originYd, targetName, pinYd);
+
+  // ライン描画
   if (teeLine) teeLine.setMap(null);
-  teeLine = new google.maps.Polyline({ path: [{ lat: h.tee.lat, lng: h.tee.lng }, pos], map,
+  teeLine = new google.maps.Polyline({ path: [origin, pos], map,
     strokeColor: '#4a9fd4', strokeOpacity: .7, strokeWeight: 2,
     icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.5 }, offset: '100%' }] });
   if (pinLine) pinLine.setMap(null);
-  pinLine = new google.maps.Polyline({ path: [pos, { lat: near.pos.lat, lng: near.pos.lng }], map,
+  pinLine = new google.maps.Polyline({ path: [pos, { lat: targetPos.lat, lng: targetPos.lng }], map,
     strokeColor: '#e8c84a', strokeOpacity: .85, strokeWeight: 2,
     icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.5 }, offset: '100%' }] });
 }
@@ -328,7 +385,11 @@ function clearMeasure() {
   if (measureClick) { measureClick.setMap(null); measureClick = null; }
   if (teeLine) { teeLine.setMap(null); teeLine = null; }
   if (pinLine)  { pinLine.setMap(null);  pinLine = null; }
+  measureSelectedPin = null;
   document.getElementById('distPanel').classList.remove('show');
+  // ヤード情報パネルの測定欄をクリア
+  const mEl = document.getElementById('yiMeasure');
+  if (mEl) mEl.innerHTML = '';
 }
 
 // ============================================================
@@ -455,15 +516,16 @@ function cancelShot() {
 function openCupPanel() {
   const h = hole(); if (!h) return;
   const shots = curShots();
-  const diff = shots.length - h.par;
+  const totalShots = shots.length + 1; // ④ 記録したショット数+1（カップインの打数）
+  const diff = totalShots - h.par;
   cpSelectedDiff = diff;
   const sd = scoreDef(diff);
   document.getElementById('cpHoleInfo').textContent = `H${h.no} PAR${h.par}`;
-  document.getElementById('cpShots').textContent = shots.length || '—';
+  document.getElementById('cpShots').textContent = shots.length > 0 ? totalShots : '—';
   const lbl = document.getElementById('cpScoreLabel');
-  lbl.textContent   = shots.length ? `${sd.name}（${diff > 0 ? '+' : ''}${diff}）` : '（打数未記録）';
+  lbl.textContent   = shots.length > 0 ? `${sd.name}（${diff > 0 ? '+' : ''}${diff}）` : '（打数未記録）';
   lbl.className     = `cup-score-label ${sd.cls}`;
-  lbl.style.background = shots.length ? '' : 'transparent';
+  lbl.style.background = shots.length > 0 ? '' : 'transparent';
   document.getElementById('cpScoreBtns').innerHTML = SCORE_DEFS.map(d => {
     const label = d.diff === 0 ? 'E' : d.diff > 0 ? `+${d.diff}` : String(d.diff);
     return `<button class="score-btn ${d.cls} ${d.diff === cpSelectedDiff ? 'sel' : ''}"
@@ -485,17 +547,115 @@ function confirmCupIn() {
   const h = hole(); if (!h) return;
   const key = holeKey();
   if (!roundShots[key]) roundShots[key] = [];
-  roundShots[`${key}_meta`] = { cupIn: true, scoreDiff: cpSelectedDiff, par: h.par };
+  const totalShots = roundShots[key].length + 1; // ④ +1
+  roundShots[`${key}_meta`] = { cupIn: true, scoreDiff: cpSelectedDiff, par: h.par, totalShots };
   saveRound(); closeCupPanel(); renderStrip(); updateInfo(); updateRecBanner();
-  const nextIdx = st.hIdx + 1;
-  if (course() && nextIdx < course().holes.length) {
-    setTimeout(() => selectHole(nextIdx), 400);
-  }
+  // ⑤ サマリーを表示（自動遷移は不要）
+  openHoleSummary();
 }
 
 function closeCupPanel() {
   document.getElementById('cupPanel').classList.remove('open');
   updateRecBanner();
+}
+
+// ⑤ ホールサマリーパネル
+function openHoleSummary() {
+  const h = hole(); if (!h) return;
+  const shots = curShots();
+  const meta = roundShots[`${holeKey()}_meta`] || {};
+  const sd = meta.cupIn ? scoreDef(meta.scoreDiff) : null;
+  const totalShots = meta.totalShots || shots.length;
+
+  // ショットサマリー
+  const shotRows = shots.map(s => `
+    <div class="hs-shot">
+      <div class="hs-no">${s.no}</div>
+      <div class="hs-club">${s.club}</div>
+      <div class="hs-dists">
+        <span class="hs-carry">${s.carry}yd</span>
+        <span class="hs-arr">→</span>
+        <span class="hs-rem">残${s.remaining}yd</span>
+      </div>
+    </div>`).join('');
+  const cupRow = `
+    <div class="hs-shot hs-cupin">
+      <div class="hs-no">⛳</div>
+      <div class="hs-club">カップイン</div>
+      <div class="hs-dists"><span class="hs-carry">${totalShots}打</span></div>
+    </div>`;
+
+  // スコアカード
+  const scoreCardHtml = buildScoreCard();
+
+  document.getElementById('hsShotList').innerHTML = shotRows + cupRow;
+  document.getElementById('hsScoreCard').innerHTML = scoreCardHtml;
+  if (sd) {
+    document.getElementById('hsScore').textContent = sd.name;
+    document.getElementById('hsScore').className = `hs-score-badge ${sd.cls}`;
+    document.getElementById('hsHoleInfo').textContent = `H${h.no} PAR${h.par}　${totalShots}打`;
+  }
+  document.getElementById('holeSummaryPanel').classList.add('open');
+}
+
+function closeHoleSummary() {
+  document.getElementById('holeSummaryPanel').classList.remove('open');
+  // 次のホールへ
+  const nextIdx = st.hIdx + 1;
+  if (course() && nextIdx < course().holes.length) {
+    selectHole(nextIdx);
+  }
+}
+
+// スコアカードHTML生成
+function buildScoreCard() {
+  if (!course()) return '';
+  const holes = course().holes;
+  const parRow    = holes.map(h => `<td>${h.par}</td>`).join('');
+  const scoreRow  = holes.map((h, i) => {
+    const mk = `${st.gcIdx}_${st.cIdx}_${i}_meta`;
+    const meta = roundShots[mk] || {};
+    if (!meta.cupIn) return '<td class="sc-empty">—</td>';
+    const sd = scoreDef(meta.scoreDiff);
+    const label = meta.scoreDiff === 0 ? 'E' : meta.scoreDiff > 0 ? `+${meta.scoreDiff}` : String(meta.scoreDiff);
+    return `<td class="sc-cell ${sd.cls}">${meta.totalShots || '?'}<br><small>${label}</small></td>`;
+  }).join('');
+  const totalPar   = holes.reduce((a, h) => a + h.par, 0);
+  const totalDiff  = holes.reduce((a, h, i) => {
+    const mk = `${st.gcIdx}_${st.cIdx}_${i}_meta`;
+    const meta = roundShots[mk] || {};
+    return meta.cupIn ? a + (meta.scoreDiff || 0) : a;
+  }, 0);
+  const totalScore = holes.reduce((a, h, i) => {
+    const mk = `${st.gcIdx}_${st.cIdx}_${i}_meta`;
+    const meta = roundShots[mk] || {};
+    return meta.cupIn && meta.totalShots ? a + meta.totalShots : a;
+  }, 0);
+  const totalLabel = totalDiff === 0 ? 'Even' : totalDiff > 0 ? `+${totalDiff}` : String(totalDiff);
+
+  return `
+    <table class="sc-table">
+      <thead>
+        <tr>
+          <th>H</th>
+          ${holes.map(h => `<th>${h.no}</th>`).join('')}
+          <th>合計</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sc-par-row">
+          <td class="sc-label">PAR</td>
+          ${parRow}
+          <td>${totalPar}</td>
+        </tr>
+        <tr class="sc-score-row">
+          <td class="sc-label">スコア</td>
+          ${scoreRow}
+          <td class="sc-total">${totalScore || '—'}<br><small>${totalScore ? totalLabel : ''}</small></td>
+        </tr>
+      </tbody>
+    </table>
+  `;
 }
 
 // ============================================================

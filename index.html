@@ -61,7 +61,7 @@
 <!-- ===== 距離パネル（測定モード） ===== -->
 <div id="distPanel">
   <div class="dp-row">
-    <div class="dp-label">ティーから</div>
+    <div class="dp-label" id="dpFromLabel">ティーから</div>
     <div class="dp-yd blue" id="dpTeeYd">—<span>yd</span></div>
     <div class="dp-to">（飛距離目安）</div>
   </div>
@@ -127,6 +127,22 @@
   <button class="bb-btn danger" style="width:100%;margin-top:10px;" onclick="clearHoleShots()">
     このホールのショットをすべて削除
   </button>
+</div>
+
+<!-- ===== ホールサマリーパネル（⑤ カップイン後表示） ===== -->
+<div id="holeSummaryPanel">
+  <div class="hs-header">
+    <div>
+      <div class="hs-hole-info" id="hsHoleInfo">H1 PAR4　5打</div>
+      <div class="hs-score-badge" id="hsScore">ボギー</div>
+    </div>
+    <div class="hs-title">ホールサマリー</div>
+  </div>
+  <div class="hs-section-title">📍 ショット詳細</div>
+  <div id="hsShotList"></div>
+  <div class="hs-section-title">📊 スコアカード</div>
+  <div id="hsScoreCard"></div>
+  <button class="hs-next-btn" onclick="closeHoleSummary()">次のホールへ ▶</button>
 </div>
 
 <!-- ===== 履歴パネル ===== -->

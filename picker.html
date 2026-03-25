@@ -384,11 +384,7 @@ function onMapClick(e) {
   if (curIdx < keys.length - 1) {
     currentPoint = keys[curIdx + 1];
   }
-  // 全4点完了なら次のホールへ
-  else if (isDone(currentHole) && currentHole < 8) {
-    setTimeout(() => selectHole(currentHole + 1), 300);
-    return;
-  }
+  // ⑥ 全4点完了しても自動で次ホールへは移動しない（手動で「次のH」ボタンを押す）
 
   renderPointBtns();
   renderHoleTabs();

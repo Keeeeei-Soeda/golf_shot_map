@@ -140,9 +140,9 @@ header{
 /* ヤード情報トグルボタン */
 .yi-toggle-btn{
   position:absolute;top:8px;right:8px;z-index:6;
-  width:40px;height:40px;border-radius:10px;
+  width:32px;height:32px;border-radius:8px;
   background:rgba(10,22,10,.9);border:1px solid var(--acc);
-  color:var(--acc);font-size:18px;cursor:pointer;
+  color:var(--acc);font-size:14px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:all .15s;
 }
@@ -150,10 +150,10 @@ header{
 .yi-toggle-btn.open{background:var(--acc);color:#000;}
 /* 回転ボタン */
 .rotate-btn{
-  position:absolute;top:56px;right:8px;z-index:6;
-  width:40px;height:40px;border-radius:10px;
+  position:absolute;top:48px;right:8px;z-index:6;
+  width:32px;height:32px;border-radius:8px;
   background:rgba(10,22,10,.9);border:1px solid var(--blue);
-  color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;
+  color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:all .15s;font-family:inherit;
 }
@@ -280,16 +280,16 @@ header{
   font-size:10px;color:var(--gr);text-align:center;
   padding:6px 0 2px;
 }
-.sp-btns{display:flex;gap:8px;}
+.sp-btns{display:flex;gap:6px;}
 .sp-ok{
-  flex:1;padding:10px;border-radius:8px;background:var(--gv);border:none;
-  color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;
+  flex:1;padding:8px;border-radius:7px;background:var(--gv);border:none;
+  color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;
 }
 .sp-ok:hover{background:var(--gvd);}
 .sp-ok:disabled{background:var(--g3);color:var(--gr);cursor:default;}
 .sp-cancel{
-  padding:10px 12px;border-radius:8px;background:var(--g3);border:1px solid var(--g4);
-  color:var(--gr);font-size:12px;cursor:pointer;font-family:inherit;
+  padding:8px 10px;border-radius:7px;background:var(--g3);border:1px solid var(--g4);
+  color:var(--gr);font-size:11px;cursor:pointer;font-family:inherit;
 }
 
 /* ===== カップインパネル ===== */

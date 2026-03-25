@@ -218,14 +218,16 @@ function renderYardageInfo(h) {
     return;
   }
   if (btn) btn.style.display = 'flex';
+  const rotBtn = document.getElementById('rotateBtn');
+  if (rotBtn) rotBtn.style.display = 'flex';
 
   const teeToFront  = Math.round(haversine(h.tee.lat, h.tee.lng, h.front.lat,  h.front.lng)  * 1.09361);
   const teeToCenter = Math.round(haversine(h.tee.lat, h.tee.lng, h.center.lat, h.center.lng) * 1.09361);
 
-  // バック/レギュラー/レディース削除・横一列レイアウト
   el.innerHTML = `
     <div class="yi-horiz">
-      <div class="yi-badge">H${h.no} <span class="yi-par">PAR ${h.par}</span></div>
+      <div class="yi-badge">H${h.no}<span class="yi-par"> PAR${h.par}</span></div>
+      <div class="yi-sep">|</div>
       <div class="yi-item">
         <div class="yi-label">T→F</div>
         <div class="yi-val blue">${teeToFront}<span>yd</span></div>
@@ -243,10 +245,10 @@ function renderYardageInfo(h) {
 
 // 測定距離をヤード情報パネルに追加表示
 function updateYardageMeasure(fromLabel, fromYd, toName, toYd) {
-  let mEl = document.getElementById('yiMeasure');
+  const mEl = document.getElementById('yiMeasure');
   if (!mEl) return;
   mEl.innerHTML = `
-    <div class="yi-measure-row">
+    <div class="yi-horiz yi-measure-row">
       <div class="yi-item">
         <div class="yi-label">${fromLabel}</div>
         <div class="yi-val blue">${fromYd}<span>yd</span></div>
@@ -308,27 +310,41 @@ function loadHole() {
   if (!map) {
     map = new google.maps.Map(document.getElementById('map'), {
       center: { lat: midLat, lng: midLng }, zoom,
-      mapTypeId: 'hybrid',   // satellite→hybrid（回転サポートが安定）
-      tilt: 0,
+      mapTypeId: 'hybrid', tilt: 0,
       disableDefaultUI: true, zoomControl: true,
       gestureHandling: 'greedy',
       rotateControl: false,
       zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_CENTER }
     });
     map.addListener('click', onMapClick);
-    // idle後にheadingを設定（tilt:0などに上書きされない）
-    google.maps.event.addListenerOnce(map, 'idle', () => {
-      map.setHeading(bearing);
-    });
   } else {
     map.setZoom(zoom);
     map.panTo({ lat: midLat, lng: midLng });
-    // ホール切替時もidle後に設定
-    google.maps.event.addListenerOnce(map, 'idle', () => {
-      map.setHeading(bearing);
-    });
   }
+  // 手動回転ボタンのbearingを更新
+  window._currentBearing = bearing;
   placePins(h); renderShotLayer(); updateInfo(); updateRecBanner();
+}
+
+// ============================================================
+// 手動回転ボタン
+// ============================================================
+function rotateToHole() {
+  if (!map || window._currentBearing === undefined) return;
+  const btn = document.getElementById('rotateBtn');
+  const currentHeading = map.getHeading() || 0;
+  const target = window._currentBearing;
+  // すでにホール向きならNorth（0°）に戻す
+  const diff = Math.abs(currentHeading - target) % 360;
+  if (diff < 5) {
+    map.setHeading(0);
+    btn.textContent = '⛳↑';
+    btn.title = 'ホール方向に回転';
+  } else {
+    map.setHeading(target);
+    btn.textContent = '🧭N';
+    btn.title = '北向きに戻す';
+  }
 }
 
 // ============================================================

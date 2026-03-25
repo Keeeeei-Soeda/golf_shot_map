@@ -148,30 +148,48 @@ header{
 }
 .yi-toggle-btn:hover{background:rgba(232,200,74,.2);}
 .yi-toggle-btn.open{background:var(--acc);color:#000;}
+/* 回転ボタン */
+.rotate-btn{
+  position:absolute;top:56px;right:8px;z-index:6;
+  width:40px;height:40px;border-radius:10px;
+  background:rgba(10,22,10,.9);border:1px solid var(--blue);
+  color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;font-family:inherit;
+}
+.rotate-btn:hover{background:rgba(74,159,212,.2);}
 
-/* ヤード情報パネル */
+/* ヤード情報パネル（横長） */
 #yardageInfo{
   position:absolute;top:56px;right:8px;z-index:5;
   background:rgba(10,22,10,.95);border:1px solid var(--g4);
-  border-radius:10px;padding:10px 12px;min-width:200px;
+  border-radius:10px;padding:7px 10px;
   pointer-events:none;
 }
-.yi-title{font-size:13px;font-weight:700;color:var(--acc);margin-bottom:8px;}
-.yi-par{font-size:11px;color:var(--gr);font-weight:400;margin-left:4px;}
-.yi-row{display:flex;gap:8px;margin-bottom:6px;}
-.yi-row:last-child{margin-bottom:0;}
-.yi-shotnavi{border-top:1px solid var(--g3);padding-top:6px;margin-top:2px;}
-.yi-cell{flex:1;text-align:center;}
-.yi-label{font-size:9px;color:var(--gr);letter-spacing:1px;margin-bottom:2px;}
-.yi-val{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;color:var(--w);}
-.yi-val span{font-size:10px;color:var(--gr);margin-left:1px;}
+.yi-horiz{
+  display:flex;align-items:center;gap:8px;white-space:nowrap;
+}
+.yi-badge{
+  font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--acc);
+  flex-shrink:0;
+}
+.yi-par{font-size:11px;color:var(--gr);margin-left:2px;}
+.yi-item{text-align:center;flex-shrink:0;}
+.yi-label{font-size:8px;color:var(--gr);letter-spacing:1px;margin-bottom:1px;}
+.yi-val{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;color:var(--w);}
+.yi-val span{font-size:9px;color:var(--gr);margin-left:1px;}
 .yi-val.blue  {color:var(--blue);}
 .yi-val.green {color:var(--gv);}
 .yi-val.yellow{color:var(--acc);}
-.yi-val.sn    {color:var(--acc);font-size:18px;}
-.yi-divider{height:1px;background:var(--g3);margin:6px 0;}
-.yi-measure-title{font-size:10px;color:var(--blue);font-weight:700;margin-bottom:4px;letter-spacing:1px;}
-.yi-pin-hint{font-size:9px;color:var(--gr);text-align:center;margin-top:4px;}
+.yi-sep{color:var(--g4);font-size:14px;flex-shrink:0;}
+/* 測定欄（2行目） */
+.yi-measure-row{
+  display:flex;align-items:center;gap:8px;
+  border-top:1px solid var(--g3);margin-top:5px;padding-top:5px;
+  white-space:nowrap;
+}
+/* 削除 */
+.yi-divider,.yi-measure-title,.yi-pin-hint,.yi-row,.yi-cell,.yi-shotnavi{display:none;}
 
 /* 記録バナー */
 #recBanner{

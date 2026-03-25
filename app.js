@@ -375,9 +375,12 @@ let editingClubs = []; // 編集中の一時クラブ配列
 
 function openClubEditor() {
   editingClubs = [...CLUBS];
-  renderClubEditor();
-  document.getElementById('clubEditorPanel').classList.add('open');
   closeMenu();
+  // メニューの閉じるアニメーション後に開く
+  setTimeout(() => {
+    renderClubEditor();
+    document.getElementById('clubEditorPanel').classList.add('open');
+  }, 280);
 }
 
 function closeClubEditor() {

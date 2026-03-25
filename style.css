@@ -254,8 +254,8 @@ header{
 .sdc-val.blue{color:var(--blue);}
 .sdc-val.yellow{color:var(--acc);}
 
-/* クラブグリッド（6列2行・コンパクト） */
-.club-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:8px;}
+/* クラブグリッド（3列3行・コンパクト） */
+.club-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px;}
 .cb{
   padding:8px 4px;border-radius:6px;background:var(--g3);border:1px solid var(--g4);
   color:var(--w);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
@@ -501,4 +501,104 @@ header{
   .hs-next-btn{padding:14px;font-size:15px;}
   .hr-score-grid{min-width:280px;}
   .hist-round{overflow-x:auto;}
+}
+
+/* ===== クラブグリッド（7列固定） ===== */
+.club-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px;}
+.cb-empty{
+  border-radius:6px;border:1px dashed var(--g3);
+  background:transparent;min-height:34px;
+}
+
+/* ===== サイドバー クラブボタン ===== */
+.menu-divider{height:1px;background:var(--g3);margin:12px 0;}
+.menu-club-btn{
+  width:100%;padding:10px;border-radius:8px;
+  background:var(--g2);border:1px solid var(--acc);
+  color:var(--acc);font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;text-align:center;
+}
+.menu-club-btn:hover{background:rgba(232,200,74,.15);}
+
+/* ===== クラブエディタ全画面パネル ===== */
+#clubEditorPanel{
+  position:fixed;inset:0;z-index:300;
+  background:var(--gd);display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .25s ease;
+  overflow:hidden;
+}
+#clubEditorPanel.open{transform:translateX(0);}
+.ce-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;background:var(--g1);border-bottom:1px solid var(--g3);
+  flex-shrink:0;
+}
+.ce-back{
+  background:none;border:none;color:var(--gr);font-size:14px;
+  cursor:pointer;font-family:inherit;padding:4px 8px;
+}
+.ce-title{font-size:15px;font-weight:700;color:var(--w);}
+.ce-save{
+  padding:7px 16px;border-radius:7px;background:var(--gv);border:none;
+  color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
+}
+.ce-body{
+  flex:1;overflow-y:auto;padding:14px 16px;
+}
+/* カウントバー */
+.ce-count-wrap{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.ce-count-bar-bg{flex:1;height:6px;background:var(--g3);border-radius:3px;overflow:hidden;}
+.ce-count-bar{height:100%;border-radius:3px;transition:width .2s;}
+.ce-count{font-size:12px;font-weight:700;color:var(--w);white-space:nowrap;}
+/* スロット */
+.ce-slots-label{font-size:10px;color:var(--gr);letter-spacing:1px;margin-bottom:6px;}
+.ce-slots{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;
+}
+.ce-slot{
+  border-radius:6px;min-height:36px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;position:relative;
+}
+.ce-slot.filled{
+  background:var(--g2);border:1px solid var(--acc);color:var(--acc);
+  cursor:pointer;
+}
+.ce-slot.filled:hover{background:rgba(232,200,74,.15);}
+.ce-slot.empty{
+  background:transparent;border:1px dashed var(--g3);color:var(--g3);
+  font-size:10px;
+}
+.ce-rm{
+  position:absolute;top:1px;right:2px;font-size:8px;color:var(--gr);
+}
+/* プリセット */
+.ce-cat{margin-bottom:10px;}
+.ce-cat-label{font-size:10px;color:var(--gr);letter-spacing:1px;margin-bottom:5px;}
+.ce-cat-clubs{display:flex;flex-wrap:wrap;gap:5px;}
+.ce-club-btn{
+  padding:7px 10px;border-radius:6px;border:1px solid var(--g4);
+  background:var(--g2);color:var(--w);font-size:12px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.ce-club-btn.sel{background:var(--org);border-color:var(--org);color:#000;}
+.ce-club-btn:hover{background:var(--g3);}
+/* その他 */
+.ce-other-wrap{display:flex;gap:8px;margin-top:14px;margin-bottom:10px;}
+.ce-other-input{
+  flex:1;padding:8px 10px;border-radius:7px;
+  background:var(--g2);border:1px solid var(--g4);
+  color:var(--w);font-size:13px;font-family:inherit;
+}
+.ce-other-input::placeholder{color:var(--gr);}
+.ce-other-add{
+  padding:8px 14px;border-radius:7px;background:var(--g3);
+  border:1px solid var(--g4);color:var(--w);font-size:13px;
+  font-weight:700;cursor:pointer;font-family:inherit;
+}
+.ce-reset{
+  display:block;width:100%;padding:10px;border-radius:7px;
+  background:transparent;border:1px solid var(--g3);
+  color:var(--gr);font-size:12px;cursor:pointer;font-family:inherit;
+  margin-top:4px;
 }

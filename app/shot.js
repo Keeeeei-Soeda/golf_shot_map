@@ -136,6 +136,8 @@ function confirmShot() {
     club: selectedClub, carry: carryYd, remaining: remYd,
     fromLabel: prevIsTee ? 'ティー' : `${shots.length}打目地点` });
   saveRound(); cancelShot(); renderShotLayer(); renderStrip(); updateInfo(); updateRecBanner();
+  updateYardagePanel(); // 打数更新後にパネル再描画
+  placePins(hole());    // F/B表示切替のためピン再描画
 }
 
 function cancelShot() {
@@ -305,7 +307,7 @@ function renderShotLayer() {
   clearShotLayer();
   const shots = curShots(); if (!shots.length) return;
   const h = hole(); if (!h) return;
-  document.getElementById('legShot').style.display = 'flex';
+  
   const path = [{ lat: h.tee.lat, lng: h.tee.lng }, ...shots.map(s => ({ lat: s.lat, lng: s.lng }))];
   shotLines.push(new google.maps.Polyline({ path, map,
     strokeColor: '#4caf50', strokeOpacity: .6, strokeWeight: 2,
@@ -320,7 +322,7 @@ function renderShotLayer() {
 function clearShotLayer() {
   shotMarkers.forEach(m => m.setMap(null)); shotMarkers = [];
   shotLines.forEach(l => l.setMap(null));   shotLines = [];
-  document.getElementById('legShot').style.display = 'none';
+  
 }
 
 // ============================================================

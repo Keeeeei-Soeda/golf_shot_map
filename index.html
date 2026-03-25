@@ -85,21 +85,11 @@
   <div id="emptyMap"><div class="ico">⛳</div><p>メニューからゴルフ場・コースを選択してください</p></div>
   <div id="map"></div>
 
-  <!-- 凡例 -->
-  <div id="legend">
-    <div class="leg-r"><div class="leg-dot" style="background:#4a9fd4"></div>T</div>
-    <div class="leg-r"><div class="leg-dot" style="background:#e05252"></div>F</div>
-    <div class="leg-r"><div class="leg-dot" style="background:#a78bfa"></div>C</div>
-    <div class="leg-r"><div class="leg-dot" style="background:#e8c84a"></div>B</div>
-    <div class="leg-r" id="legShot" style="display:none">
-      <div class="leg-dot" style="background:#4caf50"></div>軌跡
-    </div>
+  <!-- 右上ボタン群（横並び） -->
+  <div class="map-btns" id="mapBtns" style="display:none">
+    <button class="yi-toggle-btn" id="yiToggleBtn" onclick="toggleYardageInfo()" title="ヤード情報">📐</button>
+    <button class="rotate-btn" id="rotateBtn" onclick="rotateToHole()" title="ホール方向に回転">⛳↑</button>
   </div>
-
-  <!-- ヤード情報トグルボタン（地図上右上） -->
-  <button class="yi-toggle-btn" id="yiToggleBtn" onclick="toggleYardageInfo()" style="display:none">📐</button>
-  <!-- 回転ボタン -->
-  <button class="rotate-btn" id="rotateBtn" onclick="rotateToHole()" style="display:none" title="ホール方向に回転">⛳↑</button>
 
   <!-- ヤード情報パネル（開閉式） -->
   <div id="yardageInfo" style="display:none"></div>

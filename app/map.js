@@ -15,36 +15,61 @@ function toggleYardageInfo() {
 
 function renderYardageInfo(h) {
   const el = document.getElementById('yardageInfo');
-  const btn = document.getElementById('yiToggleBtn');
+  const mapBtns = document.getElementById('mapBtns');
   if (!h || !hasData(h)) {
     el.style.display = 'none';
-    if (btn) btn.style.display = 'none';
+    if (mapBtns) mapBtns.style.display = 'none';
     return;
   }
-  if (btn) btn.style.display = 'flex';
-  const rotBtn = document.getElementById('rotateBtn');
-  if (rotBtn) rotBtn.style.display = 'flex';
+  if (mapBtns) mapBtns.style.display = 'flex';
 
-  const teeToFront  = Math.round(haversine(h.tee.lat, h.tee.lng, h.front.lat,  h.front.lng)  * 1.09361);
-  const teeToCenter = Math.round(haversine(h.tee.lat, h.tee.lng, h.center.lat, h.center.lng) * 1.09361);
+  updateYardagePanel(h);
+  el.style.display = yardageInfoOpen ? 'block' : 'none';
+}
 
-  el.innerHTML = `
+// 現在打数に応じてヤードパネルを更新
+function updateYardagePanel(h) {
+  if (!h) h = hole();
+  if (!h || !hasData(h)) return;
+
+  const shots = curShots();
+  const nextNo = shots.length + 1; // 次の打数番号
+
+  let fromLat, fromLng, fromLabel;
+  if (shots.length === 0) {
+    fromLat = h.tee.lat; fromLng = h.tee.lng;
+    fromLabel = `第${nextNo}打`;
+  } else {
+    const last = shots[shots.length - 1];
+    fromLat = last.lat; fromLng = last.lng;
+    fromLabel = `第${nextNo}打`;
+  }
+
+  const toFront  = Math.round(haversine(fromLat, fromLng, h.front.lat,  h.front.lng)  * 1.09361);
+  const toCenter = Math.round(haversine(fromLat, fromLng, h.center.lat, h.center.lng) * 1.09361);
+  const toBack   = Math.round(haversine(fromLat, fromLng, h.back.lat,   h.back.lng)   * 1.09361);
+
+  document.getElementById('yardageInfo').innerHTML = `
     <div class="yi-horiz">
       <div class="yi-badge">H${h.no}<span class="yi-par"> PAR${h.par}</span></div>
       <div class="yi-sep">|</div>
       <div class="yi-item">
-        <div class="yi-label">T→F</div>
-        <div class="yi-val blue">${teeToFront}<span>yd</span></div>
+        <div class="yi-label">${fromLabel}→F</div>
+        <div class="yi-val blue">${toFront}<span>yd</span></div>
       </div>
       <div class="yi-sep">|</div>
       <div class="yi-item">
-        <div class="yi-label">T→C</div>
-        <div class="yi-val green">${teeToCenter}<span>yd</span></div>
+        <div class="yi-label">${fromLabel}→C</div>
+        <div class="yi-val green">${toCenter}<span>yd</span></div>
+      </div>
+      <div class="yi-sep">|</div>
+      <div class="yi-item">
+        <div class="yi-label">${fromLabel}→B</div>
+        <div class="yi-val yellow">${toBack}<span>yd</span></div>
       </div>
     </div>
     <div id="yiMeasure"></div>
   `;
-  el.style.display = yardageInfoOpen ? 'block' : 'none';
 }
 
 function updateYardageMeasure(fromLabel, fromYd, toName, toYd) {
@@ -77,7 +102,7 @@ function loadHole() {
     document.getElementById('emptyMap').style.display = 'flex';
     document.getElementById('emptyMap').querySelector('p').textContent =
       h ? `${h.no}番ホールの座標はまだ登録されていません` : 'コースを選択してください';
-    document.getElementById('legend').style.display = 'none';
+    
     document.getElementById('recBanner').style.display = 'none';
     const btn = document.getElementById('yiToggleBtn');
     if (btn) btn.style.display = 'none';
@@ -85,7 +110,7 @@ function loadHole() {
   }
   document.getElementById('emptyMap').style.display = 'none';
   document.getElementById('map').style.display = 'block';
-  document.getElementById('legend').style.display = 'block';
+  
   document.getElementById('reviewBtn').style.display = 'flex';
   renderYardageInfo(h);
   clearMeasure(); clearPending();
@@ -121,7 +146,11 @@ function loadHole() {
 function placePins(h) {
   if (window._pins) window._pins.forEach(m => m.setMap(null));
   window._pins = [];
-  const mk = (pos, color, lbl, title, pinKey) => {
+  const shotCount = curShots().length;
+  const showFB = shotCount >= 1; // 2打目以降のみF/Bを表示
+
+  const mk = (pos, color, lbl, title, pinKey, fbPin) => {
+    if (fbPin && !showFB) return null;
     const m = new google.maps.Marker({ position: pos, map, title,
       icon: { path: google.maps.SymbolPath.CIRCLE, scale: 11,
         fillColor: color, fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 },
@@ -135,10 +164,13 @@ function placePins(h) {
     });
     return m;
   };
-  window._pins.push(mk(h.tee,    '#4a9fd4', 'T', 'ティー',   null));
-  window._pins.push(mk(h.front,  '#e05252', 'F', 'フロント', 'front'));
-  window._pins.push(mk(h.center, '#a78bfa', 'C', 'センター', 'center'));
-  window._pins.push(mk(h.back,   '#e8c84a', 'B', 'バック',   'back'));
+  const pins = [
+    mk(h.tee,    '#4a9fd4', 'T', 'ティー',   null,     false),
+    mk(h.front,  '#e05252', 'F', 'フロント', 'front',  true),
+    mk(h.center, '#a78bfa', 'C', 'センター', 'center', false),
+    mk(h.back,   '#e8c84a', 'B', 'バック',   'back',   true),
+  ];
+  window._pins = pins.filter(p => p !== null);
 }
 
 // ============================================================

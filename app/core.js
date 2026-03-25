@@ -12,7 +12,9 @@ function loadClubs() {
     const saved = localStorage.getItem('golfClubSet');
     if (saved) {
       const arr = JSON.parse(saved);
-      return Array.from({length:14}, (_, i) => arr[i] || '');
+      const normalized = Array.from({length:14}, (_, i) => arr[i] || '');
+      // clubs.jsのsortClumsが読み込まれる前なのでここではソートしない
+      return normalized;
     }
   } catch(e) {}
   return [...DEFAULT_CLUBS];

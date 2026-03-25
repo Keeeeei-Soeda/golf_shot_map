@@ -220,7 +220,8 @@
 <script src="app/clubs.js"></script>
 <script src="app/history.js"></script>
 <script>
-  // 初期化
+  // 初期化（全jsロード後にソート適用）
+  CLUBS = sortClubs(CLUBS);
   initSelects();
   updateBadge();
 </script>

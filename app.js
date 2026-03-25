@@ -310,7 +310,8 @@ function loadHole() {
   if (!map) {
     map = new google.maps.Map(document.getElementById('map'), {
       center: { lat: midLat, lng: midLng }, zoom,
-      mapTypeId: 'hybrid', tilt: 0,
+      mapTypeId: 'hybrid',
+      // tilt:0 を削除 → headingが有効になる
       disableDefaultUI: true, zoomControl: true,
       gestureHandling: 'greedy',
       rotateControl: false,
@@ -334,16 +335,13 @@ function rotateToHole() {
   const btn = document.getElementById('rotateBtn');
   const currentHeading = map.getHeading() || 0;
   const target = window._currentBearing;
-  // すでにホール向きならNorth（0°）に戻す
-  const diff = Math.abs(currentHeading - target) % 360;
-  if (diff < 5) {
+  const diff = Math.min(Math.abs(currentHeading - target), 360 - Math.abs(currentHeading - target));
+  if (diff < 10) {
     map.setHeading(0);
-    btn.textContent = '⛳↑';
-    btn.title = 'ホール方向に回転';
+    if (btn) { btn.textContent = '⛳↑'; btn.title = 'ホール方向に回転'; }
   } else {
     map.setHeading(target);
-    btn.textContent = '🧭N';
-    btn.title = '北向きに戻す';
+    if (btn) { btn.textContent = '🧭N'; btn.title = '北向きに戻す'; }
   }
 }
 

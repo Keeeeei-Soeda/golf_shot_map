@@ -73,12 +73,12 @@ function updateYardagePanel(h) {
       </div>
       <div class="yi-sep">|</div>
       <div class="yi-item">
-        <div class="yi-label">${fromLabel}→C</div>
+        <div class="yi-label">→C</div>
         <div class="yi-val green">${toCenter}<span>yd</span></div>
       </div>
       <div class="yi-sep">|</div>
       <div class="yi-item">
-        <div class="yi-label">${fromLabel}→B</div>
+        <div class="yi-label">→B</div>
         <div class="yi-val yellow">${toBack}<span>yd</span></div>
       </div>
     </div>

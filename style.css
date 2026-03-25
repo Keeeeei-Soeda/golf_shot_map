@@ -500,3 +500,186 @@ header {
 .hr-total { margin-top: 6px; font-size: 11px; color: var(--gr); text-align: right; }
 .hr-total strong { color: var(--acc); }
 .hist-empty { text-align: center; color: var(--gr); margin-top: 40px; font-size: 13px; }
+
+/* =====================================================
+   📱 スマホ対応（〜480px）
+   iPhone / Android Chrome 両対応
+   ===================================================== */
+
+/* iPhone ノッチ・ホームバー対応 */
+@supports (padding: env(safe-area-inset-bottom)) {
+  #bottomBar {
+    padding-bottom: calc(6px + env(safe-area-inset-bottom));
+    height: auto; min-height: 50px;
+  }
+  #holeSummaryPanel, #shotPanel, #cupPanel,
+  #reviewPanel, #distPanel {
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 480px) {
+
+  /* ===== HEADER ===== */
+  header {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 8px 10px 6px;
+    gap: 6px;
+  }
+  .logo { font-size: 17px; }
+  /* セレクタを2段目に */
+  .hdr-sel {
+    flex: 1 1 40%;
+    min-width: 0;
+  }
+  .hdr-sel select {
+    font-size: 13px;
+    padding: 7px 24px 7px 8px;
+  }
+  /* ボタン群を右端にまとめる */
+  #gpsBtn, #snLink, #histBtn {
+    padding: 7px 10px;
+    font-size: 14px;
+  }
+
+  /* ===== HOLE STRIP ===== */
+  #holeStrip {
+    height: 68px;
+    gap: 6px;
+    padding: 0 10px;
+  }
+  .h-btn {
+    min-width: 52px;
+    padding: 5px 6px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+  .h-btn .par { font-size: 10px; }
+  .h-btn .sbadge { font-size: 10px; line-height: 15px; }
+
+  /* ===== MAP ===== */
+  #mapWrap { flex: 1; }
+
+  /* ===== ヤード情報パネル ===== */
+  #yardageInfo {
+    top: auto;
+    bottom: 58px;
+    right: 8px;
+    left: auto;
+    min-width: 160px;
+    max-width: 190px;
+    font-size: 11px;
+  }
+  .yi-title { font-size: 12px; margin-bottom: 6px; }
+  .yi-val { font-size: 18px; }
+  .yi-val.sn { font-size: 15px; }
+  .yi-label { font-size: 8px; }
+
+  /* ===== BOTTOM BAR ===== */
+  #bottomBar {
+    padding: 6px 8px;
+    gap: 5px;
+    flex-wrap: nowrap;
+  }
+  .mtab {
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+  .mode-info { font-size: 10px; }
+  #cupBtn {
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+  .bb-btn {
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+
+  /* ===== 距離パネル ===== */
+  #distPanel {
+    bottom: 70px;
+    min-width: 200px;
+    padding: 8px 14px;
+  }
+  .dp-yd { font-size: 30px; }
+  .dp-yd span { font-size: 11px; }
+  .dp-label { font-size: 9px; min-width: 48px; }
+  .dp-to { font-size: 9px; min-width: 48px; }
+
+  /* ===== ショット登録パネル ===== */
+  #shotPanel {
+    padding: 14px 12px 20px;
+  }
+  .sp-shotno { font-size: 15px; }
+  .sp-hint   { font-size: 11px; }
+  .sdc-val   { font-size: 32px; }
+  .sdc-label { font-size: 10px; }
+  .sdc-from  { font-size: 10px; }
+  /* クラブボタン：3列配置・大きめ */
+  .club-grid { gap: 6px; }
+  .cb {
+    padding: 10px 6px;
+    font-size: 13px;
+    min-width: calc(25% - 5px);
+    flex: 0 0 calc(25% - 5px);
+    border-radius: 8px;
+  }
+  .sp-ok     { padding: 13px; font-size: 14px; }
+  .sp-cancel { padding: 13px 14px; font-size: 14px; }
+
+  /* ===== カップインパネル ===== */
+  #cupPanel { padding: 14px 12px 24px; }
+  .cup-title  { font-size: 16px; }
+  .cup-shots  { font-size: 58px; }
+  .score-btn  {
+    padding: 10px 4px;
+    font-size: 12px;
+    min-width: 50px;
+  }
+  .cup-ok     { padding: 13px; font-size: 14px; }
+  .cup-cancel { padding: 13px 14px; font-size: 14px; }
+
+  /* ===== ホールサマリー ===== */
+  #holeSummaryPanel { padding: 14px 12px 24px; }
+  .hs-hole-info { font-size: 15px; }
+  .hs-club      { font-size: 14px; }
+  .hs-dists     { font-size: 12px; }
+  .hs-next-btn  { padding: 14px; font-size: 15px; }
+  /* スコアカード：横スクロール */
+  #hsScoreCard { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .sc-table { min-width: 520px; }
+  .sc-table th, .sc-table td { padding: 6px 4px; font-size: 11px; }
+
+  /* ===== レビューパネル ===== */
+  #reviewPanel { padding: 12px 12px 24px; }
+  .rv-club { font-size: 15px; }
+  .rv-line { font-size: 12px; }
+  .rv-no   { width: 30px; height: 30px; font-size: 12px; }
+
+  /* ===== 履歴パネル ===== */
+  .hist-hdr h2   { font-size: 16px; }
+  .hr-title      { font-size: 14px; }
+  .hr-sub        { font-size: 12px; }
+  .hr-badge      { font-size: 11px; padding: 3px 10px; }
+  /* スコアグリッド横スクロール */
+  .hr-score-grid { min-width: 300px; }
+  .hist-list > div { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .hr-score-cell { padding: 4px 2px; font-size: 10px; }
+
+  /* ===== 凡例 ===== */
+  #legend { padding: 5px 8px; }
+  .leg-r  { font-size: 9px; gap: 4px; margin-bottom: 2px; }
+  .leg-dot { width: 9px; height: 9px; }
+
+  /* ===== recBanner ===== */
+  #recBanner { font-size: 13px; padding: 7px 18px; }
+}
+
+/* ===== 中サイズ（481〜768px）タブレット・大きめスマホ ===== */
+@media (min-width: 481px) and (max-width: 768px) {
+  .cb { min-width: calc(20% - 5px); flex: 0 0 calc(20% - 5px); }
+  #yardageInfo { min-width: 180px; }
+  .sc-table { min-width: 480px; }
+  #hsScoreCard { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}

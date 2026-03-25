@@ -222,27 +222,26 @@ header{
 }
 #shotPanel.open{transform:translateY(0);}
 .sp-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;}
-.sp-shotno{font-size:14px;font-weight:700;color:var(--org);}
+.sp-shotno{font-size:12px;font-weight:700;color:var(--org);}
 .sp-hint{font-size:10px;color:var(--gr);margin-top:2px;}
 .sp-close{background:none;border:none;color:var(--gr);font-size:18px;cursor:pointer;padding:0 4px;}
 .sp-dists{display:flex;gap:6px;margin-bottom:8px;}
 .sp-dist-card{flex:1;border-radius:8px;padding:6px 8px;text-align:center;}
 .sp-dist-card.carry{background:rgba(74,159,212,.15);border:1px solid rgba(74,159,212,.4);}
 .sp-dist-card.remain{background:rgba(232,200,74,.12);border:1px solid rgba(232,200,74,.35);}
-.sdc-label{font-size:9px;letter-spacing:1px;color:var(--gr);text-transform:uppercase;margin-bottom:1px;}
-.sdc-from{font-size:9px;color:var(--gr);margin-bottom:1px;}
-.sdc-val{font-family:'Bebas Neue',sans-serif;font-size:26px;line-height:1;}
+.sdc-label{font-size:8px;letter-spacing:1px;color:var(--gr);text-transform:uppercase;margin-bottom:1px;}
+.sdc-from{font-size:8px;color:var(--gr);margin-bottom:1px;}
+.sdc-val{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;}
 .sdc-val span{font-size:11px;color:var(--gr);margin-left:1px;}
 .sdc-val.blue{color:var(--blue);}
 .sdc-val.yellow{color:var(--acc);}
 
-/* クラブグリッド（コンパクト） */
-.club-grid{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+/* クラブグリッド（6列2行・コンパクト） */
+.club-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:8px;}
 .cb{
-  padding:6px 4px;border-radius:6px;background:var(--g3);border:1px solid var(--g4);
-  color:var(--w);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
-  transition:all .15s;flex:0 0 calc(16.66% - 4px);text-align:center;
-  min-width:0;
+  padding:8px 4px;border-radius:6px;background:var(--g3);border:1px solid var(--g4);
+  color:var(--w);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:all .15s;text-align:center;
 }
 .cb:hover{background:var(--g4);}
 .cb.sel{background:var(--org);border-color:var(--org);color:#000;}
@@ -253,7 +252,7 @@ header{
 }
 .sp-tab{
   flex:1;padding:7px 4px;border-radius:6px;border:none;
-  background:transparent;color:var(--gr);font-size:12px;font-weight:700;
+  background:transparent;color:var(--gr);font-size:11px;font-weight:700;
   cursor:pointer;font-family:inherit;transition:all .15s;
 }
 .sp-tab.active{background:var(--g1);color:var(--w);}

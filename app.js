@@ -28,6 +28,7 @@ let appMode = 'measure';
 
 // 測定モード
 let measureClick = null, teeLine = null, pinLine = null;
+let measureFromLabel = null, measureToLabel = null; // 地図上のヤードラベル
 let measureSelectedPin = null; // 'front' / 'center' / 'back' / null(自動)
 
 // ショット保存済みレイヤー
@@ -220,51 +221,42 @@ function renderYardageInfo(h) {
 
   const teeToFront  = Math.round(haversine(h.tee.lat, h.tee.lng, h.front.lat,  h.front.lng)  * 1.09361);
   const teeToCenter = Math.round(haversine(h.tee.lat, h.tee.lng, h.center.lat, h.center.lng) * 1.09361);
-  const yd = h.yards;
-  const ydRow = yd
-    ? `<div class="yi-row yi-shotnavi">
-        <div class="yi-cell"><div class="yi-label">バック</div><div class="yi-val sn">${yd.back}<span>yd</span></div></div>
-        <div class="yi-cell"><div class="yi-label">レギュラー</div><div class="yi-val sn">${yd.reg}<span>yd</span></div></div>
-        <div class="yi-cell"><div class="yi-label">レディース</div><div class="yi-val sn">${yd.ladies}<span>yd</span></div></div>
-      </div>` : '';
 
+  // バック/レギュラー/レディース削除・横一列レイアウト
   el.innerHTML = `
-    <div class="yi-title">H${h.no} <span class="yi-par">PAR ${h.par}</span></div>
-    <div class="yi-row">
-      <div class="yi-cell">
-        <div class="yi-label">T → フロント</div>
+    <div class="yi-horiz">
+      <div class="yi-badge">H${h.no} <span class="yi-par">PAR ${h.par}</span></div>
+      <div class="yi-item">
+        <div class="yi-label">T→F</div>
         <div class="yi-val blue">${teeToFront}<span>yd</span></div>
       </div>
-      <div class="yi-cell">
-        <div class="yi-label">T → センター</div>
+      <div class="yi-sep">|</div>
+      <div class="yi-item">
+        <div class="yi-label">T→C</div>
         <div class="yi-val green">${teeToCenter}<span>yd</span></div>
       </div>
     </div>
-    ${ydRow}
     <div id="yiMeasure"></div>
   `;
-  // 開閉状態を維持
   el.style.display = yardageInfoOpen ? 'block' : 'none';
 }
 
-// ③ 測定距離をヤード情報パネルに追加表示
+// 測定距離をヤード情報パネルに追加表示
 function updateYardageMeasure(fromLabel, fromYd, toName, toYd) {
   let mEl = document.getElementById('yiMeasure');
   if (!mEl) return;
   mEl.innerHTML = `
-    <div class="yi-divider"></div>
-    <div class="yi-measure-title">📍 現在地からの距離</div>
-    <div class="yi-row">
-      <div class="yi-cell">
+    <div class="yi-measure-row">
+      <div class="yi-item">
         <div class="yi-label">${fromLabel}</div>
         <div class="yi-val blue">${fromYd}<span>yd</span></div>
       </div>
-      <div class="yi-cell">
+      <div class="yi-sep">→</div>
+      <div class="yi-item">
         <div class="yi-label">${toName}まで</div>
         <div class="yi-val yellow">${toYd}<span>yd</span></div>
       </div>
     </div>
-    <div class="yi-pin-hint">F・C・B をタップで切替</div>
   `;
 }
 // ============================================================
@@ -316,21 +308,25 @@ function loadHole() {
   if (!map) {
     map = new google.maps.Map(document.getElementById('map'), {
       center: { lat: midLat, lng: midLng }, zoom,
-      mapTypeId: 'satellite', tilt: 0,
-      heading: bearing,
+      mapTypeId: 'hybrid',   // satellite→hybrid（回転サポートが安定）
+      tilt: 0,
       disableDefaultUI: true, zoomControl: true,
       gestureHandling: 'greedy',
       rotateControl: false,
       zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_CENTER }
     });
     map.addListener('click', onMapClick);
+    // idle後にheadingを設定（tilt:0などに上書きされない）
+    google.maps.event.addListenerOnce(map, 'idle', () => {
+      map.setHeading(bearing);
+    });
   } else {
-    // fitBoundsはheadingをリセットするので使わない
-    // panTo + setZoom + setHeading の順で設定
     map.setZoom(zoom);
     map.panTo({ lat: midLat, lng: midLng });
-    // headingはpanTo完了後に設定（少し遅延）
-    setTimeout(() => { if (map) map.setHeading(bearing); }, 150);
+    // ホール切替時もidle後に設定
+    google.maps.event.addListenerOnce(map, 'idle', () => {
+      map.setHeading(bearing);
+    });
   }
   placePins(h); renderShotLayer(); updateInfo(); updateRecBanner();
 }
@@ -438,14 +434,27 @@ function showDists(pos) {
   pinLine = new google.maps.Polyline({ path: [pos, { lat: targetPos.lat, lng: targetPos.lng }], map,
     strokeColor: '#e8c84a', strokeOpacity: .85, strokeWeight: 2,
     icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.5 }, offset: '100%' }] });
+
+  // 地図上にヤードラベルを表示（記録モードと同様）
+  if (measureFromLabel) measureFromLabel.setMap(null);
+  measureFromLabel = makeLabel(
+    { lat: (origin.lat + pos.lat()) / 2, lng: (origin.lng + pos.lng()) / 2 },
+    `${originYd}yd`, '#000', '#4a9fd4'
+  );
+  if (measureToLabel) measureToLabel.setMap(null);
+  measureToLabel = makeLabel(
+    { lat: (pos.lat() + targetPos.lat) / 2, lng: (pos.lng() + targetPos.lng) / 2 },
+    `残${pinYd}yd`, '#000', '#e8c84a'
+  );
 }
 
 function clearMeasure() {
   if (measureClick) { measureClick.setMap(null); measureClick = null; }
   if (teeLine) { teeLine.setMap(null); teeLine = null; }
   if (pinLine)  { pinLine.setMap(null);  pinLine = null; }
+  if (measureFromLabel) { measureFromLabel.setMap(null); measureFromLabel = null; }
+  if (measureToLabel)   { measureToLabel.setMap(null);   measureToLabel = null; }
   measureSelectedPin = null;
-  // ヤード情報パネルの測定欄をクリア
   const mEl = document.getElementById('yiMeasure');
   if (mEl) mEl.innerHTML = '';
 }

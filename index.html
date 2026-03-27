@@ -82,7 +82,29 @@
 
 <!-- ===== MAP ===== -->
 <div id="mapWrap">
-  <div id="emptyMap"><div class="ico">⛳</div><p>メニューからゴルフ場・コースを選択してください</p></div>
+  <div id="emptyMap">
+    <div class="ico">⛳</div>
+    <p id="emptyMapMsg">コースを選択してください</p>
+
+    <!-- インライン コース選択 -->
+    <div class="em-selector">
+      <!-- ① 都道府県 -->
+      <div class="em-step" id="emStepPref">
+        <div class="em-label">都道府県</div>
+        <div class="em-pref-btns" id="emPrefBtns"></div>
+      </div>
+      <!-- ② ゴルフ場 -->
+      <div class="em-step" id="emStepGc" style="display:none">
+        <div class="em-label"><span class="em-back" onclick="emBackToPref()">← 戻る</span>ゴルフ場</div>
+        <div class="em-gc-btns" id="emGcBtns"></div>
+      </div>
+      <!-- ③ コース（アウト/イン） -->
+      <div class="em-step" id="emStepCourse" style="display:none">
+        <div class="em-label"><span class="em-back" onclick="emBackToGc()">← 戻る</span>コース</div>
+        <div class="em-course-btns" id="emCourseBtns"></div>
+      </div>
+    </div>
+  </div>
   <div id="map"></div>
 
   <!-- 右上ボタン群（横並び：内側=回転、外側=📐） -->
@@ -221,6 +243,7 @@
   // 初期化（全jsロード後にソート適用）
   CLUBS = sortClubs(CLUBS);
   initSelects();
+  initEmSelector();
   updateBadge();
 </script>
 <script

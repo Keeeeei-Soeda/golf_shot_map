@@ -101,3 +101,72 @@ function updateCupBtn() {
   document.getElementById('cupBtn').style.display =
     (appMode === 'record' && hole() && hasData(hole())) ? 'block' : 'none';
 }
+
+// ============================================================
+// インライン コース選択（emptyMap上）
+// ============================================================
+let emSelectedGcIdx = null;
+
+function initEmSelector() {
+  // 都道府県の一覧（重複なし）
+  const prefs = [...new Set(COURSES.map(c => c.pref))];
+  document.getElementById('emPrefBtns').innerHTML = prefs.map(p =>
+    `<button class="em-pref-btn" onclick="emSelectPref('${p}')">${p}</button>`
+  ).join('');
+}
+
+function emSelectPref(pref) {
+  // その都道府県のゴルフ場一覧
+  const gcs = COURSES.map((c, i) => ({ ...c, idx: i })).filter(c => c.pref === pref);
+  document.getElementById('emGcBtns').innerHTML = gcs.map(gc =>
+    `<button class="em-gc-btn" onclick="emSelectGc(${gc.idx})">${gc.name}</button>`
+  ).join('');
+  document.getElementById('emStepPref').style.display = 'none';
+  document.getElementById('emStepGc').style.display = 'flex';
+}
+
+function emBackToPref() {
+  document.getElementById('emStepGc').style.display = 'none';
+  document.getElementById('emStepPref').style.display = 'flex';
+}
+
+function emSelectGc(gcIdx) {
+  emSelectedGcIdx = gcIdx;
+  const gc = COURSES[gcIdx];
+  document.getElementById('emCourseBtns').innerHTML = gc.courses.map((c, ci) =>
+    `<button class="em-course-btn" onclick="emSelectCourse(${gcIdx},${ci})">${c.name}</button>`
+  ).join('');
+  document.getElementById('emStepGc').style.display = 'none';
+  document.getElementById('emStepCourse').style.display = 'flex';
+}
+
+function emBackToGc() {
+  document.getElementById('emStepCourse').style.display = 'none';
+  document.getElementById('emStepGc').style.display = 'flex';
+}
+
+function emSelectCourse(gcIdx, cIdx) {
+  // サイドバーのselectと同じ状態にセット
+  st.gcIdx = gcIdx; st.cIdx = cIdx; st.hIdx = 0;
+  roundShots = {}; roundId = `round_${Date.now()}`;
+  // ドロップダウンUIも同期
+  const gcSel = document.getElementById('gcSel');
+  gcSel.value = gcIdx;
+  const cs = document.getElementById('courseSel');
+  cs.innerHTML = '<option value="">-- コース --</option>';
+  COURSES[gcIdx].courses.forEach((c, i) => {
+    const o = document.createElement('option');
+    o.value = i; o.textContent = c.name; cs.appendChild(o);
+  });
+  cs.value = cIdx;
+  // emSelectorをリセット
+  emResetSelector();
+  renderStrip(); loadHole(); updateSNLink();
+}
+
+function emResetSelector() {
+  document.getElementById('emStepPref').style.display = 'flex';
+  document.getElementById('emStepGc').style.display = 'none';
+  document.getElementById('emStepCourse').style.display = 'none';
+  emSelectedGcIdx = null;
+}

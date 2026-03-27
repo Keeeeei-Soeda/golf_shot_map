@@ -611,3 +611,42 @@ header{
   color:var(--gr);font-size:12px;cursor:pointer;font-family:inherit;
   margin-top:4px;
 }
+
+/* ===== インライン コース選択UI ===== */
+.em-selector{
+  width:min(320px, 90vw);display:flex;flex-direction:column;gap:12px;
+  margin-top:8px;
+}
+.em-step{display:flex;flex-direction:column;gap:8px;}
+.em-label{
+  font-size:10px;color:var(--gr);letter-spacing:1.5px;text-align:center;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.em-back{
+  font-size:11px;color:var(--blue);cursor:pointer;flex-shrink:0;
+}
+.em-back:hover{text-decoration:underline;}
+/* 都道府県ボタン群 */
+.em-pref-btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+.em-pref-btn{
+  padding:7px 14px;border-radius:20px;border:1px solid var(--g4);
+  background:var(--g2);color:var(--w);font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.em-pref-btn:hover{border-color:var(--acc);color:var(--acc);}
+/* ゴルフ場ボタン群 */
+.em-gc-btns{display:flex;flex-direction:column;gap:6px;}
+.em-gc-btn{
+  padding:10px 16px;border-radius:10px;border:1px solid var(--g4);
+  background:var(--g2);color:var(--w);font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .15s;text-align:left;
+}
+.em-gc-btn:hover{border-color:var(--acc);background:rgba(232,200,74,.08);}
+/* コースボタン群（アウト/イン） */
+.em-course-btns{display:flex;gap:8px;justify-content:center;}
+.em-course-btn{
+  flex:1;padding:12px 8px;border-radius:10px;border:1px solid var(--gv);
+  background:rgba(76,175,80,.12);color:var(--gv);
+  font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.em-course-btn:hover{background:var(--gv);color:#000;}

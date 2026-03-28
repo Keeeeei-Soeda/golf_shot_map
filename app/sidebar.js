@@ -255,6 +255,7 @@ function buildFullScorecard() {
 }
 
 
+function emResetSelector() {
   document.getElementById('emStepPref').style.display = 'flex';
   document.getElementById('emStepGc').style.display = 'none';
   document.getElementById('emStepCourse').style.display = 'none';

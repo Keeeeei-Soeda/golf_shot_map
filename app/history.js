@@ -98,3 +98,49 @@ function updateSNLink() {
   document.getElementById('snLink').href = (h && g && c) ?
     `https://shotnavi.jp/gcguide/cdata/hdata2_${g.gcid}_${c.cid}_${h.no}.htm` : '#';
 }
+
+// ============================================================
+// キャディノート エクスポート
+// ============================================================
+function exportCaddyNotes() {
+  var all = JSON.parse(localStorage.getItem('golfRounds') || '[]');
+  if (!all.length) { alert('エクスポートするデータがありません'); return; }
+
+  // roundShots の各エントリを人間が読みやすい形式に変換
+  var notes = all.map(function(r) {
+    // ホール別に整理
+    var holes = {};
+    Object.keys(r.shots).forEach(function(k) {
+      if (k.indexOf('_meta') !== -1) return;
+      var parts = k.split('_'); // gcIdx_cIdx_hIdx
+      var hIdx = parseInt(parts[2]);
+      var metaKey = k + '_meta';
+      var meta = r.shots[metaKey] || {};
+      var shots = r.shots[k] || [];
+      holes[hIdx] = {
+        holeIndex: hIdx,
+        par: meta.par || null,
+        totalShots: meta.totalShots || null,
+        scoreDiff: meta.scoreDiff !== undefined ? meta.scoreDiff : null,
+        cupIn: meta.cupIn || false,
+        shots: shots.map(function(s) {
+          return { no: s.no, club: s.club, carry: s.carry, remaining: s.remaining, fromLabel: s.fromLabel, lat: s.lat, lng: s.lng };
+        })
+      };
+    });
+    return {
+      id: r.id,
+      date: r.date,
+      gcName: r.gcName,
+      courseName: r.courseName,
+      holes: holes
+    };
+  });
+
+  var json = JSON.stringify({ exportedAt: new Date().toISOString(), rounds: notes }, null, 2);
+  var blob = new Blob([json], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'caddy_notes.json'; a.click();
+  URL.revokeObjectURL(url);
+}

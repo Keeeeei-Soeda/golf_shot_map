@@ -45,22 +45,9 @@
     </div>
     <div class="menu-label">ホール選択</div>
     <div id="holeStrip"></div>
-    <!-- スコアカード・クラブセット編集 -->
+    <!-- クラブセット編集 -->
     <div class="menu-divider"></div>
-    <button class="menu-club-btn" style="margin-bottom:8px" onclick="openScorecard()">📊 スコアカード</button>
     <button class="menu-club-btn" onclick="openClubEditor()">🏌️ クラブセット編集</button>
-  </div>
-</div>
-
-<!-- ===== スコアカードパネル（全画面） ===== -->
-<div id="scorecardPanel">
-  <div class="scp-header">
-    <button class="scp-back" onclick="closeScorecard()">← 戻る</button>
-    <div class="scp-title">📊 スコアカード</div>
-    <div style="width:60px"></div>
-  </div>
-  <div class="scp-body" id="scpBody">
-    <p style="color:var(--gr);text-align:center;padding:40px 16px;">コースを選択してください</p>
   </div>
 </div>
 
@@ -139,15 +126,22 @@
 
   <!-- 記録モードバナー -->
   <div id="recBanner"></div>
+  <!-- 戦略オーバーレイバナー -->
+  <div id="strategyBanner" style="display:none"></div>
 </div>
 
 <!-- ===== BOTTOM BAR ===== -->
 <div id="bottomBar">
   <div class="mode-tabs">
-    <button class="mtab active" id="tabMeasure" onclick="setMode('measure');hideLegend();">📏 測定</button>
-    <button class="mtab rec"    id="tabRecord"  onclick="setMode('record');hideLegend();">🏌️ 記録</button>
+    <button class="mtab active" id="tabMeasure"  onclick="setMode('measure');hideLegend();">📏 測定</button>
+    <button class="mtab rec"    id="tabRecord"   onclick="setMode('record');hideLegend();">🏌️ 記録</button>
+    <button class="mtab strat"  id="tabStrategy" onclick="setMode('strategy');hideLegend();">📍 戦略</button>
   </div>
   <div class="mode-info" id="modeInfo">メニューからコースを選択</div>
+  <div id="stratNavWrap" style="display:none">
+    <button class="strat-nav-btn" onclick="if(st.hIdx>0)selectHole(st.hIdx-1)">◀ 前H</button>
+    <button class="strat-nav-btn" onclick="if(course()&&st.hIdx<course().holes.length-1)selectHole(st.hIdx+1)">次H ▶</button>
+  </div>
   <button id="cupBtn" onclick="openCupPanel()">⛳ IN</button>
   <button class="bb-btn" id="reviewBtn" style="display:none" onclick="toggleReview()">📋</button>
   <button class="bb-btn" onclick="clearMeasure()">↺</button>
@@ -240,24 +234,27 @@
     <h2>📋 ラウンド履歴</h2>
     <button class="hist-close" onclick="closeHistory()">✕</button>
   </div>
+  <button class="hist-export-btn" id="histExportBtn" onclick="exportCaddyNotes()">📤 caddy_notes.json をエクスポート</button>
   <div class="hist-list" id="histList"></div>
 </div>
 
 <!-- ===== JS ===== -->
 <script src="courses.js"></script>
 <script src="app/core.js"></script>
-<script src="app/sidebar.js?v=2"></script>
+<script src="app/sidebar.js"></script>
 <script src="app/map.js"></script>
 <script src="app/measure.js"></script>
 <script src="app/shot.js"></script>
 <script src="app/clubs.js"></script>
 <script src="app/history.js"></script>
+<script src="app/strategy.js"></script>
 <script>
   // 初期化（全jsロード後にソート適用）
   CLUBS = sortClubs(CLUBS);
   initSelects();
   initEmSelector();
   updateBadge();
+  if (typeof restoreStrategyState === 'function') restoreStrategyState();
 </script>
 <script
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBryPip32SP4e5y2RBSDyKLbxoz313JAgU&callback=initMap&loading=async&libraries=marker&language=ja">

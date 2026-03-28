@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#0f1f0f"/>
+<title>Caddy Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gd:#0f1f0f;--g1:#162816;--g2:#1e3a1e;--g3:#2d4f2d;--g4:#3d6b3d;
+  --gv:#4caf50;--w:#eef4ee;--gr:#7a957a;
+  --acc:#e8c84a;--org:#f59e0b;
+  --eagle:#f472b6;--birdie:#60a5fa;--par:#4caf50;
+  --bogey:#fb923c;--dbl:#ef4444;--tpl:#991b1b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--gd);color:var(--w);font-family:'Noto Sans JP',sans-serif;}
+body{display:flex;flex-direction:column;}
+
+/* ヘッダー */
+.cn-header{
+  height:52px;flex-shrink:0;
+  background:linear-gradient(135deg,#0a160a,var(--g1));
+  border-bottom:2px solid var(--gv);
+  display:flex;align-items:center;padding:0 14px;gap:10px;
+}
+.cn-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--acc);letter-spacing:2px;}
+.cn-logo small{font-size:11px;color:var(--gr);letter-spacing:1px;margin-left:4px;font-family:'Noto Sans JP',sans-serif;}
+.cn-round-sel{
+  margin-left:auto;padding:6px 10px;border-radius:7px;
+  background:var(--g2);border:1px solid var(--g4);
+  color:var(--w);font-size:12px;font-family:inherit;max-width:160px;
+}
+
+/* メイン */
+.cn-body{flex:1;overflow-y:auto;padding:12px;}
+
+/* ラウンド情報 */
+.cn-round-info{
+  background:var(--g2);border:1px solid var(--g3);
+  border-radius:10px;padding:12px 14px;margin-bottom:14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.cn-gc-name{font-size:14px;font-weight:700;color:var(--acc);}
+.cn-course-name{font-size:11px;color:var(--gr);margin-top:2px;}
+.cn-date{font-size:12px;color:var(--gr);}
+
+/* スコアサマリーバー */
+.cn-summary{
+  display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;
+}
+.cn-sum-cell{
+  flex-shrink:0;min-width:44px;
+  background:var(--g2);border:1px solid var(--g3);
+  border-radius:8px;padding:6px 4px;text-align:center;
+}
+.cn-sum-cell .sh{font-size:9px;color:var(--gr);}
+.cn-sum-cell .sv{font-size:13px;font-weight:700;margin-top:2px;}
+.cn-sum-cell.eagle{background:var(--eagle);border-color:var(--eagle);}
+.cn-sum-cell.birdie{background:var(--birdie);border-color:var(--birdie);}
+.cn-sum-cell.par{background:var(--par);border-color:var(--par);}
+.cn-sum-cell.bogey{background:var(--bogey);border-color:var(--bogey);}
+.cn-sum-cell.dbl{background:var(--dbl);border-color:var(--dbl);}
+.cn-sum-cell.tpl{background:var(--tpl);border-color:var(--tpl);}
+.cn-sum-cell.empty{opacity:.5;}
+
+/* ホールカード */
+.cn-hole-card{
+  background:var(--g2);border:1px solid var(--g3);
+  border-radius:10px;margin-bottom:10px;overflow:hidden;
+}
+.cn-hole-header{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;background:var(--g1);border-bottom:1px solid var(--g3);
+}
+.cn-hole-no{
+  font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--acc);
+  line-height:1;min-width:32px;
+}
+.cn-hole-par{
+  font-size:11px;color:var(--gr);font-weight:600;
+}
+.cn-hole-score-badge{
+  margin-left:auto;padding:3px 10px;border-radius:20px;
+  font-size:12px;font-weight:700;
+}
+.cn-hole-score-badge.eagle{background:var(--eagle);color:#fff;}
+.cn-hole-score-badge.birdie{background:var(--birdie);color:#fff;}
+.cn-hole-score-badge.par{background:var(--par);color:#fff;}
+.cn-hole-score-badge.bogey{background:var(--bogey);color:#fff;}
+.cn-hole-score-badge.dbl{background:var(--dbl);color:#fff;}
+.cn-hole-score-badge.tpl{background:var(--tpl);color:#fff;}
+.cn-hole-score-badge.no-score{background:var(--g3);color:var(--gr);}
+
+.cn-shots{padding:10px 14px;}
+.cn-shot-row{
+  display:flex;align-items:center;gap:10px;
+  padding:7px 0;border-bottom:1px solid var(--g3);
+}
+.cn-shot-row:last-child{border-bottom:none;}
+.cn-shot-no{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--g3);border:1px solid var(--g4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:var(--acc);flex-shrink:0;
+}
+.cn-shot-club{
+  min-width:44px;font-size:13px;font-weight:700;color:var(--w);
+}
+.cn-shot-dist{flex:1;font-size:11px;color:var(--gr);}
+.cn-shot-carry{color:var(--birdie);font-weight:600;}
+.cn-shot-rem{color:var(--acc);}
+.cn-cupin-row{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 0;color:var(--gv);font-size:12px;font-weight:700;
+}
+
+/* 空状態 */
+.cn-empty{
+  text-align:center;padding:60px 20px;color:var(--gr);font-size:14px;
+}
+.cn-empty .ico{font-size:48px;margin-bottom:12px;}
+
+/* ローディング */
+.cn-loading{
+  text-align:center;padding:60px 20px;color:var(--gr);font-size:13px;
+}
+
+/* エラー */
+.cn-error{
+  background:#2a1515;border:1px solid var(--dbl);
+  border-radius:10px;padding:16px;margin:20px;
+  color:#fca5a5;font-size:13px;line-height:1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="cn-header">
+  <div class="cn-logo">⛳ CADDY<small>NOTES</small></div>
+  <select class="cn-round-sel" id="roundSel" onchange="selectRound(this.value)">
+    <option value="">-- ラウンドを選択 --</option>
+  </select>
+</div>
+
+<div class="cn-body" id="cnBody">
+  <div class="cn-loading">データを読み込み中...</div>
+</div>
+
+<script>
+var SCORE_DEFS = [
+  {diff:-2,name:'イーグル',cls:'eagle'},
+  {diff:-1,name:'バーディ',cls:'birdie'},
+  {diff: 0,name:'パー',cls:'par'},
+  {diff: 1,name:'ボギー',cls:'bogey'},
+  {diff: 2,name:'ダブルボギー',cls:'dbl'},
+  {diff: 3,name:'トリプルボギー',cls:'tpl'}
+];
+function scoreDef(diff){
+  return SCORE_DEFS.find(function(d){return d.diff===diff;}) || {diff:diff,name:'+'+diff,cls:'other'};
+}
+
+var allRounds = [];
+
+// caddy_notes.json を fetch
+fetch('./data/caddy_notes.json?v=' + Date.now())
+  .then(function(r){
+    if(!r.ok) throw new Error('HTTPエラー: ' + r.status);
+    return r.json();
+  })
+  .then(function(data){
+    allRounds = data.rounds || [];
+    var sel = document.getElementById('roundSel');
+    allRounds.forEach(function(r, i){
+      var o = document.createElement('option');
+      o.value = i;
+      o.textContent = r.gcName + ' ' + r.courseName + '（' + r.date + '）';
+      sel.appendChild(o);
+    });
+    if(allRounds.length === 1){
+      sel.value = 0;
+      selectRound(0);
+    } else if(allRounds.length > 1){
+      document.getElementById('cnBody').innerHTML =
+        '<div class="cn-empty"><div class="ico">⛳</div>ラウンドを選択してください</div>';
+    } else {
+      showEmpty();
+    }
+  })
+  .catch(function(e){
+    document.getElementById('cnBody').innerHTML =
+      '<div class="cn-error">'
+      + '<strong>データの読み込みに失敗しました</strong><br><br>'
+      + 'caddy_notes.json が data/ フォルダに配置されているか確認してください。<br><br>'
+      + '詳細: ' + e.message
+      + '</div>';
+  });
+
+function showEmpty(){
+  document.getElementById('cnBody').innerHTML =
+    '<div class="cn-empty"><div class="ico">📋</div>データがありません<br>'
+    + '<small style="font-size:11px;margin-top:8px;display:block">アプリの履歴パネルからエクスポートしてください</small></div>';
+}
+
+function selectRound(idx){
+  if(idx === '' || idx === null) return;
+  var r = allRounds[parseInt(idx)];
+  if(!r) return;
+  renderRound(r);
+}
+
+function renderRound(r){
+  // ホールを番号順にソート
+  var holeKeys = Object.keys(r.holes).map(function(k){return parseInt(k);}).sort(function(a,b){return a-b;});
+
+  // スコアサマリーバー
+  var summaryHtml = holeKeys.map(function(hi){
+    var h = r.holes[hi];
+    if(!h.cupIn || h.scoreDiff === null){
+      return '<div class="cn-sum-cell empty"><div class="sh">' + (hi+1) + 'H</div><div class="sv" style="color:var(--gr)">—</div></div>';
+    }
+    var diff = h.scoreDiff;
+    var sd = scoreDef(diff);
+    var lbl = diff===0?'E': diff>0?'+'+diff:String(diff);
+    return '<div class="cn-sum-cell ' + sd.cls + '"><div class="sh">' + (hi+1) + 'H</div><div class="sv">' + lbl + '</div></div>';
+  }).join('');
+
+  // ホールカード
+  var cardsHtml = holeKeys.map(function(hi){
+    var h = r.holes[hi];
+    var shots = h.shots || [];
+
+    // スコアバッジ
+    var badge = '';
+    if(h.cupIn && h.scoreDiff !== null){
+      var sd = scoreDef(h.scoreDiff);
+      var lbl = h.scoreDiff===0?'E': h.scoreDiff>0?'+'+h.scoreDiff:String(h.scoreDiff);
+      var name = sd.name;
+      badge = '<span class="cn-hole-score-badge ' + sd.cls + '">' + (h.totalShots||'?') + '打 ' + name + ' (' + lbl + ')</span>';
+    } else {
+      badge = '<span class="cn-hole-score-badge no-score">未記録</span>';
+    }
+
+    // ショット行
+    var shotsHtml = shots.map(function(s){
+      return '<div class="cn-shot-row">'
+        + '<div class="cn-shot-no">' + s.no + '</div>'
+        + '<div class="cn-shot-club">' + (s.club||'—') + '</div>'
+        + '<div class="cn-shot-dist">'
+        + s.fromLabel + ' <span class="cn-shot-carry">' + s.carry + 'yd</span>'
+        + ' → 残 <span class="cn-shot-rem">' + s.remaining + 'yd</span>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+
+    // カップイン行
+    var cupRow = h.cupIn
+      ? '<div class="cn-cupin-row"><span>⛳</span><span>カップイン (' + (h.totalShots||'?') + '打)</span></div>'
+      : '';
+
+    return '<div class="cn-hole-card">'
+      + '<div class="cn-hole-header">'
+      + '<div class="cn-hole-no">' + (hi+1) + '</div>'
+      + '<div class="cn-hole-par">PAR ' + (h.par||'?') + '</div>'
+      + badge
+      + '</div>'
+      + '<div class="cn-shots">'
+      + (shotsHtml || '<div style="color:var(--gr);font-size:12px;padding:4px 0">ショット未記録</div>')
+      + cupRow
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  document.getElementById('cnBody').innerHTML =
+    '<div class="cn-round-info">'
+    + '<div><div class="cn-gc-name">' + r.gcName + '</div><div class="cn-course-name">' + r.courseName + '</div></div>'
+    + '<div class="cn-date">' + r.date + '</div>'
+    + '</div>'
+    + '<div class="cn-summary">' + summaryHtml + '</div>'
+    + cardsHtml;
+}
+</script>
+</body>
+</html>

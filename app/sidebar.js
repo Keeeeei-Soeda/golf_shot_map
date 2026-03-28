@@ -74,17 +74,25 @@ function setMode(m) {
   appMode = m;
   document.getElementById('tabMeasure').classList.toggle('active', m === 'measure');
   document.getElementById('tabRecord').classList.toggle('active', m === 'record');
+  var stTab = document.getElementById('tabStrategy');
+  if (stTab) stTab.classList.toggle('active', m === 'strategy');
   clearMeasure(); clearPending(); updateInfo(); updateRecBanner(); updateCupBtn();
+  var stWrap = document.getElementById('stratNavWrap');
+  if (stWrap) stWrap.style.display = m === 'strategy' ? 'flex' : 'none';
 }
 
 function updateInfo() {
   var h = hole(); var n = curShots().length + 1;
-  if (appMode === 'measure')
+  if (appMode === 'strategy') {
+    document.getElementById('modeInfo').innerHTML =
+      h ? '<strong style="color:var(--org)">📍 戦略</strong> ホールを切り替えて過去の記録を確認' : 'コースを選択';
+  } else if (appMode === 'measure') {
     document.getElementById('modeInfo').innerHTML =
       h && hasData(h) ? '<strong>H' + h.no + ' PAR' + h.par + '</strong> タップ → ティーからの距離＋残り距離' : 'コースを選択';
-  else
+  } else {
     document.getElementById('modeInfo').innerHTML =
       h && hasData(h) ? '<strong class="rec">🏌️ 記録</strong> ' + n + '打目 — 落下地点をタップ' : '座標未登録';
+  }
 }
 
 function updateRecBanner() {
@@ -102,6 +110,10 @@ function updateRecBanner() {
 function updateCupBtn() {
   document.getElementById('cupBtn').style.display =
     (appMode === 'record' && hole() && hasData(hole())) ? 'block' : 'none';
+}
+// コース戦略ボタン（サイドバー）
+function openStrategySelectorFromMenu() {
+  if (typeof openStrategySelector === 'function') openStrategySelector();
 }
 
 // ============================================================

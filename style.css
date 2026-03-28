@@ -732,3 +732,25 @@ header{
   color:var(--red);font-size:13px;font-weight:700;
   cursor:pointer;font-family:inherit;
 }
+
+/* ===== サイドバーボタン カラーバリエーション ===== */
+.menu-btn-strategy{
+  border-color:var(--org) !important;
+  color:var(--org) !important;
+  margin-bottom:6px;
+}
+.menu-btn-strategy:hover{background:rgba(245,158,11,.15) !important;}
+
+.menu-btn-caddy{
+  border-color:var(--blue) !important;
+  color:var(--blue) !important;
+  margin-bottom:6px;
+}
+.menu-btn-caddy:hover{background:rgba(74,159,212,.15) !important;}
+
+.menu-btn-score{
+  border-color:var(--acc) !important;
+  color:var(--acc) !important;
+  margin-bottom:6px;
+}
+.menu-btn-score:hover{background:rgba(232,200,74,.15) !important;}

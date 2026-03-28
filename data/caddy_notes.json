@@ -1,0 +1,1906 @@
+{
+  "exportedAt": "2026-03-28T18:48:53.413Z",
+  "rounds": [
+    {
+      "id": "round_1774694758240",
+      "date": "2026/3/29",
+      "gcName": "れいせんゴルフ倶楽部",
+      "courseName": "イン",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": 6,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 201,
+              "remaining": 256,
+              "fromLabel": "ティー",
+              "lat": 34.983045497656654,
+              "lng": 135.51306194841814
+            },
+            {
+              "no": 2,
+              "club": "4I",
+              "carry": 148,
+              "remaining": 107,
+              "fromLabel": "1打目地点",
+              "lat": 34.98258113138753,
+              "lng": 135.5116855941999
+            },
+            {
+              "no": 3,
+              "club": "9I",
+              "carry": 110,
+              "remaining": 14,
+              "fromLabel": "2打目地点",
+              "lat": 34.982102649869,
+              "lng": 135.51075026173837
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 11,
+              "remaining": 5,
+              "fromLabel": "3打目地点",
+              "lat": 34.98219267989255,
+              "lng": 135.51075074351132
+            }
+          ]
+        },
+        "1": {
+          "holeIndex": 1,
+          "par": 4,
+          "totalShots": 4,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 204,
+              "remaining": 57,
+              "fromLabel": "ティー",
+              "lat": 34.98341326530831,
+              "lng": 135.5085592979679
+            },
+            {
+              "no": 2,
+              "club": "SW",
+              "carry": 52,
+              "remaining": 5,
+              "fromLabel": "1打目地点",
+              "lat": 34.983569797500245,
+              "lng": 135.50807362913955
+            }
+          ]
+        },
+        "2": {
+          "holeIndex": 2,
+          "par": 3,
+          "totalShots": 3,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 163,
+              "remaining": 10,
+              "fromLabel": "ティー",
+              "lat": 34.98473222305647,
+              "lng": 135.50999539691816
+            },
+            {
+              "no": 2,
+              "club": "PT",
+              "carry": 6,
+              "remaining": 4,
+              "fromLabel": "1打目地点",
+              "lat": 34.984746128949126,
+              "lng": 135.5100582084402
+            }
+          ]
+        },
+        "3": {
+          "holeIndex": 3,
+          "par": 4,
+          "totalShots": 5,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 205,
+              "remaining": 112,
+              "fromLabel": "ティー",
+              "lat": 34.98716226425319,
+              "lng": 135.51013630913627
+            },
+            {
+              "no": 2,
+              "club": "9I",
+              "carry": 118,
+              "remaining": 7,
+              "fromLabel": "1打目地点",
+              "lat": 34.98805502482159,
+              "lng": 135.510612123408
+            },
+            {
+              "no": 3,
+              "club": "PT",
+              "carry": 8,
+              "remaining": 4,
+              "fromLabel": "2打目地点",
+              "lat": 34.98798818788503,
+              "lng": 135.51060579712797
+            }
+          ]
+        },
+        "4": {
+          "holeIndex": 4,
+          "par": 4,
+          "totalShots": 5,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 193,
+              "remaining": 177,
+              "fromLabel": "ティー",
+              "lat": 34.98665839724398,
+              "lng": 135.51098875637834
+            },
+            {
+              "no": 2,
+              "club": "4I",
+              "carry": 160,
+              "remaining": 20,
+              "fromLabel": "1打目地点",
+              "lat": 34.98535808905172,
+              "lng": 135.5107428644015
+            },
+            {
+              "no": 3,
+              "club": "56°",
+              "carry": 17,
+              "remaining": 4,
+              "fromLabel": "2打目地点",
+              "lat": 34.98522774691817,
+              "lng": 135.51080243202904
+            }
+          ]
+        },
+        "5": {
+          "holeIndex": 5,
+          "par": 4,
+          "totalShots": 5,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 202,
+              "remaining": 193,
+              "fromLabel": "ティー",
+              "lat": 34.987271793027254,
+              "lng": 135.5116365884564
+            },
+            {
+              "no": 2,
+              "club": "4I",
+              "carry": 159,
+              "remaining": 35,
+              "fromLabel": "1打目地点",
+              "lat": 34.98847954702212,
+              "lng": 135.51223502220057
+            },
+            {
+              "no": 3,
+              "club": "56°",
+              "carry": 34,
+              "remaining": 5,
+              "fromLabel": "2打目地点",
+              "lat": 34.988718026266426,
+              "lng": 135.512409306447
+            }
+          ]
+        },
+        "6": {
+          "holeIndex": 6,
+          "par": 5,
+          "totalShots": 6,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 207,
+              "remaining": 292,
+              "fromLabel": "ティー",
+              "lat": 34.987204546721905,
+              "lng": 135.51275943668392
+            },
+            {
+              "no": 2,
+              "club": "4I",
+              "carry": 143,
+              "remaining": 148,
+              "fromLabel": "1打目地点",
+              "lat": 34.986099252707696,
+              "lng": 135.51226661934595
+            },
+            {
+              "no": 3,
+              "club": "7I",
+              "carry": 129,
+              "remaining": 22,
+              "fromLabel": "2打目地点",
+              "lat": 34.98507520816583,
+              "lng": 135.51191991812325
+            },
+            {
+              "no": 4,
+              "club": "PW",
+              "carry": 16,
+              "remaining": 6,
+              "fromLabel": "3打目地点",
+              "lat": 34.98498245776191,
+              "lng": 135.51180660927125
+            }
+          ]
+        },
+        "7": {
+          "holeIndex": 7,
+          "par": 3,
+          "totalShots": 4,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 168,
+              "remaining": 22,
+              "fromLabel": "ティー",
+              "lat": 34.98400966818139,
+              "lng": 135.51044765332054
+            },
+            {
+              "no": 2,
+              "club": "56°",
+              "carry": 18,
+              "remaining": 5,
+              "fromLabel": "1打目地点",
+              "lat": 34.98397559449936,
+              "lng": 135.51027679479034
+            }
+          ]
+        },
+        "8": {
+          "holeIndex": 8,
+          "par": 4,
+          "totalShots": 6,
+          "scoreDiff": 2,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 204,
+              "remaining": 142,
+              "fromLabel": "ティー",
+              "lat": 34.983582884208424,
+              "lng": 135.51223756671666
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 140,
+              "remaining": 17,
+              "fromLabel": "1打目地点",
+              "lat": 34.98464652189662,
+              "lng": 135.51276947102318
+            },
+            {
+              "no": 3,
+              "club": "56°",
+              "carry": 15,
+              "remaining": 4,
+              "fromLabel": "2打目地点",
+              "lat": 34.98458846004987,
+              "lng": 135.51290080188429
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774669676392",
+      "date": "2026/3/28",
+      "gcName": "大熱海国際ゴルフクラブ",
+      "courseName": "熱海OUT",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 4,
+          "totalShots": 4,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 226,
+              "remaining": 65,
+              "fromLabel": "ティー",
+              "lat": 35.02449290545564,
+              "lng": 139.03719018004233
+            },
+            {
+              "no": 2,
+              "club": "SW",
+              "carry": 66,
+              "remaining": 8,
+              "fromLabel": "1打目地点",
+              "lat": 35.02486563507615,
+              "lng": 139.03767043285558
+            },
+            {
+              "no": 3,
+              "club": "PT",
+              "carry": 9,
+              "remaining": 3,
+              "fromLabel": "2打目地点",
+              "lat": 35.024793705548355,
+              "lng": 139.03769750827692
+            }
+          ]
+        },
+        "1": {
+          "holeIndex": 1,
+          "par": 5,
+          "totalShots": 5,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 216,
+              "remaining": 235,
+              "fromLabel": "ティー",
+              "lat": 35.02634230057279,
+              "lng": 139.03981762953094
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 158,
+              "remaining": 78,
+              "fromLabel": "1打目地点",
+              "lat": 35.02730532884749,
+              "lng": 139.04088135692913
+            },
+            {
+              "no": 3,
+              "club": "9I",
+              "carry": 76,
+              "remaining": 7,
+              "fromLabel": "2打目地点",
+              "lat": 35.02772473556125,
+              "lng": 139.04145040894346
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 8,
+              "remaining": 4,
+              "fromLabel": "3打目地点",
+              "lat": 35.027664718571174,
+              "lng": 139.0414853498328
+            }
+          ]
+        },
+        "2": {
+          "holeIndex": 2,
+          "par": 3,
+          "totalShots": 4,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "7I",
+              "carry": 127,
+              "remaining": 12,
+              "fromLabel": "ティー",
+              "lat": 35.026442605500705,
+              "lng": 139.04141342724125
+            },
+            {
+              "no": 2,
+              "club": "56°",
+              "carry": 12,
+              "remaining": 3,
+              "fromLabel": "1打目地点",
+              "lat": 35.02637164141194,
+              "lng": 139.04133391813647
+            },
+            {
+              "no": 3,
+              "club": "PT",
+              "carry": 4,
+              "remaining": 4,
+              "fromLabel": "2打目地点",
+              "lat": 35.02633525477288,
+              "lng": 139.04132691931756
+            }
+          ]
+        },
+        "3": {
+          "holeIndex": 3,
+          "par": 5,
+          "totalShots": 5,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 203,
+              "remaining": 208,
+              "fromLabel": "ティー",
+              "lat": 35.0284629158363,
+              "lng": 139.04277038262114
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 149,
+              "remaining": 63,
+              "fromLabel": "1打目地点",
+              "lat": 35.028629135256125,
+              "lng": 139.04425283561218
+            },
+            {
+              "no": 3,
+              "club": "SW",
+              "carry": 69,
+              "remaining": 7,
+              "fromLabel": "2打目地点",
+              "lat": 35.028493400014526,
+              "lng": 139.0449207156491
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 8,
+              "remaining": 3,
+              "fromLabel": "3打目地点",
+              "lat": 35.02845613470521,
+              "lng": 139.04485272129665
+            }
+          ]
+        },
+        "4": {
+          "holeIndex": 4,
+          "par": 4,
+          "totalShots": 5,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 221,
+              "remaining": 70,
+              "fromLabel": "ティー",
+              "lat": 35.029225226163895,
+              "lng": 139.04332648908124
+            },
+            {
+              "no": 2,
+              "club": "SW",
+              "carry": 78,
+              "remaining": 13,
+              "fromLabel": "1打目地点",
+              "lat": 35.02960548090898,
+              "lng": 139.0426964639562
+            },
+            {
+              "no": 3,
+              "club": "PW",
+              "carry": 11,
+              "remaining": 2,
+              "fromLabel": "2打目地点",
+              "lat": 35.02951992365432,
+              "lng": 139.04271905541094
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 6,
+              "remaining": 4,
+              "fromLabel": "3打目地点",
+              "lat": 35.029480075558595,
+              "lng": 139.04267863633913
+            }
+          ]
+        },
+        "5": {
+          "holeIndex": 5,
+          "par": 4,
+          "totalShots": 4,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 237,
+              "remaining": 87,
+              "fromLabel": "ティー",
+              "lat": 35.03020437718201,
+              "lng": 139.03993900547192
+            },
+            {
+              "no": 2,
+              "club": "9I",
+              "carry": 93,
+              "remaining": 6,
+              "fromLabel": "1打目地点",
+              "lat": 35.03091143076412,
+              "lng": 139.03958667264047
+            },
+            {
+              "no": 3,
+              "club": "PT",
+              "carry": 7,
+              "remaining": 3,
+              "fromLabel": "2打目地点",
+              "lat": 35.03086065844668,
+              "lng": 139.03955198322956
+            }
+          ]
+        },
+        "6": {
+          "holeIndex": 6,
+          "par": null,
+          "totalShots": null,
+          "scoreDiff": null,
+          "cupIn": false,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 150,
+              "remaining": 23,
+              "fromLabel": "ティー",
+              "lat": 35.03125652244492,
+              "lng": 139.04116649844644
+            },
+            {
+              "no": 2,
+              "club": "SW",
+              "carry": 20,
+              "remaining": 3,
+              "fromLabel": "1打目地点",
+              "lat": 35.03111919492478,
+              "lng": 139.04127179023314
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774485324300",
+      "date": "2026/3/26",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": 5,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 230,
+              "remaining": 250,
+              "fromLabel": "ティー",
+              "lat": 34.892588971613144,
+              "lng": 136.05411849888685
+            },
+            {
+              "no": 2,
+              "club": "UT",
+              "carry": 181,
+              "remaining": 70,
+              "fromLabel": "1打目地点",
+              "lat": 34.89210435793397,
+              "lng": 136.05583528615963
+            },
+            {
+              "no": 3,
+              "club": "SW",
+              "carry": 67,
+              "remaining": 3,
+              "fromLabel": "2打目地点",
+              "lat": 34.892010359771575,
+              "lng": 136.0564999195948
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 4,
+              "remaining": 3,
+              "fromLabel": "3打目地点",
+              "lat": 34.89199732324245,
+              "lng": 136.05653599727864
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774471624574",
+      "date": "2026/3/26",
+      "gcName": "亀岡ゴルフクラブ【アコーディア・ゴルフ】",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 4,
+          "totalShots": 5,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 202,
+              "remaining": 191,
+              "fromLabel": "ティー",
+              "lat": 34.95757995376823,
+              "lng": 135.4939012738385
+            },
+            {
+              "no": 2,
+              "club": "UT",
+              "carry": 155,
+              "remaining": 36,
+              "fromLabel": "1打目地点",
+              "lat": 34.95878485528939,
+              "lng": 135.49439702616317
+            },
+            {
+              "no": 3,
+              "club": "SW",
+              "carry": 34,
+              "remaining": 3,
+              "fromLabel": "2打目地点",
+              "lat": 34.959054988058305,
+              "lng": 135.4944859909161
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 5,
+              "remaining": 3,
+              "fromLabel": "3打目地点",
+              "lat": 34.959095593615345,
+              "lng": 135.49447905918365
+            }
+          ]
+        },
+        "1": {
+          "holeIndex": 1,
+          "par": 4,
+          "totalShots": 4,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 207,
+              "remaining": 133,
+              "fromLabel": "ティー",
+              "lat": 34.95776463347581,
+              "lng": 135.49489734745939
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 125,
+              "remaining": 11,
+              "fromLabel": "1打目地点",
+              "lat": 34.9567563123732,
+              "lng": 135.49464375315824
+            },
+            {
+              "no": 3,
+              "club": "PT",
+              "carry": 11,
+              "remaining": 2,
+              "fromLabel": "2打目地点",
+              "lat": 34.956690766407505,
+              "lng": 135.49472478697143
+            }
+          ]
+        },
+        "2": {
+          "holeIndex": 2,
+          "par": 3,
+          "totalShots": 6,
+          "scoreDiff": 3,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "7I",
+              "carry": 45,
+              "remaining": 81,
+              "fromLabel": "ティー",
+              "lat": 34.956239027276666,
+              "lng": 135.49557022543098
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 9,
+              "remaining": 73,
+              "fromLabel": "1打目地点",
+              "lat": 34.95621329742723,
+              "lng": 135.49565889109365
+            },
+            {
+              "no": 3,
+              "club": "7I",
+              "carry": 110,
+              "remaining": 37,
+              "fromLabel": "2打目地点",
+              "lat": 34.95648206366269,
+              "lng": 135.49671186093897
+            },
+            {
+              "no": 4,
+              "club": "56°",
+              "carry": 32,
+              "remaining": 5,
+              "fromLabel": "3打目地点",
+              "lat": 34.956420501892985,
+              "lng": 135.496394606101
+            },
+            {
+              "no": 5,
+              "club": "PT",
+              "carry": 5,
+              "remaining": 3,
+              "fromLabel": "4打目地点",
+              "lat": 34.95640421355035,
+              "lng": 135.49634712067873
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774426556823",
+      "date": "2026/3/25",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": 5,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 195,
+              "remaining": 283,
+              "fromLabel": "ティー",
+              "lat": 34.89256234500856,
+              "lng": 136.05377389151488
+            },
+            {
+              "no": 2,
+              "club": "UT",
+              "carry": 190,
+              "remaining": 95,
+              "fromLabel": "1打目地点",
+              "lat": 34.89206745081449,
+              "lng": 136.05558524301748
+            },
+            {
+              "no": 3,
+              "club": "PW",
+              "carry": 89,
+              "remaining": 5,
+              "fromLabel": "2打目地点",
+              "lat": 34.89202675023477,
+              "lng": 136.05647844765497
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 6,
+              "remaining": 3,
+              "fromLabel": "3打目地点",
+              "lat": 34.89199644644647,
+              "lng": 136.05652414814492
+            }
+          ]
+        },
+        "1": {
+          "holeIndex": 1,
+          "par": 4,
+          "totalShots": 3,
+          "scoreDiff": -1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 190,
+              "remaining": 131,
+              "fromLabel": "ティー",
+              "lat": 34.893025293286094,
+              "lng": 136.0559174930015
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 135,
+              "remaining": 13,
+              "fromLabel": "1打目地点",
+              "lat": 34.89395120899108,
+              "lng": 136.05516801196313
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774426196288",
+      "date": "2026/3/25",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": null,
+          "totalShots": null,
+          "scoreDiff": null,
+          "cupIn": false,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 191,
+              "remaining": 287,
+              "fromLabel": "ティー",
+              "lat": 34.89257873648261,
+              "lng": 136.05373127214173
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774423562086",
+      "date": "2026/3/25",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": null,
+          "totalShots": null,
+          "scoreDiff": null,
+          "cupIn": false,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 196,
+              "remaining": 280,
+              "fromLabel": "ティー",
+              "lat": 34.892462260226175,
+              "lng": 136.05377604079231
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774416151976",
+      "date": "2026/3/25",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": 5,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 214,
+              "remaining": 266,
+              "fromLabel": "ティー",
+              "lat": 34.89258565826084,
+              "lng": 136.05395552499755
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 195,
+              "remaining": 73,
+              "fromLabel": "1打目地点",
+              "lat": 34.892065496788,
+              "lng": 136.0558023310689
+            },
+            {
+              "no": 3,
+              "club": "PW",
+              "carry": 72,
+              "remaining": 16,
+              "fromLabel": "2打目地点",
+              "lat": 34.89189405065639,
+              "lng": 136.05649517967402
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 18,
+              "remaining": 4,
+              "fromLabel": "3打目地点",
+              "lat": 34.892045271353666,
+              "lng": 136.05651118622995
+            }
+          ]
+        },
+        "1": {
+          "holeIndex": 1,
+          "par": 4,
+          "totalShots": 4,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 203,
+              "remaining": 149,
+              "fromLabel": "ティー",
+              "lat": 34.8927978835367,
+              "lng": 136.05571420088071
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 150,
+              "remaining": 11,
+              "fromLabel": "1打目地点",
+              "lat": 34.89394668521758,
+              "lng": 136.05518020883034
+            },
+            {
+              "no": 3,
+              "club": "PT",
+              "carry": 14,
+              "remaining": 3,
+              "fromLabel": "2打目地点",
+              "lat": 34.89395819548271,
+              "lng": 136.05531521606466
+            }
+          ]
+        },
+        "2": {
+          "holeIndex": 2,
+          "par": 3,
+          "totalShots": 3,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "4H",
+              "carry": 156,
+              "remaining": 10,
+              "fromLabel": "ティー",
+              "lat": 34.89359975174114,
+              "lng": 136.05678573247664
+            },
+            {
+              "no": 2,
+              "club": "PT",
+              "carry": 10,
+              "remaining": 3,
+              "fromLabel": "1打目地点",
+              "lat": 34.893553555274664,
+              "lng": 136.05686311671462
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774408808822",
+      "date": "2026/3/25",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": 4,
+          "scoreDiff": -1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 253,
+              "remaining": 224,
+              "fromLabel": "ティー",
+              "lat": 34.89242939885164,
+              "lng": 136.05434600531007
+            },
+            {
+              "no": 2,
+              "club": "4H",
+              "carry": 176,
+              "remaining": 51,
+              "fromLabel": "1打目地点",
+              "lat": 34.891963175178816,
+              "lng": 136.05602082376447
+            },
+            {
+              "no": 3,
+              "club": "PW",
+              "carry": 54,
+              "remaining": 3,
+              "fromLabel": "2打目地点",
+              "lat": 34.89200559387196,
+              "lng": 136.0565600611368
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774404271751",
+      "date": "2026/3/25",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": 4,
+          "scoreDiff": -1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "4I",
+              "carry": 379,
+              "remaining": 96,
+              "fromLabel": "ティー",
+              "lat": 34.89208660572343,
+              "lng": 136.0555706802457
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 104,
+              "remaining": 14,
+              "fromLabel": "1打目地点",
+              "lat": 34.891918736193496,
+              "lng": 136.0565925586789
+            },
+            {
+              "no": 3,
+              "club": "PT",
+              "carry": 13,
+              "remaining": 3,
+              "fromLabel": "2打目地点",
+              "lat": 34.89201998693857,
+              "lng": 136.0565603408229
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774399188116",
+      "date": "2026/3/25",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": 5,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 199,
+              "remaining": 279,
+              "fromLabel": "ティー",
+              "lat": 34.8925294349325,
+              "lng": 136.05380451714993
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 176,
+              "remaining": 105,
+              "fromLabel": "1打目地点",
+              "lat": 34.89206302961693,
+              "lng": 136.05547821557522
+            },
+            {
+              "no": 3,
+              "club": "PW",
+              "carry": 109,
+              "remaining": 11,
+              "fromLabel": "2打目地点",
+              "lat": 34.89210703023151,
+              "lng": 136.05656719243527
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 14,
+              "remaining": 3,
+              "fromLabel": "3打目地点",
+              "lat": 34.891997587100704,
+              "lng": 136.05654190050853
+            }
+          ]
+        },
+        "1": {
+          "holeIndex": 1,
+          "par": null,
+          "totalShots": null,
+          "scoreDiff": null,
+          "cupIn": false,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 204,
+              "remaining": 122,
+              "fromLabel": "ティー",
+              "lat": 34.893054611643244,
+              "lng": 136.05577953240203
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774393712800",
+      "date": "2026/3/25",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": null,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 222,
+              "remaining": 253,
+              "fromLabel": "ティー",
+              "lat": 34.89235459808635,
+              "lng": 136.05402414022828
+            },
+            {
+              "no": 2,
+              "club": "4H",
+              "carry": 179,
+              "remaining": 75,
+              "fromLabel": "1打目地点",
+              "lat": 34.892019818794864,
+              "lng": 136.05577626890832
+            },
+            {
+              "no": 3,
+              "club": "7I",
+              "carry": 83,
+              "remaining": 8,
+              "fromLabel": "2打目地点",
+              "lat": 34.892000018500205,
+              "lng": 136.05660507149392
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 6,
+              "remaining": 3,
+              "fromLabel": "3打目地点",
+              "lat": 34.89202651361044,
+              "lng": 136.05655746358698
+            }
+          ]
+        },
+        "1": {
+          "holeIndex": 1,
+          "par": 4,
+          "totalShots": null,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 204,
+              "remaining": 133,
+              "fromLabel": "ティー",
+              "lat": 34.89294450320035,
+              "lng": 136.0557366170578
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 136,
+              "remaining": 6,
+              "fromLabel": "1打目地点",
+              "lat": 34.893982545933476,
+              "lng": 136.05523228167996
+            },
+            {
+              "no": 3,
+              "club": "PT",
+              "carry": 9,
+              "remaining": 3,
+              "fromLabel": "2打目地点",
+              "lat": 34.89396044625256,
+              "lng": 136.05532042764844
+            }
+          ]
+        },
+        "2": {
+          "holeIndex": 2,
+          "par": 3,
+          "totalShots": null,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "4H",
+              "carry": 161,
+              "remaining": 5,
+              "fromLabel": "ティー",
+              "lat": 34.89361680703541,
+              "lng": 136.05686827307093
+            },
+            {
+              "no": 2,
+              "club": "PT",
+              "carry": 8,
+              "remaining": 3,
+              "fromLabel": "1打目地点",
+              "lat": 34.89356617204073,
+              "lng": 136.05691255578074
+            }
+          ]
+        },
+        "3": {
+          "holeIndex": 3,
+          "par": 4,
+          "totalShots": null,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 213,
+              "remaining": 214,
+              "fromLabel": "ティー",
+              "lat": 34.893565007949675,
+              "lng": 136.05885321230318
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 167,
+              "remaining": 49,
+              "fromLabel": "1打目地点",
+              "lat": 34.89252764337665,
+              "lng": 136.05994944629953
+            },
+            {
+              "no": 3,
+              "club": "PW",
+              "carry": 51,
+              "remaining": 7,
+              "fromLabel": "2打目地点",
+              "lat": 34.89216144527718,
+              "lng": 136.0602024829792
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 9,
+              "remaining": 3,
+              "fromLabel": "3打目地点",
+              "lat": 34.892165854097556,
+              "lng": 136.06011278826216
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774339370452",
+      "date": "2026/3/24",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": null,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 226,
+              "remaining": 251,
+              "fromLabel": "ティー",
+              "lat": 34.89248698917762,
+              "lng": 136.05408074755343
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 185,
+              "remaining": 67,
+              "fromLabel": "1打目地点",
+              "lat": 34.89203818387882,
+              "lng": 136.0558563699213
+            },
+            {
+              "no": 3,
+              "club": "PW",
+              "carry": 66,
+              "remaining": 5,
+              "fromLabel": "2打目地点",
+              "lat": 34.891988730158886,
+              "lng": 136.05651036544663
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 8,
+              "remaining": 3,
+              "fromLabel": "3打目地点",
+              "lat": 34.89204703102086,
+              "lng": 136.05654925747734
+            }
+          ]
+        },
+        "1": {
+          "holeIndex": 1,
+          "par": 4,
+          "totalShots": null,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 205,
+              "remaining": 151,
+              "fromLabel": "ティー",
+              "lat": 34.8927729024195,
+              "lng": 136.0556856550865
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 148,
+              "remaining": 7,
+              "fromLabel": "1打目地点",
+              "lat": 34.89396346914791,
+              "lng": 136.05536416212172
+            },
+            {
+              "no": 3,
+              "club": "PT",
+              "carry": 6,
+              "remaining": 3,
+              "fromLabel": "2打目地点",
+              "lat": 34.89395473233384,
+              "lng": 136.0553077483689
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774338867148",
+      "date": "2026/3/24",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": null,
+          "scoreDiff": -1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 215,
+              "remaining": 262,
+              "fromLabel": "ティー",
+              "lat": 34.89247218492541,
+              "lng": 136.05396668071123
+            },
+            {
+              "no": 2,
+              "club": "4H",
+              "carry": 187,
+              "remaining": 75,
+              "fromLabel": "1打目地点",
+              "lat": 34.8920805803677,
+              "lng": 136.0557798540053
+            },
+            {
+              "no": 3,
+              "club": "SW",
+              "carry": 75,
+              "remaining": 8,
+              "fromLabel": "2打目地点",
+              "lat": 34.89208938049063,
+              "lng": 136.0565362369475
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774336906639",
+      "date": "2026/3/24",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "8": {
+          "holeIndex": 8,
+          "par": 4,
+          "totalShots": null,
+          "scoreDiff": -1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 201,
+              "remaining": 156,
+              "fromLabel": "ティー",
+              "lat": 34.89139623915142,
+              "lng": 136.05291968313682
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 152,
+              "remaining": 5,
+              "fromLabel": "1打目地点",
+              "lat": 34.891763646541975,
+              "lng": 136.05146056143272
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774319701827",
+      "date": "2026/3/24",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": null,
+          "scoreDiff": -1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 210,
+              "remaining": 266,
+              "fromLabel": "ティー",
+              "lat": 34.892426198738704,
+              "lng": 136.05390841273805
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 173,
+              "remaining": 93,
+              "fromLabel": "1打目地点",
+              "lat": 34.892170995837546,
+              "lng": 136.05561429767153
+            },
+            {
+              "no": 3,
+              "club": "PW",
+              "carry": 91,
+              "remaining": 5,
+              "fromLabel": "2打目地点",
+              "lat": 34.89199627121574,
+              "lng": 136.0564997076302
+            }
+          ]
+        },
+        "1": {
+          "holeIndex": 1,
+          "par": null,
+          "totalShots": null,
+          "scoreDiff": null,
+          "cupIn": false,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 195,
+              "remaining": 114,
+              "fromLabel": "ティー",
+              "lat": 34.89310500393817,
+              "lng": 136.05572758332826
+            },
+            {
+              "no": 2,
+              "club": "8I",
+              "carry": 109,
+              "remaining": 12,
+              "fromLabel": "1打目地点",
+              "lat": 34.89396740075038,
+              "lng": 136.05543254033662
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774316150848",
+      "date": "2026/3/24",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": 5,
+          "totalShots": null,
+          "scoreDiff": 0,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 205,
+              "remaining": 273,
+              "fromLabel": "ティー",
+              "lat": 34.89252140261093,
+              "lng": 136.05386392277862
+            },
+            {
+              "no": 2,
+              "club": "4H",
+              "carry": 186,
+              "remaining": 87,
+              "fromLabel": "1打目地点",
+              "lat": 34.89214299846396,
+              "lng": 136.05567173165466
+            },
+            {
+              "no": 3,
+              "club": "PW",
+              "carry": 80,
+              "remaining": 7,
+              "fromLabel": "2打目地点",
+              "lat": 34.892019678305665,
+              "lng": 136.0564622551628
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 8,
+              "remaining": 3,
+              "fromLabel": "3打目地点",
+              "lat": 34.89200207804394,
+              "lng": 136.05654003922425
+            }
+          ]
+        },
+        "1": {
+          "holeIndex": 1,
+          "par": 4,
+          "totalShots": null,
+          "scoreDiff": 1,
+          "cupIn": true,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 161,
+              "remaining": 158,
+              "fromLabel": "ティー",
+              "lat": 34.89279130094071,
+              "lng": 136.0559539997776
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 164,
+              "remaining": 21,
+              "fromLabel": "1打目地点",
+              "lat": 34.893945650375485,
+              "lng": 136.05510736208493
+            },
+            {
+              "no": 3,
+              "club": "SW",
+              "carry": 22,
+              "remaining": 3,
+              "fromLabel": "2打目地点",
+              "lat": 34.89399543614403,
+              "lng": 136.0553241417607
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 6,
+              "remaining": 4,
+              "fromLabel": "3打目地点",
+              "lat": 34.89394263661739,
+              "lng": 136.05531475402915
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774313427103",
+      "date": "2026/3/24",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": null,
+          "totalShots": null,
+          "scoreDiff": null,
+          "cupIn": false,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 214,
+              "remaining": 264,
+              "fromLabel": "ティー",
+              "lat": 34.89250850270556,
+              "lng": 136.05395741402305
+            },
+            {
+              "no": 2,
+              "club": "4H",
+              "carry": 201,
+              "remaining": 67,
+              "fromLabel": "1打目地点",
+              "lat": 34.891980496355444,
+              "lng": 136.05586178242362
+            },
+            {
+              "no": 3,
+              "club": "PW",
+              "carry": 66,
+              "remaining": 14,
+              "fromLabel": "2打目地点",
+              "lat": 34.89190797482332,
+              "lng": 136.05651791192378
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 14,
+              "remaining": 3,
+              "fromLabel": "3打目地点",
+              "lat": 34.89202017655568,
+              "lng": 136.05656082726802
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774309658785",
+      "date": "2026/3/24",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": null,
+          "totalShots": null,
+          "scoreDiff": null,
+          "cupIn": false,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 164,
+              "remaining": 315,
+              "fromLabel": "ティー",
+              "lat": 34.89260690007343,
+              "lng": 136.05345833629772
+            },
+            {
+              "no": 2,
+              "club": "5I",
+              "carry": 172,
+              "remaining": 143,
+              "fromLabel": "1打目地点",
+              "lat": 34.892221341408394,
+              "lng": 136.0551165569592
+            },
+            {
+              "no": 3,
+              "club": "7I",
+              "carry": 138,
+              "remaining": 12,
+              "fromLabel": "2打目地点",
+              "lat": 34.89194413752878,
+              "lng": 136.05646302588468
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 13,
+              "remaining": 3,
+              "fromLabel": "3打目地点",
+              "lat": 34.89201453860268,
+              "lng": 136.05656092651373
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774308404709",
+      "date": "2026/3/24",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": null,
+          "totalShots": null,
+          "scoreDiff": null,
+          "cupIn": false,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 203,
+              "remaining": 272,
+              "fromLabel": "ティー",
+              "lat": 34.89233598067072,
+              "lng": 136.05382911313208
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 123,
+              "remaining": 150,
+              "fromLabel": "1打目地点",
+              "lat": 34.8921997513587,
+              "lng": 136.0550477985783
+            },
+            {
+              "no": 3,
+              "club": "7I",
+              "carry": 155,
+              "remaining": 14,
+              "fromLabel": "2打目地点",
+              "lat": 34.89191169254964,
+              "lng": 136.05655743933193
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "round_1774283736146",
+      "date": "2026/3/24",
+      "gcName": "ローズゴルフクラブ",
+      "courseName": "アウト",
+      "holes": {
+        "0": {
+          "holeIndex": 0,
+          "par": null,
+          "totalShots": null,
+          "scoreDiff": null,
+          "cupIn": false,
+          "shots": [
+            {
+              "no": 1,
+              "club": "1W",
+              "carry": 191,
+              "remaining": 289,
+              "lat": 34.89259340020965,
+              "lng": 136.0537237328186
+            },
+            {
+              "no": 2,
+              "club": "7I",
+              "carry": 170,
+              "remaining": 119,
+              "lat": 34.89230299743713,
+              "lng": 136.05538837878848
+            },
+            {
+              "no": 3,
+              "club": "9I",
+              "carry": 106,
+              "remaining": 18,
+              "lat": 34.891971252705936,
+              "lng": 136.05636761089636
+            },
+            {
+              "no": 4,
+              "club": "PT",
+              "carry": 16,
+              "remaining": 2,
+              "lat": 34.89202185346721,
+              "lng": 136.05651513239218
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

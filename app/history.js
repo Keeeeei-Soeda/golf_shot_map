@@ -106,34 +106,61 @@ function exportCaddyNotes() {
   var all = JSON.parse(localStorage.getItem('golfRounds') || '[]');
   if (!all.length) { alert('エクスポートするデータがありません'); return; }
 
-  // roundShots の各エントリを人間が読みやすい形式に変換
   var notes = all.map(function(r) {
-    // ホール別に整理
-    var holes = {};
+    // cIdx ごとにコース別に整理 { cIdx: { hIdx: {...} } }
+    var courses = {};
+
     Object.keys(r.shots).forEach(function(k) {
       if (k.indexOf('_meta') !== -1) return;
       var parts = k.split('_'); // gcIdx_cIdx_hIdx
-      var hIdx = parseInt(parts[2]);
+      if (parts.length < 3) return;
+      var gcIdx = parseInt(parts[0]);
+      var cIdx  = parseInt(parts[1]);
+      var hIdx  = parseInt(parts[2]);
+
       var metaKey = k + '_meta';
-      var meta = r.shots[metaKey] || {};
+      var meta  = r.shots[metaKey] || {};
       var shots = r.shots[k] || [];
-      holes[hIdx] = {
+
+      // コース名を COURSES から取得
+      var courseName = '';
+      try { courseName = COURSES[gcIdx].courses[cIdx].name; } catch(e) {}
+
+      if (!courses[cIdx]) {
+        courses[cIdx] = { courseIndex: cIdx, courseName: courseName, holes: {} };
+      }
+      courses[cIdx].holes[hIdx] = {
         holeIndex: hIdx,
         par: meta.par || null,
         totalShots: meta.totalShots || null,
         scoreDiff: meta.scoreDiff !== undefined ? meta.scoreDiff : null,
         cupIn: meta.cupIn || false,
         shots: shots.map(function(s) {
-          return { no: s.no, club: s.club, carry: s.carry, remaining: s.remaining, fromLabel: s.fromLabel, lat: s.lat, lng: s.lng };
+          return { no: s.no, club: s.club, carry: s.carry, remaining: s.remaining,
+                   fromLabel: s.fromLabel, lat: s.lat, lng: s.lng };
         })
       };
     });
+
+    // courses を配列に変換（旧形式 holes も互換のため残す）
+    var coursesArr = Object.keys(courses).sort().map(function(ci) { return courses[ci]; });
+
+    // 旧形式互換: 全コースのホールをフラットにまとめた holes
+    var holesFlat = {};
+    coursesArr.forEach(function(c) {
+      Object.keys(c.holes).forEach(function(hi) {
+        var key = c.courseIndex + '_' + hi;
+        holesFlat[key] = c.holes[hi];
+      });
+    });
+
     return {
       id: r.id,
       date: r.date,
       gcName: r.gcName,
       courseName: r.courseName,
-      holes: holes
+      courses: coursesArr,
+      holes: holesFlat  // 旧caddy.html互換
     };
   });
 

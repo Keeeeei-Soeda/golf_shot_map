@@ -45,9 +45,22 @@
     </div>
     <div class="menu-label">ホール選択</div>
     <div id="holeStrip"></div>
-    <!-- クラブセット編集 -->
+    <!-- スコアカード・クラブセット編集 -->
     <div class="menu-divider"></div>
+    <button class="menu-club-btn" style="margin-bottom:8px" onclick="openScorecard()">📊 スコアカード</button>
     <button class="menu-club-btn" onclick="openClubEditor()">🏌️ クラブセット編集</button>
+  </div>
+</div>
+
+<!-- ===== スコアカードパネル（全画面） ===== -->
+<div id="scorecardPanel">
+  <div class="scp-header">
+    <button class="scp-back" onclick="closeScorecard()">← 戻る</button>
+    <div class="scp-title">📊 スコアカード</div>
+    <div style="width:60px"></div>
+  </div>
+  <div class="scp-body" id="scpBody">
+    <p style="color:var(--gr);text-align:center;padding:40px 16px;">コースを選択してください</p>
   </div>
 </div>
 

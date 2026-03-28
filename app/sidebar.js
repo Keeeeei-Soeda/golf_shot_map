@@ -164,7 +164,97 @@ function emSelectCourse(gcIdx, cIdx) {
   renderStrip(); loadHole(); updateSNLink();
 }
 
-function emResetSelector() {
+// ============================================================
+// スコアカードパネル
+// ============================================================
+function openScorecard() {
+  const g = gc();
+  const body = document.getElementById('scpBody');
+  if (!g) {
+    body.innerHTML = '<p class="scp-no-course">コースを選択してください</p>';
+  } else {
+    body.innerHTML = buildFullScorecard();
+  }
+  document.getElementById('scorecardPanel').classList.add('open');
+  closeMenu();
+}
+
+function closeScorecard() {
+  document.getElementById('scorecardPanel').classList.remove('open');
+}
+
+function buildFullScorecard() {
+  const g = gc();
+  if (!g) return '';
+
+  let grandTotalPar = 0, grandTotalScore = 0, grandTotalDiff = 0, grandAny = false;
+
+  const cols = g.courses.map((c, ci) => {
+    const holes = c.holes;
+    let totalPar = 0, totalScore = 0, totalDiff = 0, anyScore = false;
+
+    const rows = holes.map((h, hi) => {
+      const meta = roundShots[`${st.gcIdx}_${ci}_${hi}_meta`] || {};
+      totalPar += h.par;
+      if (meta.cupIn) {
+        anyScore = true;
+        const s = meta.totalShots || (meta.par + (meta.scoreDiff || 0));
+        const diff = s - meta.par;
+        const sd = scoreDef(diff);
+        const lbl = diff === 0 ? 'E' : diff > 0 ? `+${diff}` : String(diff);
+        totalScore += s; totalDiff += diff;
+        return `<tr>
+          <td class="scp-hole-no">${h.no}H</td>
+          <td class="scp-par-val">${h.par}</td>
+          <td class="scp-score-cell ${sd.cls}">${s}<small>${lbl}</small></td>
+        </tr>`;
+      }
+      return `<tr>
+        <td class="scp-hole-no">${h.no}H</td>
+        <td class="scp-par-val">${h.par}</td>
+        <td class="scp-score-cell empty">—</td>
+      </tr>`;
+    }).join('');
+
+    grandTotalPar += totalPar;
+    if (anyScore) { grandAny = true; grandTotalScore += totalScore; grandTotalDiff += totalDiff; }
+
+    const totLbl = totalDiff === 0 ? 'E' : totalDiff > 0 ? `+${totalDiff}` : String(totalDiff);
+    return `
+      <div class="scp-course-col">
+        <div class="scp-course-name">${c.name}</div>
+        <table class="scp-table">
+          <thead><tr><th>H</th><th>PAR</th><th>Score</th></tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr class="scp-total-row">
+              <td>合計</td>
+              <td>${totalPar}</td>
+              <td class="scp-total-score">${anyScore ? `${totalScore}<small>${totLbl}</small>` : '—'}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>`;
+  }).join('');
+
+  const grandLbl = grandTotalDiff === 0 ? 'E' : grandTotalDiff > 0 ? `+${grandTotalDiff}` : String(grandTotalDiff);
+  const diffCls  = grandTotalDiff === 0 ? 'even' : grandTotalDiff > 0 ? 'plus' : 'minus';
+  const grandHtml = g.courses.length >= 2 ? `
+    <div class="scp-grand">
+      <div class="scp-grand-label">🏆 トータル<br><small style="font-size:10px">PAR ${grandTotalPar}</small></div>
+      <div>
+        <span class="scp-grand-val">${grandAny ? grandTotalScore : '—'}</span>
+        ${grandAny ? `<span class="scp-grand-diff ${diffCls}">${grandLbl}</span>` : ''}
+      </div>
+    </div>` : '';
+
+  return `
+    <div class="scp-gc-name">⛳ ${g.name}</div>
+    <div class="scp-courses-wrap">${cols}</div>
+    ${grandHtml}`;
+}
+
+
   document.getElementById('emStepPref').style.display = 'flex';
   document.getElementById('emStepGc').style.display = 'none';
   document.getElementById('emStepCourse').style.display = 'none';

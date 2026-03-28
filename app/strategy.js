@@ -3,11 +3,12 @@
    ===================================================== */
 
 var strategyActive   = false;
-var strategyGcIdx    = null;
-var strategyCIdx     = null;
 var strategyRoundId  = null;
 var strategySource   = 'local';
-var strategyShotData = {};   // hIdx -> shots[]
+
+// コース別ショットデータ: { cIdx: { hIdx: shots[] } }
+var strategyCourseData = {};
+
 var strategyMarkers  = [];
 var strategyLines    = [];
 var jsonRoundsCache  = null;
@@ -38,11 +39,11 @@ function restoreStrategyState() {
     if (strategySource === 'local') {
       var all = JSON.parse(localStorage.getItem('golfRounds') || '[]');
       var r = all.find(function(x){ return x.id === strategyRoundId; });
-      if (r) _applyLocalRound(r);
+      if (r) _applyLocalRound(r, false);
     } else {
       _fetchJsonRounds().then(function(rounds) {
         var r = rounds.find(function(x){ return x.id === strategyRoundId; });
-        if (r) _applyJsonRound(r);
+        if (r) _applyJsonRound(r, false);
       }).catch(function(){});
     }
   } catch(e) {}
@@ -81,7 +82,9 @@ function _populateRoundList() {
       return;
     }
     list.innerHTML = all.map(function(r) {
-      var hc = Object.keys(r.shots).filter(function(k){ return !k.includes('_meta') && r.shots[k].length > 0; }).length;
+      var hc = Object.keys(r.shots).filter(function(k){
+        return k.indexOf('_meta') === -1 && r.shots[k].length > 0;
+      }).length;
       var isOn = strategyActive && strategyRoundId === r.id;
       return '<div class="st-round-item' + (isOn ? ' active' : '') + '" onclick="activateStrategyLocal(\'' + r.id + '\')">'
         + '<div class="st-round-gc">' + r.gcName + '</div>'
@@ -96,11 +99,12 @@ function _populateRoundList() {
         return;
       }
       list.innerHTML = rounds.map(function(r) {
-        var hc = Object.keys(r.holes || {}).length;
+        var courses = r.courses || [];
+        var hc = courses.reduce(function(acc, c){ return acc + Object.keys(c.holes||{}).length; }, 0);
         var isOn = strategyActive && strategyRoundId === r.id;
         return '<div class="st-round-item' + (isOn ? ' active' : '') + '" onclick="activateStrategyJson(\'' + r.id + '\')">'
           + '<div class="st-round-gc">' + r.gcName + '</div>'
-          + '<div class="st-round-sub">' + r.courseName + '・' + r.date + '・' + hc + 'H記録</div>'
+          + '<div class="st-round-sub">' + r.date + '・' + hc + 'H記録</div>'
           + (isOn ? '<span class="st-on-badge">表示中</span>' : '')
           + '</div>';
       }).join('');
@@ -124,79 +128,111 @@ function activateStrategyLocal(roundId) {
   var all = JSON.parse(localStorage.getItem('golfRounds') || '[]');
   var r = all.find(function(x){ return x.id === roundId; });
   if (!r) return;
-  _applyLocalRound(r);
-  closeStrategySelector();
+  _applyLocalRound(r, true);
 }
 
 function activateStrategyJson(roundId) {
   _fetchJsonRounds().then(function(rounds) {
     var r = rounds.find(function(x){ return x.id === roundId; });
-    if (r) { _applyJsonRound(r); closeStrategySelector(); }
+    if (r) _applyJsonRound(r, true);
   });
 }
 
-function _applyLocalRound(r) {
-  var shotKeys = Object.keys(r.shots).filter(function(k){ return !k.includes('_meta'); });
-  if (!shotKeys.length) { alert('このラウンドにはショットデータがありません'); return; }
-  var first  = shotKeys[0].split('_');
-  strategyGcIdx = parseInt(first[0]);
-  strategyCIdx  = parseInt(first[1]);
+// ローカル履歴から適用 - cIdx を正しく分離
+function _applyLocalRound(r, closePanel) {
+  var shotKeys = Object.keys(r.shots).filter(function(k){
+    return k.indexOf('_meta') === -1;
+  });
+  if (!shotKeys.length) {
+    alert('このラウンドにはショットデータがありません');
+    return;
+  }
 
-  strategyShotData = {};
+  // { cIdx: { hIdx: shots[] } } の形に整理
+  strategyCourseData = {};
   shotKeys.forEach(function(k) {
-    var parts = k.split('_');
-    var hIdx  = parseInt(parts[2]);
-    strategyShotData[hIdx] = r.shots[k] || [];
+    var parts = k.split('_'); // gcIdx_cIdx_hIdx
+    if (parts.length < 3) return;
+    var cIdx = parseInt(parts[1]);
+    var hIdx = parseInt(parts[2]);
+    if (!strategyCourseData[cIdx]) strategyCourseData[cIdx] = {};
+    strategyCourseData[cIdx][hIdx] = r.shots[k] || [];
   });
 
   strategyRoundId = r.id;
   strategySource  = 'local';
   strategyActive  = true;
+
+  // 戦略モードに切り替え
+  setMode('strategy');
   renderStrategyLayer();
   saveStrategyState();
   _updateStrategyUI();
+  if (closePanel) closeStrategySelector();
 }
 
-function _applyJsonRound(r) {
-  strategyShotData = {};
-  Object.keys(r.holes || {}).forEach(function(hKey) {
-    strategyShotData[parseInt(hKey)] = r.holes[hKey].shots || [];
+// JSON形式から適用（新フォーマット: courses[].holes）
+function _applyJsonRound(r, closePanel) {
+  strategyCourseData = {};
+  var courses = r.courses || [];
+  courses.forEach(function(c) {
+    var cIdx = c.courseIndex;
+    strategyCourseData[cIdx] = {};
+    Object.keys(c.holes || {}).forEach(function(hKey) {
+      strategyCourseData[cIdx][parseInt(hKey)] = c.holes[hKey].shots || [];
+    });
   });
+
   strategyRoundId = r.id;
   strategySource  = 'json';
   strategyActive  = true;
+
+  setMode('strategy');
   renderStrategyLayer();
   saveStrategyState();
   _updateStrategyUI();
+  if (closePanel) closeStrategySelector();
 }
 
 function deactivateStrategy() {
   strategyActive = false;
+  strategyCourseData = {};
   clearStrategyLayer();
   saveStrategyState();
   _updateStrategyUI();
+  // 測定モードに戻す
+  setMode('measure');
 }
 
 // ============================================================
-// レイヤー描画
+// レイヤー描画（戦略モードのみ表示）
 // ============================================================
 function renderStrategyLayer() {
   clearStrategyLayer();
-  if (!strategyActive || !map) return;
-  var h = hole();
-  if (!h || !hasData(h)) return;
 
-  var shots = strategyShotData[st.hIdx] || [];
+  // 戦略モードかつアクティブな時のみ描画
+  if (!strategyActive || appMode !== 'strategy' || !map) return;
+
+  var h = hole();
+  if (!h || !hasData(h)) { _updateStrategyUI(); return; }
+
+  // 現在のコース(st.cIdx)のホール(st.hIdx)のデータを取得
+  var cData = strategyCourseData[st.cIdx] || {};
+  var shots = cData[st.hIdx] || [];
   var validShots = shots.filter(function(s){ return s.lat && s.lng; });
+
   if (!validShots.length) { _updateStrategyUI(); return; }
 
-  // ライン
+  // ライン（ティーから各ショットへ）
   var path = [{ lat: h.tee.lat, lng: h.tee.lng }];
   validShots.forEach(function(s){ path.push({ lat: s.lat, lng: s.lng }); });
   var line = new google.maps.Polyline({
     path: path, map: map,
-    strokeColor: '#f59e0b', strokeOpacity: .75, strokeWeight: 2.5,
-    icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.5 }, offset: '100%', repeat: '70px' }],
+    strokeColor: '#f59e0b', strokeOpacity: .8, strokeWeight: 2.5,
+    icons: [{
+      icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.5 },
+      offset: '100%', repeat: '70px'
+    }],
     zIndex: 45
   });
   strategyLines.push(line);
@@ -208,9 +244,12 @@ function renderStrategyLayer() {
     var half = Math.round(w / 2);
     var svg  = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="52">'
       + '<circle cx="' + half + '" cy="14" r="12" fill="#1a0800" stroke="#f59e0b" stroke-width="2.5"/>'
-      + '<text x="' + half + '" y="19" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="bold" font-family="Arial,sans-serif">' + s.no + '</text>'
-      + '<rect x="1" y="30" width="' + (w - 2) + '" height="20" rx="5" fill="rgba(26,8,0,0.9)" stroke="#f59e0b" stroke-width="0.8"/>'
-      + '<text x="' + half + '" y="44" text-anchor="middle" fill="#e8c84a" font-size="10" font-family="Arial,sans-serif">' + lbl + '</text>'
+      + '<text x="' + half + '" y="19" text-anchor="middle" fill="#f59e0b" font-size="12"'
+      + ' font-weight="bold" font-family="Arial,sans-serif">' + s.no + '</text>'
+      + '<rect x="1" y="30" width="' + (w-2) + '" height="20" rx="5"'
+      + ' fill="rgba(26,8,0,0.9)" stroke="#f59e0b" stroke-width="0.8"/>'
+      + '<text x="' + half + '" y="44" text-anchor="middle" fill="#e8c84a" font-size="10"'
+      + ' font-family="Arial,sans-serif">' + lbl + '</text>'
       + '</svg>';
     var marker = new google.maps.Marker({
       position: { lat: s.lat, lng: s.lng },
@@ -236,11 +275,17 @@ function clearStrategyLayer() {
 // UI 更新
 // ============================================================
 function _updateStrategyUI() {
-  // バナー
   var banner = document.getElementById('strategyBanner');
   if (!banner) return;
-  if (!strategyActive) { banner.style.display = 'none'; return; }
-  var shots = strategyShotData[st.hIdx] || [];
+
+  // 戦略モード以外・非アクティブはバナー非表示
+  if (!strategyActive || appMode !== 'strategy') {
+    banner.style.display = 'none';
+    return;
+  }
+
+  var cData = strategyCourseData[st.cIdx] || {};
+  var shots = cData[st.hIdx] || [];
   var h = hole();
   var hName = h ? ('H' + h.no + ' PAR' + h.par) : '';
   banner.textContent = shots.length
@@ -256,16 +301,37 @@ function updateStrategyNavBtns() {
 }
 
 // ============================================================
-// モードタブ連携
+// setMode パッチ：モード切替時にレイヤーを制御
 // ============================================================
-// loadHole が呼ばれるたびに戦略レイヤーを再描画するパッチ
+(function() {
+  var _origSetMode = setMode;
+  setMode = function(m) {
+    _origSetMode.apply(this, arguments);
+    // 戦略モード以外になったらレイヤーを隠す
+    if (strategyActive) {
+      if (m === 'strategy') {
+        renderStrategyLayer();
+      } else {
+        clearStrategyLayer();
+        var banner = document.getElementById('strategyBanner');
+        if (banner) banner.style.display = 'none';
+      }
+    }
+    updateStrategyNavBtns();
+  };
+})();
+
+// ============================================================
+// loadHole パッチ：ホール切替時に戦略レイヤーを再描画
+// ============================================================
 (function() {
   var _origLoadHole = loadHole;
   loadHole = function() {
     _origLoadHole.apply(this, arguments);
-    if (strategyActive) { renderStrategyLayer(); }
+    if (strategyActive && appMode === 'strategy') {
+      renderStrategyLayer();
+    }
     updateStrategyNavBtns();
     _updateStrategyUI();
   };
 })();
-

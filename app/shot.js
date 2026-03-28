@@ -153,12 +153,13 @@ function cancelShot() {
 function openCupPanel() {
   const h = hole(); if (!h) return;
   const shots = curShots();
-  const totalShots = shots.length + 1;
-  const diff = totalShots - h.par;
+  // デフォルトは実際の記録打数ベースで計算
+  const defaultTotal = shots.length + 1;
+  const diff = defaultTotal - h.par;
   cpSelectedDiff = diff;
   const sd = scoreDef(diff);
   document.getElementById('cpHoleInfo').textContent = `H${h.no} PAR${h.par}`;
-  document.getElementById('cpShots').textContent = shots.length > 0 ? totalShots : '—';
+  document.getElementById('cpShots').textContent = shots.length > 0 ? defaultTotal : '—';
   const lbl = document.getElementById('cpScoreLabel');
   lbl.textContent   = shots.length > 0 ? `${sd.name}（${diff > 0 ? '+' : ''}${diff}）` : '（打数未記録）';
   lbl.className     = `cup-score-label ${sd.cls}`;
@@ -174,6 +175,15 @@ function openCupPanel() {
 
 function selectCupScore(diff) {
   cpSelectedDiff = diff;
+  const h = hole();
+  // 打数表示をスコアに連動して更新
+  if (h) {
+    document.getElementById('cpShots').textContent = h.par + diff;
+    const sd = scoreDef(diff);
+    const lbl = document.getElementById('cpScoreLabel');
+    lbl.textContent = `${sd.name}（${diff > 0 ? '+' : ''}${diff}）`;
+    lbl.className   = `cup-score-label ${sd.cls}`;
+  }
   document.querySelectorAll('.score-btn').forEach(b => {
     const d = parseInt(b.getAttribute('onclick').match(/-?\d+/)[0]);
     b.classList.toggle('sel', d === diff);
@@ -184,7 +194,8 @@ function confirmCupIn() {
   const h = hole(); if (!h) return;
   const key = holeKey();
   if (!roundShots[key]) roundShots[key] = [];
-  const totalShots = roundShots[key].length + 1;
+  // totalShotsはスコアボタンで選択した値から算出（打数記録と乖離しないよう）
+  const totalShots = h.par + cpSelectedDiff;
   roundShots[`${key}_meta`] = { cupIn: true, scoreDiff: cpSelectedDiff, par: h.par, totalShots };
   saveRound(); closeCupPanel(); renderStrip(); updateInfo(); updateRecBanner();
   openHoleSummary();

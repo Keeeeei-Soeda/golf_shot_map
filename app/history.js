@@ -1,5 +1,5 @@
 /* =====================================================
-   history.js — ラウンド履歴・GPS・ShotNaviリンク
+   history.js — ラウンド履歴・GPS
    ===================================================== */
 
 // ============================================================
@@ -90,14 +90,6 @@ function clearAllHistory() {
   localStorage.removeItem('golfRounds'); updateBadge(); closeHistory();
 }
 
-// ============================================================
-// ShotNavi リンク
-// ============================================================
-function updateSNLink() {
-  const h = hole(), g = gc(), c = course();
-  document.getElementById('snLink').href = (h && g && c) ?
-    `https://shotnavi.jp/gcguide/cdata/hdata2_${g.gcid}_${c.cid}_${h.no}.htm` : '#';
-}
 
 // ============================================================
 // キャディノート エクスポート

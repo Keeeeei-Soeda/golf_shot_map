@@ -26,13 +26,13 @@ function onGCSel() {
   if (gc()) gc().courses.forEach(function(c, i) {
     var o = document.createElement('option'); o.value = i; o.textContent = c.name; cs.appendChild(o);
   });
-  roundShots = {}; roundId = 'round_' + Date.now(); updateSNLink();
+  roundShots = {}; roundId = 'round_' + Date.now();
 }
 
 function onCourseSel() {
   var v = document.getElementById('courseSel').value;
   st.cIdx = v === '' ? null : parseInt(v); st.hIdx = 0;
-  renderStrip(); loadHole(); updateSNLink();
+  renderStrip(); loadHole();
   closeMenu();
 }
 
@@ -64,7 +64,7 @@ function renderStrip() {
 }
 
 function selectHole(i) {
-  st.hIdx = i; renderStrip(); loadHole(); closeReview(); updateSNLink(); closeMenu();
+  st.hIdx = i; renderStrip(); loadHole(); closeReview(); closeMenu();
 }
 
 // ============================================================
@@ -176,7 +176,7 @@ function emSelectCourse(gcIdx, cIdx) {
   });
   cs.value = cIdx;
   emResetSelector();
-  renderStrip(); loadHole(); updateSNLink();
+  renderStrip(); loadHole();
 }
 
 function emResetSelector() {

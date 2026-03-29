@@ -8,6 +8,7 @@ var strategySource   = 'local';
 
 // コース別ショットデータ: { cIdx: { hIdx: shots[] } }
 var strategyCourseData = {};
+var strategyGcIdx = null;  // 戦略データのゴルフ場インデックス
 
 var strategyMarkers  = [];
 var strategyLines    = [];
@@ -159,6 +160,10 @@ function _applyLocalRound(r, closePanel) {
     strategyCourseData[cIdx][hIdx] = r.shots[k] || [];
   });
 
+  // 最初のキーからgcIdxを取得
+  strategyGcIdx = parseInt(Object.keys(r.shots).filter(function(k){
+    return k.indexOf('_meta') === -1;
+  })[0].split('_')[0]);
   strategyRoundId = r.id;
   strategySource  = 'local';
   strategyActive  = true;
@@ -183,6 +188,7 @@ function _applyJsonRound(r, closePanel) {
     });
   });
 
+  strategyGcIdx = null;  // JSONはgcIdx不明のためnull（コース名で照合）
   strategyRoundId = r.id;
   strategySource  = 'json';
   strategyActive  = true;
@@ -197,6 +203,7 @@ function _applyJsonRound(r, closePanel) {
 function deactivateStrategy() {
   strategyActive = false;
   strategyCourseData = {};
+  strategyGcIdx = null;
   clearStrategyLayer();
   saveStrategyState();
   _updateStrategyUI();
@@ -216,6 +223,11 @@ function renderStrategyLayer() {
   var h = hole();
   if (!h || !hasData(h)) { _updateStrategyUI(); return; }
 
+  // gcIdxが一致しないコースでは表示しない
+  if (strategyGcIdx !== null && strategyGcIdx !== st.gcIdx) {
+    _updateStrategyUI();
+    return;
+  }
   // 現在のコース(st.cIdx)のホール(st.hIdx)のデータを取得
   var cData = strategyCourseData[st.cIdx] || {};
   var shots = cData[st.hIdx] || [];
@@ -284,13 +296,21 @@ function _updateStrategyUI() {
     return;
   }
 
+  // gcIdx不一致のゴルフ場ではバナーを出さない
+  if (strategyGcIdx !== null && strategyGcIdx !== st.gcIdx) {
+    banner.style.display = 'none';
+    return;
+  }
   var cData = strategyCourseData[st.cIdx] || {};
   var shots = cData[st.hIdx] || [];
+  // ショットがない場合はバナー非表示（「記録なし」表示をしない）
+  if (!shots.length) {
+    banner.style.display = 'none';
+    return;
+  }
   var h = hole();
   var hName = h ? ('H' + h.no + ' PAR' + h.par) : '';
-  banner.textContent = shots.length
-    ? '📍 ' + hName + ' — 過去' + shots.length + '打の記録を表示中'
-    : '📍 ' + hName + ' — このホールの記録なし';
+  banner.textContent = '📍 ' + hName + ' — 過去' + shots.length + '打の記録を表示中';
   banner.style.display = 'block';
 }
 

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0a0f0a"/>
+<title>Club Stats</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0f0a; --g1:#111811; --g2:#182018; --g3:#243024; --g4:#2f402f;
+  --gv:#4caf50; --w:#e8f0e8; --gr:#6a886a; --dim:#3a503a;
+  --acc:#e8c84a; --org:#f59e0b; --blue:#4a9fd4;
+  --eagle:#f472b6; --birdie:#60a5fa; --bogey:#fb923c;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);color:var(--w);font-family:'Noto Sans JP',sans-serif;}
+
+/* ===== HEADER ===== */
+.hdr{
+  background:linear-gradient(135deg,#060d06,var(--g1));
+  border-bottom:2px solid var(--gv);
+  padding:0 16px;height:54px;
+  display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:50;
+}
+.hdr-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--acc);letter-spacing:3px;}
+.hdr-logo small{font-family:'Noto Sans JP',sans-serif;font-size:10px;color:var(--gr);letter-spacing:1px;margin-left:6px;}
+.hdr-back{
+  margin-left:auto;padding:6px 14px;border-radius:7px;
+  background:var(--g2);border:1px solid var(--g4);
+  color:var(--gr);font-size:12px;cursor:pointer;font-family:inherit;
+  text-decoration:none;
+}
+
+/* ===== BODY ===== */
+.body{padding:14px 12px;max-width:600px;margin:0 auto;}
+
+/* ===== FILTER BAR ===== */
+.filter-bar{
+  background:var(--g2);border:1px solid var(--g3);border-radius:12px;
+  padding:12px;margin-bottom:16px;
+}
+.filter-label{font-size:10px;color:var(--gr);letter-spacing:1px;margin-bottom:6px;}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;}
+.filter-btn{
+  padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;
+  background:var(--g3);border:1px solid var(--g4);color:var(--gr);
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.filter-btn.active{background:rgba(232,200,74,.15);border-color:var(--acc);color:var(--acc);}
+.filter-sel{
+  padding:5px 10px;border-radius:7px;
+  background:var(--g2);border:1px solid var(--g4);
+  color:var(--w);font-size:12px;font-family:inherit;
+  flex:1;min-width:120px;
+}
+
+/* ===== SUMMARY CARDS ===== */
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.sum-card{
+  background:var(--g2);border:1px solid var(--g3);border-radius:10px;
+  padding:10px 8px;text-align:center;
+}
+.sum-label{font-size:9px;color:var(--gr);letter-spacing:.5px;margin-bottom:4px;}
+.sum-val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--acc);line-height:1;}
+.sum-unit{font-size:10px;color:var(--gr);}
+
+/* ===== CLUB CARDS ===== */
+.section-title{
+  font-size:11px;color:var(--gr);letter-spacing:1.5px;
+  margin-bottom:10px;margin-top:20px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-title::after{content:'';flex:1;height:1px;background:var(--g3);}
+
+.club-card{
+  background:var(--g2);border:1px solid var(--g3);border-radius:12px;
+  margin-bottom:10px;overflow:hidden;
+  transition:border-color .15s;cursor:pointer;
+}
+.club-card:hover{border-color:var(--g4);}
+.club-card.expanded{border-color:var(--acc);}
+
+.club-header{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;
+}
+.club-name{
+  font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--acc);
+  min-width:44px;
+}
+.club-stats{flex:1;display:flex;gap:16px;}
+.club-stat{text-align:center;}
+.club-stat-val{
+  font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;
+  color:var(--w);line-height:1;
+}
+.club-stat-val.avg{color:var(--gv);}
+.club-stat-val.max{color:var(--birdie);}
+.club-stat-val.min{color:var(--org);}
+.club-stat-lbl{font-size:9px;color:var(--gr);margin-top:2px;}
+.club-count{
+  background:var(--g3);border-radius:20px;
+  padding:2px 8px;font-size:10px;color:var(--gr);
+  white-space:nowrap;
+}
+.club-chevron{font-size:10px;color:var(--dim);margin-left:4px;transition:transform .2s;}
+.club-card.expanded .club-chevron{transform:rotate(180deg);}
+
+/* バーグラフ */
+.club-bar-wrap{padding:0 14px 4px;}
+.club-bar-bg{height:5px;background:var(--g3);border-radius:3px;overflow:hidden;}
+.club-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gv),var(--acc));transition:width .4s ease;}
+
+/* 展開詳細 */
+.club-detail{
+  border-top:1px solid var(--g3);
+  max-height:0;overflow:hidden;transition:max-height .3s ease;
+}
+.club-card.expanded .club-detail{max-height:400px;}
+.club-detail-inner{padding:10px 14px;}
+
+/* グラフ */
+.dist-chart{
+  width:100%;height:80px;position:relative;margin-bottom:10px;
+}
+.dist-chart canvas{width:100% !important;height:80px !important;}
+
+/* 全記録リスト */
+.shot-list{max-height:160px;overflow-y:auto;}
+.shot-row{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 0;border-bottom:1px solid var(--g3);font-size:11px;
+}
+.shot-row:last-child{border-bottom:none;}
+.shot-no{color:var(--dim);min-width:20px;font-family:'JetBrains Mono',monospace;}
+.shot-carry{
+  font-family:'JetBrains Mono',monospace;font-weight:700;
+  color:var(--blue);min-width:50px;
+}
+.shot-rem{color:var(--gr);flex:1;}
+.shot-gc{color:var(--dim);font-size:10px;text-align:right;}
+
+/* 空状態 */
+.empty{
+  text-align:center;padding:60px 20px;color:var(--gr);
+}
+.empty .ico{font-size:48px;margin-bottom:12px;}
+
+/* スクロールバー */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--g4);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">⛳ STATS<small>クラブ飛距離分析</small></div>
+  <a class="hdr-back" href="./index.html">← アプリへ</a>
+</div>
+
+<div class="body">
+
+  <!-- フィルター -->
+  <div class="filter-bar">
+    <div class="filter-label">ゴルフ場フィルター</div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setGcFilter('all')">すべて</button>
+      <div id="gcFilterBtns"></div>
+    </div>
+  </div>
+
+  <!-- サマリー -->
+  <div class="summary-grid">
+    <div class="sum-card">
+      <div class="sum-label">総ショット数</div>
+      <div class="sum-val" id="sumTotal">0</div>
+      <div class="sum-unit">shots</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">使用クラブ数</div>
+      <div class="sum-val" id="sumClubs">0</div>
+      <div class="sum-unit">clubs</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">最長飛距離</div>
+      <div class="sum-val" id="sumMax">0</div>
+      <div class="sum-unit">yards</div>
+    </div>
+  </div>
+
+  <!-- クラブカード -->
+  <div class="section-title">クラブ別分析</div>
+  <div id="clubCards"></div>
+
+</div>
+
+<script>
+var allShots = [];   // { club, carry, remaining, gcName, date }
+var gcFilter = 'all';
+var maxAvg   = 0;
+
+// ===== データ読み込み =====
+function loadData() {
+  var rounds = JSON.parse(localStorage.getItem('golfRounds') || '[]');
+  allShots = [];
+  rounds.forEach(function(r) {
+    Object.keys(r.shots).forEach(function(k) {
+      if (k.indexOf('_meta') !== -1) return;
+      var shots = r.shots[k] || [];
+      shots.forEach(function(s) {
+        if (!s.club || !s.carry) return;
+        allShots.push({
+          club:      s.club,
+          carry:     s.carry,
+          remaining: s.remaining || 0,
+          gcName:    r.gcName,
+          date:      r.date
+        });
+      });
+    });
+  });
+
+  // ゴルフ場フィルターボタンを生成
+  var gcNames = [];
+  allShots.forEach(function(s) {
+    if (gcNames.indexOf(s.gcName) === -1) gcNames.push(s.gcName);
+  });
+  document.getElementById('gcFilterBtns').innerHTML = gcNames.map(function(name) {
+    var short = name.replace('ゴルフ倶楽部','GC').replace('カントリークラブ','CC').replace('ゴルフクラブ','GC');
+    return '<button class="filter-btn" onclick="setGcFilter(\'' + name + '\')">' + short + '</button>';
+  }).join('');
+
+  render();
+}
+
+function setGcFilter(gc) {
+  gcFilter = gc;
+  document.querySelectorAll('.filter-btn').forEach(function(b) {
+    b.classList.toggle('active',
+      (gc === 'all' && b.textContent === 'すべて') ||
+      b.getAttribute('onclick').indexOf(gc) !== -1
+    );
+  });
+  render();
+}
+
+// ===== 集計 =====
+function render() {
+  var shots = gcFilter === 'all'
+    ? allShots
+    : allShots.filter(function(s){ return s.gcName === gcFilter; });
+
+  if (!shots.length) {
+    document.getElementById('clubCards').innerHTML =
+      '<div class="empty"><div class="ico">🏌️</div>ショットデータがありません<br><small style="font-size:11px;display:block;margin-top:8px">アプリで記録モードを使って打点を記録してください</small></div>';
+    document.getElementById('sumTotal').textContent = '0';
+    document.getElementById('sumClubs').textContent = '0';
+    document.getElementById('sumMax').textContent = '0';
+    return;
+  }
+
+  // クラブ別集計
+  var clubMap = {};
+  shots.forEach(function(s) {
+    if (!clubMap[s.club]) clubMap[s.club] = { shots: [] };
+    clubMap[s.club].shots.push(s);
+  });
+
+  // 平均でソート（長い順）
+  var clubs = Object.keys(clubMap).map(function(name) {
+    var arr = clubMap[name].shots.map(function(s){ return s.carry; });
+    arr.sort(function(a,b){return a-b;});
+    var avg = Math.round(arr.reduce(function(a,b){return a+b;},0) / arr.length);
+    return { name: name, shots: clubMap[name].shots, carries: arr, avg: avg,
+             max: arr[arr.length-1], min: arr[0] };
+  }).sort(function(a,b){ return b.avg - a.avg; });
+
+  maxAvg = clubs.length ? clubs[0].avg : 1;
+
+  // サマリー更新
+  document.getElementById('sumTotal').textContent = shots.length;
+  document.getElementById('sumClubs').textContent = clubs.length;
+  var allCarries = shots.map(function(s){return s.carry;});
+  document.getElementById('sumMax').textContent = Math.max.apply(null, allCarries);
+
+  // カード生成
+  document.getElementById('clubCards').innerHTML = clubs.map(function(c, ci) {
+    var barPct = Math.round(c.avg / maxAvg * 100);
+    var shotRows = c.shots.slice().sort(function(a,b){return b.carry-a.carry;}).map(function(s,i){
+      return '<div class="shot-row">'
+        + '<span class="shot-no">' + (i+1) + '</span>'
+        + '<span class="shot-carry">' + s.carry + 'yd</span>'
+        + '<span class="shot-rem">残' + s.remaining + 'yd</span>'
+        + '<span class="shot-gc">' + s.date + '</span>'
+        + '</div>';
+    }).join('');
+
+    // 度数分布データ（20yd刻み）
+    var min20 = Math.floor(c.min / 20) * 20;
+    var max20 = Math.ceil(c.max / 20) * 20;
+    var bins = [];
+    for (var v = min20; v < max20; v += 20) {
+      var cnt = c.carries.filter(function(x){ return x >= v && x < v+20; }).length;
+      bins.push({ label: v + '', count: cnt });
+    }
+    var maxBin = Math.max.apply(null, bins.map(function(b){return b.count;})) || 1;
+
+    var barsHtml = '<div style="display:flex;align-items:flex-end;gap:2px;height:60px;padding:0 0 4px;">'
+      + bins.map(function(b){
+          var h = Math.round(b.count / maxBin * 52);
+          return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">'
+            + '<div style="width:100%;height:' + h + 'px;background:linear-gradient(180deg,var(--acc),var(--gv));border-radius:2px 2px 0 0;min-height:' + (b.count?2:0) + 'px"></div>'
+            + '<div style="font-size:8px;color:var(--dim);transform:rotate(-45deg);white-space:nowrap;margin-top:2px">' + b.label + '</div>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+
+    return '<div class="club-card" id="cc' + ci + '" onclick="toggleCard(' + ci + ')">'
+      + '<div class="club-header">'
+      + '<div class="club-name">' + c.name + '</div>'
+      + '<div class="club-stats">'
+      + '<div class="club-stat"><div class="club-stat-val avg">' + c.avg + '</div><div class="club-stat-lbl">平均 yd</div></div>'
+      + '<div class="club-stat"><div class="club-stat-val max">' + c.max + '</div><div class="club-stat-lbl">最大 yd</div></div>'
+      + '<div class="club-stat"><div class="club-stat-val min">' + c.min + '</div><div class="club-stat-lbl">最小 yd</div></div>'
+      + '</div>'
+      + '<div class="club-count">' + c.shots.length + '打</div>'
+      + '<div class="club-chevron">▼</div>'
+      + '</div>'
+      + '<div class="club-bar-wrap"><div class="club-bar-bg"><div class="club-bar" style="width:' + barPct + '%"></div></div></div>'
+      + '<div class="club-detail" id="cd' + ci + '">'
+      + '<div class="club-detail-inner">'
+      + '<div style="font-size:10px;color:var(--gr);margin-bottom:6px;">飛距離分布（20yd刻み）</div>'
+      + barsHtml
+      + '<div style="font-size:10px;color:var(--gr);margin:10px 0 6px;">全記録（飛距離順）</div>'
+      + '<div class="shot-list">' + shotRows + '</div>'
+      + '</div></div>'
+      + '</div>';
+  }).join('');
+}
+
+function toggleCard(ci) {
+  var card = document.getElementById('cc' + ci);
+  card.classList.toggle('expanded');
+}
+
+// 起動
+loadData();
+</script>
+</body>
+</html>

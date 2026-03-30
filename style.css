@@ -836,3 +836,10 @@ header{
 .scp-no-course{
   color:var(--gr);text-align:center;padding:40px 16px;font-size:13px;
 }
+
+.menu-btn-stats{
+  border-color:var(--blue) !important;
+  color:var(--blue) !important;
+  margin-bottom:6px;
+}
+.menu-btn-stats:hover{background:rgba(74,159,212,.15) !important;}

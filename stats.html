@@ -148,6 +148,13 @@ html,body{min-height:100%;background:var(--bg);color:var(--w);font-family:'Noto 
 }
 .empty .ico{font-size:48px;margin-bottom:12px;}
 
+/* バリデーション通知 */
+.validation-notice{
+  background:rgba(245,158,11,.1);border:1px solid var(--org);
+  border-radius:8px;padding:8px 12px;margin-bottom:12px;
+  font-size:11px;color:var(--org);
+}
+
 /* スクロールバー */
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
@@ -162,6 +169,9 @@ html,body{min-height:100%;background:var(--bg);color:var(--w);font-family:'Noto 
 </div>
 
 <div class="body">
+
+  <!-- バリデーション通知 -->
+  <div id="validationNotice" style="display:none" class="validation-notice"></div>
 
   <!-- フィルター -->
   <div class="filter-bar">
@@ -203,10 +213,28 @@ var gcFilter = 'all';
 var maxAvg   = 0;
 
 // ===== データ読み込み =====
+// 18ホール完了チェック：cupIn=true のホールが18個あるか
+function isComplete18(r) {
+  var holeKeys = Object.keys(r.shots).filter(function(k){
+    return k.indexOf('_meta') === -1;
+  });
+  // 全ホールキーのユニーク数（gcIdx_cIdx_hIdx）
+  var totalHoles = holeKeys.length;
+  if (totalHoles < 18) return false;
+  // 全ホールにcupIn=trueがあるか
+  var completed = holeKeys.filter(function(k){
+    var meta = r.shots[k + '_meta'] || {};
+    return meta.cupIn === true;
+  }).length;
+  return completed >= 18;
+}
+
 function loadData() {
   var rounds = JSON.parse(localStorage.getItem('golfRounds') || '[]');
   allShots = [];
+  var skipped = 0;
   rounds.forEach(function(r) {
+    if (!isComplete18(r)) { skipped++; return; }
     Object.keys(r.shots).forEach(function(k) {
       if (k.indexOf('_meta') !== -1) return;
       var shots = r.shots[k] || [];
@@ -222,6 +250,14 @@ function loadData() {
       });
     });
   });
+  // 除外件数をUIに反映
+  var notice = document.getElementById('validationNotice');
+  if (notice) {
+    notice.textContent = skipped > 0
+      ? skipped + '件のラウンドは18ホール未完了のため除外しました'
+      : '';
+    notice.style.display = skipped > 0 ? 'block' : 'none';
+  }
 
   // ゴルフ場フィルターボタンを生成
   var gcNames = [];

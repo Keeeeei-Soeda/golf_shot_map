@@ -213,20 +213,19 @@ var gcFilter = 'all';
 var maxAvg   = 0;
 
 // ===== データ読み込み =====
-// 18ホール完了チェック：cupIn=true のホールが18個あるか
-function isComplete18(r) {
+// 完了ラウンドチェック：記録されたホールが全てcupIn済みか
+// ※アウト/インは9ホールずつ別エントリのため、9ホール完了でもOK
+function isCompleteRound(r) {
   var holeKeys = Object.keys(r.shots).filter(function(k){
     return k.indexOf('_meta') === -1;
   });
-  // 全ホールキーのユニーク数（gcIdx_cIdx_hIdx）
-  var totalHoles = holeKeys.length;
-  if (totalHoles < 18) return false;
-  // 全ホールにcupIn=trueがあるか
+  if (!holeKeys.length) return false;
+  // 記録されている全ホールがcupIn済みであること
   var completed = holeKeys.filter(function(k){
     var meta = r.shots[k + '_meta'] || {};
     return meta.cupIn === true;
   }).length;
-  return completed >= 18;
+  return completed === holeKeys.length && completed >= 9;
 }
 
 function loadData() {
@@ -234,7 +233,7 @@ function loadData() {
   allShots = [];
   var skipped = 0;
   rounds.forEach(function(r) {
-    if (!isComplete18(r)) { skipped++; return; }
+    if (!isCompleteRound(r)) { skipped++; return; }
     Object.keys(r.shots).forEach(function(k) {
       if (k.indexOf('_meta') !== -1) return;
       var shots = r.shots[k] || [];
@@ -254,7 +253,7 @@ function loadData() {
   var notice = document.getElementById('validationNotice');
   if (notice) {
     notice.textContent = skipped > 0
-      ? skipped + '件のラウンドは18ホール未完了のため除外しました'
+      ? skipped + '件のラウンドは未完了（9H未満または未カップイン有）のため除外しました'
       : '';
     notice.style.display = skipped > 0 ? 'block' : 'none';
   }

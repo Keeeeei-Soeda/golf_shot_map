@@ -1057,6 +1057,8 @@ function openHistory() {
         const hc = Object.keys(r.shots).filter(k => !k.includes('_meta')).length;
         const sc = Object.entries(r.shots).filter(([k]) => !k.includes('_meta')).reduce((a, [,v]) => a + v.length, 0);
         let totalDiff = 0, completedHoles = 0;
+        const gcData = COURSES.find(c => c.name === r.gcName);
+        const courseData = gcData ? gcData.courses.find(c => c.name === r.courseName) : null;
         const cells = Array.from({ length: 9 }, (_, i) => {
           const baseKey = Object.keys(r.shots).find(k => !k.includes('_meta') && k.endsWith(`_${i}`));
           const parts = baseKey ? baseKey.split('_') : [];
@@ -1065,8 +1067,9 @@ function openHistory() {
           if (meta.cupIn) { totalDiff += meta.scoreDiff || 0; completedHoles++; }
           const sd = meta.cupIn ? scoreDef(meta.scoreDiff) : null;
           const label = sd ? (meta.scoreDiff === 0 ? 'E' : meta.scoreDiff > 0 ? `+${meta.scoreDiff}` : String(meta.scoreDiff)) : '—';
+          const holeNo = courseData && courseData.holes[i] ? courseData.holes[i].no : i + 1;
           return `<div class="hr-score-cell" style="${sd ? `background:var(--${sd.cls});color:#fff` : ''}">
-            <div class="hn">${i+1}</div><div class="sv">${label}</div>
+            <div class="hn">${holeNo}</div><div class="sv">${label}</div>
           </div>`;
         }).join('');
         const totalLabel = completedHoles > 0 ? (totalDiff === 0 ? 'Even' : totalDiff > 0 ? `+${totalDiff}` : String(totalDiff)) : '—';

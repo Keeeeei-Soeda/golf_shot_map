@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<!-- ===== HEADER（スリム版） ===== -->
+<!-- ===== HEADER ===== -->
 <header>
   <button class="hbg-btn" id="hbgBtn" onclick="toggleMenu()">
     <span></span><span></span><span></span>
@@ -45,11 +45,43 @@
     </div>
     <div class="menu-label">ホール選択</div>
     <div id="holeStrip"></div>
-    <!-- クラブセット編集 -->
+    <!-- アクションボタン -->
     <div class="menu-divider"></div>
-    <button class="menu-club-btn" onclick="openClubEditor()">🏌️ クラブセット編集</button>
-    <!-- 戦略オーバーレイ -->
-    <button class="menu-club-btn menu-strategy-btn" id="menuStrategyBtn" onclick="openStrategyMode()">⚔️ 戦略オーバーレイ</button>
+    <button class="menu-club-btn menu-btn-strategy" style="margin-bottom:6px" onclick="openStrategySelectorFromMenu()">📍 マップで過去記録を見る</button>
+    <button class="menu-club-btn menu-btn-caddy"    style="margin-bottom:6px" onclick="window.open('./caddy.html','_blank')">📋 キャディノート</button>
+    <button class="menu-club-btn menu-btn-score"    style="margin-bottom:6px" onclick="openScorecard()">📊 スコアカード</button>
+    <button class="menu-club-btn"                                              onclick="openClubEditor()">🏌️ クラブセット編集</button>
+  </div>
+</div>
+
+<!-- ===== コース戦略セレクターパネル（全画面） ===== -->
+<div id="strategyPanel">
+  <div class="stp-header">
+    <button class="stp-back" onclick="closeStrategySelector()">← 戻る</button>
+    <div class="stp-title">📍 マップで過去記録を見る</div>
+    <div style="width:60px"></div>
+  </div>
+  <div class="stp-body">
+    <div class="stp-source-tabs">
+      <button id="stTabLocal" class="stp-tab active" onclick="setStrategySourceTab('local')">📱 ローカル履歴</button>
+      <button id="stTabJson"  class="stp-tab"        onclick="setStrategySourceTab('json')">☁ JSON</button>
+    </div>
+    <div id="stRoundList" class="st-round-list"></div>
+    <div id="stDeactivateWrap" style="display:none;margin-top:8px;">
+      <button class="stp-deactivate" onclick="deactivateStrategy();closeStrategySelector()">🗑 オーバーレイを消去</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== スコアカードパネル（全画面） ===== -->
+<div id="scorecardPanel">
+  <div class="scp-header">
+    <button class="scp-back" onclick="closeScorecard()">← 戻る</button>
+    <div class="scp-title">📊 スコアカード</div>
+    <div style="width:60px"></div>
+  </div>
+  <div class="scp-body" id="scpBody">
+    <p style="color:var(--gr);text-align:center;padding:40px 16px;">コースを選択してください</p>
   </div>
 </div>
 
@@ -61,23 +93,18 @@
     <button class="ce-save" onclick="saveClubEditor()">保存</button>
   </div>
   <div class="ce-body">
-    <!-- 本数インジケーター -->
     <div class="ce-count-wrap">
       <div class="ce-count-bar-bg"><div class="ce-count-bar" id="ceCountBar"></div></div>
       <div class="ce-count" id="ceCount">0 / 14本</div>
     </div>
-    <!-- 現在のスロット（14マス） -->
     <div class="ce-slots-label">現在のセット（タップで削除）</div>
     <div class="ce-slots" id="ceSlots"></div>
-    <!-- プリセット選択 -->
     <div class="ce-slots-label" style="margin-top:12px">クラブを選択（タップで追加/削除）</div>
     <div id="cePresets"></div>
-    <!-- その他 -->
     <div class="ce-other-wrap">
       <input id="ceOtherInput" class="ce-other-input" placeholder="その他（例：48°）" maxlength="6">
       <button class="ce-other-add" onclick="addOtherClub()">追加</button>
     </div>
-    <!-- リセット -->
     <button class="ce-reset" onclick="resetClubEditor()">デフォルトに戻す</button>
   </div>
 </div>
@@ -87,20 +114,15 @@
   <div id="emptyMap">
     <div class="ico">⛳</div>
     <p id="emptyMapMsg">コースを選択してください</p>
-
-    <!-- インライン コース選択 -->
     <div class="em-selector">
-      <!-- ① 都道府県 -->
       <div class="em-step" id="emStepPref">
         <div class="em-label">都道府県</div>
         <div class="em-pref-btns" id="emPrefBtns"></div>
       </div>
-      <!-- ② ゴルフ場 -->
       <div class="em-step" id="emStepGc" style="display:none">
         <div class="em-label"><span class="em-back" onclick="emBackToPref()">← 戻る</span>ゴルフ場</div>
         <div class="em-gc-btns" id="emGcBtns"></div>
       </div>
-      <!-- ③ コース（アウト/イン） -->
       <div class="em-step" id="emStepCourse" style="display:none">
         <div class="em-label"><span class="em-back" onclick="emBackToGc()">← 戻る</span>コース</div>
         <div class="em-course-btns" id="emCourseBtns"></div>
@@ -109,13 +131,11 @@
   </div>
   <div id="map"></div>
 
-  <!-- 右上ボタン群（横並び：内側=回転、外側=📐） -->
   <div class="map-btns" id="mapBtns" style="display:none">
     <button class="rotate-btn" id="rotateBtn" onclick="rotateToHole();hideLegend();" title="ホール方向に回転">⛳↑</button>
     <button class="yi-toggle-btn" id="yiToggleBtn" onclick="toggleYardageInfo();hideLegend();" title="ヤード情報">📐</button>
   </div>
 
-  <!-- 凡例（ホール選択時に表示・操作すると消える） -->
   <div id="legend" style="display:none">
     <div class="leg-r"><div class="leg-dot" style="background:#4a9fd4"></div>T = ティー</div>
     <div class="leg-r"><div class="leg-dot" style="background:#e05252"></div>F = フロント</div>
@@ -123,21 +143,20 @@
     <div class="leg-r"><div class="leg-dot" style="background:#e8c84a"></div>B = バック</div>
   </div>
 
-  <!-- ヤード情報パネル（開閉式） -->
   <div id="yardageInfo" style="display:none"></div>
-
-  <!-- 記録モードバナー -->
   <div id="recBanner"></div>
+  <div id="strategyBanner" style="display:none"></div>
 </div>
 
 <!-- ===== BOTTOM BAR ===== -->
 <div id="bottomBar">
   <div class="mode-tabs">
-    <button class="mtab active" id="tabMeasure" onclick="setMode('measure');hideLegend();">📏 測定</button>
-    <button class="mtab rec"    id="tabRecord"  onclick="setMode('record');hideLegend();">🏌️ 記録</button>
+    <button class="mtab active"  id="tabMeasure"  onclick="setMode('measure');hideLegend();">📏 測定</button>
+    <button class="mtab rec"     id="tabRecord"   onclick="setMode('record');hideLegend();">🏌️ 記録</button>
+
   </div>
   <div class="mode-info" id="modeInfo">メニューからコースを選択</div>
-  <!-- 前H / 次H ナビ -->
+  <!-- 測定・記録モード用 前H/次H -->
   <div class="hole-nav" id="holeNavBtns" style="display:none">
     <button class="hole-nav-btn" id="prevHoleBtn" onclick="prevHole()">◀ 前H</button>
     <button class="hole-nav-btn" id="nextHoleBtn" onclick="nextHole()">次H ▶</button>
@@ -147,18 +166,16 @@
   <button class="bb-btn" onclick="clearMeasure()">↺</button>
 </div>
 
-<!-- ===== ショット登録パネル（タブ式） ===== -->
+<!-- ===== ショット登録パネル ===== -->
 <div id="shotPanel">
   <div class="sp-header">
     <div class="sp-shotno" id="spShotNo">1打目を登録</div>
     <button class="sp-close" onclick="cancelShot()">✕</button>
   </div>
-  <!-- タブ切替 -->
   <div class="sp-tabs">
     <button class="sp-tab active" id="spTabRecord" onclick="switchSpTab('record')">🏌️ 記録</button>
     <button class="sp-tab" id="spTabDist" onclick="switchSpTab('dist')">📏 飛距離確認</button>
   </div>
-  <!-- 記録タブ：クラブ選択のみ -->
   <div id="spBodyRecord">
     <div class="club-grid" id="clubGrid"></div>
     <div class="sp-btns">
@@ -166,7 +183,6 @@
       <button class="sp-ok" id="spOkBtn" onclick="confirmShot()" disabled>登録する</button>
     </div>
   </div>
-  <!-- 飛距離タブ：carry / remaining -->
   <div id="spBodyDist" style="display:none">
     <div class="sp-dists">
       <div class="sp-dist-card carry">
@@ -234,6 +250,7 @@
     <h2>📋 ラウンド履歴</h2>
     <button class="hist-close" onclick="closeHistory()">✕</button>
   </div>
+  <button class="hist-export-btn" onclick="exportCaddyNotes()">📤 caddy_notes.json をエクスポート</button>
   <div class="hist-list" id="histList"></div>
 </div>
 
@@ -246,12 +263,13 @@
 <script src="app/shot.js"></script>
 <script src="app/clubs.js"></script>
 <script src="app/history.js"></script>
+<script src="app/strategy.js"></script>
 <script>
-  // 初期化（全jsロード後にソート適用）
   CLUBS = sortClubs(CLUBS);
   initSelects();
   initEmSelector();
   updateBadge();
+  if (typeof restoreStrategyState === 'function') restoreStrategyState();
 </script>
 <script
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBryPip32SP4e5y2RBSDyKLbxoz313JAgU&callback=initMap&loading=async&libraries=marker&language=ja">

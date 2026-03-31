@@ -64,7 +64,8 @@ function renderStrip() {
 }
 
 function selectHole(i) {
-  st.hIdx = i; renderStrip(); loadHole(); closeReview(); updateSNLink(); closeMenu();
+  closeMenu();  // 最初に閉じる（後続エラーの影響を受けない）
+  st.hIdx = i; renderStrip(); loadHole(); closeReview(); updateSNLink();
 }
 
 // ============================================================
@@ -85,8 +86,16 @@ function updateHoleNavBtns() {
   if (!nav) return;
   if (!course()) { nav.style.display = 'none'; return; }
   nav.style.display = 'flex';
-  document.getElementById('prevHoleBtn').disabled = st.hIdx <= 0;
-  document.getElementById('nextHoleBtn').disabled = st.hIdx >= course().holes.length - 1;
+  const prev = document.getElementById('prevHoleBtn');
+  const next = document.getElementById('nextHoleBtn');
+  if (prev) prev.disabled = st.hIdx <= 0;
+  if (next) next.disabled = st.hIdx >= course().holes.length - 1;
+}
+
+// 戦略ボタン用ラッパー（closeMenu を確実に実行）
+function openStrategyMode() {
+  closeMenu();
+  try { setMode('strategy'); } catch(e) {}
 }
 
 // ============================================================
@@ -184,7 +193,7 @@ function emSelectCourse(gcIdx, cIdx) {
   cs.value = cIdx;
   // emSelectorをリセット
   emResetSelector();
-  renderStrip(); loadHole(); updateSNLink();
+  renderStrip(); loadHole(); updateSNLink(); updateHoleNavBtns();
 }
 
 function emResetSelector() {

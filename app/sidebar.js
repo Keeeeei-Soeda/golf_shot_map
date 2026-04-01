@@ -93,12 +93,6 @@ function updateHoleNavBtns() {
   if (next) next.disabled = st.hIdx >= course().holes.length - 1;
 }
 
-// 戦略ボタン用ラッパー（closeMenu を確実に実行）
-function openStrategyMode() {
-  closeMenu();
-  try { setMode('strategy'); } catch(e) {}
-}
-
 // ============================================================
 // モード・UI状態
 // ============================================================
@@ -106,19 +100,12 @@ function setMode(m) {
   appMode = m;
   document.getElementById('tabMeasure').classList.toggle('active', m === 'measure');
   document.getElementById('tabRecord').classList.toggle('active', m === 'record');
-  var stTab = document.getElementById('tabStrategy');
-  if (stTab) stTab.classList.toggle('active', m === 'strategy');
   clearMeasure(); clearPending(); updateInfo(); updateRecBanner(); updateCupBtn();
-  var stWrap = document.getElementById('stratNavWrap');
-  if (stWrap) stWrap.style.display = m === 'strategy' ? 'flex' : 'none';
 }
 
 function updateInfo() {
   var h = hole(); var n = curShots().length + 1;
-  if (appMode === 'strategy') {
-    document.getElementById('modeInfo').innerHTML =
-      h ? '<strong style="color:var(--org)">📍 戦略</strong> ホールを切り替えて過去の記録を確認' : 'コースを選択';
-  } else if (appMode === 'measure') {
+  if (appMode === 'measure') {
     document.getElementById('modeInfo').innerHTML =
       h && hasData(h) ? '<strong>H' + h.no + ' PAR' + h.par + '</strong> タップ → ティーからの距離＋残り距離' : 'コースを選択';
   } else {

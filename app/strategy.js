@@ -1,5 +1,5 @@
 /* =====================================================
-   strategy.js — コース戦略モード
+   strategy.js — マップ上の過去ラウンド記録オーバーレイ
    ===================================================== */
 
 var strategyActive   = false;
@@ -168,8 +168,11 @@ function _applyLocalRound(r, closePanel) {
   strategySource  = 'local';
   strategyActive  = true;
 
-  // 戦略モードに切り替え
-  setMode('strategy');
+  clearMeasure();
+  clearPending();
+  updateInfo();
+  updateRecBanner();
+  updateCupBtn();
   renderStrategyLayer();
   saveStrategyState();
   _updateStrategyUI();
@@ -193,7 +196,11 @@ function _applyJsonRound(r, closePanel) {
   strategySource  = 'json';
   strategyActive  = true;
 
-  setMode('strategy');
+  clearMeasure();
+  clearPending();
+  updateInfo();
+  updateRecBanner();
+  updateCupBtn();
   renderStrategyLayer();
   saveStrategyState();
   _updateStrategyUI();
@@ -212,13 +219,12 @@ function deactivateStrategy() {
 }
 
 // ============================================================
-// レイヤー描画（戦略モードのみ表示）
+// レイヤー描画（過去記録オーバーレイが有効なとき）
 // ============================================================
 function renderStrategyLayer() {
   clearStrategyLayer();
 
-  // 戦略モードかつアクティブな時のみ描画
-  if (!strategyActive || appMode !== 'strategy' || !map) return;
+  if (!strategyActive || !map) return;
 
   var h = hole();
   if (!h || !hasData(h)) { _updateStrategyUI(); return; }
@@ -290,8 +296,7 @@ function _updateStrategyUI() {
   var banner = document.getElementById('strategyBanner');
   if (!banner) return;
 
-  // 戦略モード以外・非アクティブはバナー非表示
-  if (!strategyActive || appMode !== 'strategy') {
+  if (!strategyActive) {
     banner.style.display = 'none';
     return;
   }
@@ -316,8 +321,7 @@ function _updateStrategyUI() {
 
 function updateStrategyNavBtns() {
   var wrap = document.getElementById('stratNavWrap');
-  if (!wrap) return;
-  wrap.style.display = (appMode === 'strategy') ? 'flex' : 'none';
+  if (wrap) wrap.style.display = 'none';
 }
 
 // ============================================================
@@ -327,15 +331,9 @@ function updateStrategyNavBtns() {
   var _origSetMode = setMode;
   setMode = function(m) {
     _origSetMode.apply(this, arguments);
-    // 戦略モード以外になったらレイヤーを隠す
     if (strategyActive) {
-      if (m === 'strategy') {
-        renderStrategyLayer();
-      } else {
-        clearStrategyLayer();
-        var banner = document.getElementById('strategyBanner');
-        if (banner) banner.style.display = 'none';
-      }
+      renderStrategyLayer();
+      _updateStrategyUI();
     }
     updateStrategyNavBtns();
   };
@@ -348,7 +346,7 @@ function updateStrategyNavBtns() {
   var _origLoadHole = loadHole;
   loadHole = function() {
     _origLoadHole.apply(this, arguments);
-    if (strategyActive && appMode === 'strategy') {
+    if (strategyActive) {
       renderStrategyLayer();
     }
     updateStrategyNavBtns();

@@ -259,8 +259,11 @@ function onMapClick(e) {
   const lat=e.latLng.lat(), lng=e.latLng.lng(), h=holeData[currentHole];
   h[currentPoint]={lat:parseFloat(lat.toFixed(6)),lng:parseFloat(lng.toFixed(6))};
   placeMarker(currentHole, currentPoint, e.latLng);
-  const keys=POINT_DEFS.map(p=>p.key), idx=keys.indexOf(currentPoint);
-  if (idx < keys.length-1) currentPoint = keys[idx+1];
+  // optional項目（レディースティー）はクリック時の自動進行でスキップ
+  const idx = POINT_DEFS.findIndex(p=>p.key===currentPoint);
+  let nextIdx = idx + 1;
+  while (nextIdx < POINT_DEFS.length && POINT_DEFS[nextIdx].optional) nextIdx++;
+  if (nextIdx < POINT_DEFS.length) currentPoint = POINT_DEFS[nextIdx].key;
   renderPointBtns(); renderHoleTabs(); updateIndicator(); updateOutput();
 }
 

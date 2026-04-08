@@ -197,9 +197,17 @@ function emSelectCourse(gcIdx, cIdx) {
     o.value = i; o.textContent = c.name; cs.appendChild(o);
   });
   cs.value = cIdx;
-  // ティー種別選択ステップへ進む
-  document.getElementById('emStepCourse').style.display = 'none';
-  document.getElementById('emStepTee').style.display = 'flex';
+  // レディースティーデータが1ホールでもあればティー選択ステップへ、なければレギュラーで直進
+  var holes = COURSES[gcIdx].courses[cIdx].holes;
+  var hasLadies = holes.some(function(h){ return h.tees && h.tees.ladies; });
+  if (hasLadies) {
+    document.getElementById('emStepCourse').style.display = 'none';
+    document.getElementById('emStepTee').style.display = 'flex';
+  } else {
+    st.teeType = 'regular';
+    emResetSelector();
+    renderStrip(); loadHole(); updateHoleNavBtns();
+  }
 }
 
 function emBackToCourse() {

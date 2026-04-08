@@ -283,6 +283,63 @@ header{
 .sp-tab.active{background:var(--g1);color:var(--w);}
 #spTabRecord.active{color:var(--org);}
 #spTabDist.active{color:var(--blue);}
+#spTabPenalty.active{color:var(--red);}
+
+/* ===== ショット評価ボタン ===== */
+.sp-result-section{margin-bottom:8px;}
+.sp-result-label{font-size:9px;color:var(--gr);letter-spacing:1px;margin-bottom:5px;}
+.sp-result-btns{display:flex;gap:4px;flex-wrap:wrap;}
+.rb{
+  padding:5px 8px;border-radius:16px;border:1px solid var(--g4);
+  background:var(--g2);color:var(--gr);font-size:11px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;flex-shrink:0;
+}
+.rb:hover{background:var(--g3);color:var(--w);}
+.rb.sel{border-width:2px;}
+.rb.nice.sel  {background:rgba(76,175,80,.25); border-color:var(--gv);  color:var(--gv);}
+.rb.miss.sel  {background:rgba(245,158,11,.2); border-color:var(--org); color:var(--org);}
+.rb.duff.sel  {background:rgba(167,139,250,.2);border-color:var(--pur); color:var(--pur);}
+.rb.slice.sel {background:rgba(74,159,212,.2); border-color:var(--blue);color:var(--blue);}
+.rb.hook.sel  {background:rgba(224,82,82,.2);  border-color:var(--red); color:var(--red);}
+
+/* ショット履歴・サマリーの評価バッジ */
+.rv-result,.hs-result{
+  display:inline-block;margin-left:6px;padding:1px 7px;border-radius:10px;
+  font-size:10px;font-weight:700;vertical-align:middle;
+}
+.rv-result.nice,.hs-result.nice   {background:rgba(76,175,80,.25); color:var(--gv);}
+.rv-result.miss,.hs-result.miss   {background:rgba(245,158,11,.2); color:var(--org);}
+.rv-result.duff,.hs-result.duff   {background:rgba(167,139,250,.2);color:var(--pur);}
+.rv-result.slice,.hs-result.slice {background:rgba(74,159,212,.2); color:var(--blue);}
+.rv-result.hook,.hs-result.hook   {background:rgba(224,82,82,.2);  color:var(--red);}
+
+/* ===== プレ4/3 ペナルティタブ ===== */
+.sp-penalty-status{
+  font-size:11px;font-weight:700;color:var(--gr);
+  text-align:center;padding:6px;margin-bottom:4px;
+  background:var(--g2);border-radius:7px;
+}
+.sp-penalty-status.active{color:var(--org);background:rgba(245,158,11,.1);}
+.sp-penalty-title{font-size:10px;color:var(--gr);letter-spacing:1px;margin-bottom:7px;text-align:center;}
+.sp-penalty-btns{display:flex;gap:6px;margin-bottom:10px;}
+.pb{
+  flex:1;padding:10px 4px;border-radius:8px;
+  background:var(--g2);border:1px solid var(--g4);
+  color:var(--w);font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .15s;text-align:center;line-height:1.4;
+}
+.pb:hover:not(:disabled){background:rgba(224,82,82,.15);border-color:var(--red);color:var(--red);}
+.pb.sel{background:rgba(224,82,82,.2);border-color:var(--red);border-width:2px;color:var(--red);}
+.pb:disabled{opacity:.35;cursor:default;}
+.pb small{display:block;font-size:9px;font-weight:400;color:var(--gr);}
+.pb.sel small{color:var(--red);}
+.pb-cancel{
+  width:100%;padding:8px;border-radius:7px;
+  background:transparent;border:1px solid var(--g3);
+  color:var(--gr);font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.pb-cancel:hover{border-color:var(--g4);color:var(--w);}
+
 .sp-hint-small{
   font-size:10px;color:var(--gr);text-align:center;
   padding:6px 0 2px;

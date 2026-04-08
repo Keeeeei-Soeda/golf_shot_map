@@ -62,6 +62,9 @@ let pendingPos = null, selectedClub = null;
 let pendingMarker = null, pendingCarryLine = null, pendingPinLine = null;
 let pendingCarryLabel = null, pendingPinLabel = null;
 
+// ショット評価（任意）
+let selectedResult = null;
+
 // GPS
 let gpsMarker = null, gpsWatch = null, gpsActive = false;
 

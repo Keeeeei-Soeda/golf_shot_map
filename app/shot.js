@@ -88,9 +88,12 @@ function openShotPanelUI() {
   const key = holeKey();
   const shots = curShots();
   const holeOff = roundShots[key + '_offset'] || 0;
+  const pendingN = roundShots[key + '_pendingPenalty'];
   const n = shots.length + 1 + holeOff;
 
-  document.getElementById('spShotNo').textContent = `${n}打目を登録`;
+  document.getElementById('spShotNo').textContent = pendingN
+    ? `ドロップ地点 → ${pendingN}打目を登録`
+    : `${n}打目を登録`;
   document.getElementById('clubGrid').innerHTML = CLUBS.map((c, i) =>
     c ? `<button class="cb" onclick="selectClub('${c}')">${c}</button>`
       : `<div class="cb-empty"></div>`
@@ -102,7 +105,7 @@ function openShotPanelUI() {
   // 評価ボタンのリセット
   document.querySelectorAll('.rb').forEach(b => b.classList.remove('sel'));
 
-  // ペナルティタブUIを更新
+  // ペナルティタブUIを更新（登録ボタンの有効/無効も反映）
   _updatePenaltyTabUI(shots, holeOff);
 
   switchSpTab('record');
@@ -111,9 +114,15 @@ function openShotPanelUI() {
 }
 
 function _updatePenaltyTabUI(shots, holeOff) {
+  const key = holeKey();
+  const pendingN = roundShots[key + '_pendingPenalty'];
   const statusEl = document.getElementById('spPenaltyStatus');
   if (!statusEl) return;
-  if (holeOff > 0) {
+
+  if (pendingN) {
+    statusEl.textContent = `🔄 プレ${pendingN}を選択中 → 「📍 ここに登録する」で確定`;
+    statusEl.className = 'sp-penalty-status active';
+  } else if (holeOff > 0) {
     const nextNo = shots.length + 1 + holeOff;
     statusEl.textContent = '設定中: 次打は ' + nextNo + '打目';
     statusEl.className = 'sp-penalty-status active';
@@ -121,15 +130,19 @@ function _updatePenaltyTabUI(shots, holeOff) {
     statusEl.textContent = '通常打順（ペナルティなし）';
     statusEl.className = 'sp-penalty-status';
   }
-  // 各ボタンのselected状態を更新
+
+  // プレボタンの選択状態・無効化
+  const currentNo = shots.length + 1 + holeOff;
   [3, 4, 5].forEach(n => {
     const btn = document.getElementById('pbBtn' + n);
     if (!btn) return;
-    const wouldBeOff = n - (shots.length + 1);
-    btn.classList.toggle('sel', wouldBeOff === holeOff && holeOff > 0);
-    // 既に通過した打数は意味がないのでdisable
-    btn.disabled = (n <= shots.length + holeOff);
+    btn.classList.toggle('sel', n === pendingN);
+    btn.disabled = (n < currentNo);
   });
+
+  // 登録ボタンの有効/無効
+  const okBtn = document.getElementById('spPenaltyOkBtn');
+  if (okBtn) okBtn.disabled = !pendingN;
 }
 
 function switchSpTab(tab) {
@@ -183,22 +196,71 @@ function selectResult(r) {
 function selectPenalty(n) {
   const key = holeKey();
   const shots = curShots();
+  const holeOff = roundShots[key + '_offset'] || 0;
+  const currentNo = shots.length + 1 + holeOff;
+
+  if (n < currentNo) return; // 既に通過済みの打数は無効
+
+  // 選択を一時保存（確定は confirmPenaltyDrop で行う）
+  roundShots[key + '_pendingPenalty'] = n;
+
+  // ヘッダー更新（プレタブに留まる）
+  document.getElementById('spShotNo').textContent = `ドロップ地点 → ${n}打目を登録`;
+  _updatePenaltyTabUI(shots, holeOff);
+}
+
+function confirmPenaltyDrop() {
+  const key = holeKey();
+  const n = roundShots[key + '_pendingPenalty'];
+  if (!n || !pendingPos) return;
+
+  const h = hole(); if (!h) return;
+  if (!roundShots[key]) roundShots[key] = [];
+  const shots = roundShots[key];
+  const holeOff = roundShots[key + '_offset'] || 0;
+
+  const prevIsTee = shots.length === 0;
+  const prevPos = prevIsTee
+    ? { lat: h.tee.lat, lng: h.tee.lng }
+    : { lat: shots[shots.length-1].lat, lng: shots[shots.length-1].lng };
+  const carryYd = Math.round(haversine(prevPos.lat, prevPos.lng, pendingPos.lat(), pendingPos.lng()) * 1.09361);
+  const remYd   = Math.round(haversine(pendingPos.lat(), pendingPos.lng(), h.center.lat, h.center.lng) * 1.09361);
+  const fromLabel = prevIsTee ? 'ティー' : `${shots[shots.length-1].no}打目地点`;
+  const dropNo = shots.length + 1 + holeOff;
+
+  shots.push({
+    no: dropNo,
+    lat: pendingPos.lat(), lng: pendingPos.lng(),
+    club: null,
+    carry: carryYd,
+    remaining: remYd,
+    fromLabel,
+    isPenalty: true,
+    penaltyTarget: n,
+  });
+
+  // ドロップ記録後、次のショットが n 打目になるようにオフセット再計算
   const newOffset = n - (shots.length + 1);
-  if (newOffset < 0) return; // 既に通過済みの打数は無効
-  roundShots[key + '_offset'] = newOffset;
+  if (newOffset > 0) {
+    roundShots[key + '_offset'] = newOffset;
+  } else {
+    delete roundShots[key + '_offset'];
+  }
+  delete roundShots[key + '_pendingPenalty'];
+
   saveRound();
-
-  // ヘッダー更新
-  document.getElementById('spShotNo').textContent = `${n}打目を登録`;
-  _updatePenaltyTabUI(shots, newOffset);
-
-  // 記録タブに戻る
-  switchSpTab('record');
+  cancelShot();
+  renderShotLayer();
+  renderStrip();
+  updateInfo();
+  updateRecBanner();
+  placePins(hole());
 }
 
 function cancelPenalty() {
   const key = holeKey();
   delete roundShots[key + '_offset'];
+  delete roundShots[key + '_pendingPenalty'];
   saveRound();
 
   const shots = curShots();
@@ -206,6 +268,9 @@ function cancelPenalty() {
   document.getElementById('spShotNo').textContent = `${n}打目を登録`;
   _updatePenaltyTabUI(shots, 0);
 
+  // 登録ボタンを無効化してから記録タブへ
+  const okBtn = document.getElementById('spPenaltyOkBtn');
+  if (okBtn) okBtn.disabled = true;
   switchSpTab('record');
 }
 
@@ -215,6 +280,8 @@ function confirmShot() {
   const key = holeKey();
   if (!roundShots[key]) roundShots[key] = [];
   const shots = roundShots[key];
+  // 通常ショット確定時はプレ待機状態をクリア
+  delete roundShots[key + '_pendingPenalty'];
   const holeOff = roundShots[key + '_offset'] || 0;
   const prevIsTee = shots.length === 0;
   const prevPos = prevIsTee
@@ -315,6 +382,16 @@ function openHoleSummary() {
   const totalShots = meta.totalShots || shots.length;
 
   const shotRows = shots.map(s => {
+    if (s.isPenalty) {
+      return `
+      <div class="hs-shot hs-shot-penalty">
+        <div class="hs-no" style="background:var(--red);font-size:9px;">OB</div>
+        <div class="hs-club" style="color:var(--red);font-size:11px;">⚠️ ドロップ地点</div>
+        <div class="hs-dists">
+          <span style="color:var(--red);font-weight:700;">→ ${s.penaltyTarget}打目へ</span>
+        </div>
+      </div>`;
+    }
     const resultBadge = s.result
       ? `<span class="hs-result ${_resultCls(s.result)}">${_resultIcon(s.result)} ${s.result}</span>`
       : '';
@@ -406,6 +483,20 @@ function buildScoreCard() {
 // 保存済みショット描画
 // ============================================================
 function makeShotIcon(s) {
+  if (s.isPenalty) {
+    // OB/ドロップ地点マーカー（赤枠・破線）
+    const label = `→${s.penaltyTarget}打目`;
+    const w = Math.max(72, label.length * 7 + 12);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="52">
+      <circle cx="${w/2}" cy="14" r="12" fill="#1a0505" stroke="#e05252" stroke-width="2" stroke-dasharray="3,2"/>
+      <text x="${w/2}" y="11" text-anchor="middle" fill="#e05252" font-size="7" font-weight="bold" font-family="Arial,sans-serif">OB</text>
+      <text x="${w/2}" y="21" text-anchor="middle" fill="#e05252" font-size="10" font-weight="bold" font-family="Arial,sans-serif">${s.no}</text>
+      <rect x="1" y="30" width="${w-2}" height="20" rx="5" fill="rgba(30,5,5,0.9)" stroke="#e05252" stroke-width="0.8"/>
+      <text x="${w/2}" y="44" text-anchor="middle" fill="#e05252" font-size="9" font-family="Arial,sans-serif">${label}</text>
+    </svg>`;
+    return { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+      scaledSize: new google.maps.Size(w, 52), anchor: new google.maps.Point(w/2, 14) };
+  }
   const label = `${s.carry}yd→${s.remaining}yd`;
   const w = Math.max(84, label.length * 7 + 12);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="52">
@@ -460,11 +551,14 @@ function openReview() {
         const resultHtml = s.result
           ? `<span class="rv-result ${_resultCls(s.result)}">${_resultIcon(s.result)} ${s.result}</span>`
           : '';
+        const clubHtml = s.isPenalty
+          ? `<span class="rv-penalty-label">⚠️ OB/ドロップ → ${s.penaltyTarget}打目へ</span>`
+          : `${s.club}${resultHtml}`;
         return `
-        <div class="rv-shot">
+        <div class="rv-shot${s.isPenalty ? ' rv-shot-penalty' : ''}">
           <div class="rv-no">${s.no}</div>
           <div class="rv-body">
-            <div class="rv-club">${s.club}${resultHtml}</div>
+            <div class="rv-club">${clubHtml}</div>
             <div class="rv-line">
               ${s.fromLabel}から <span class="hi">${s.carry}yd</span> 飛んで
               センターピンまで <span class="hi y">${s.remaining}yd</span> 残り
@@ -498,6 +592,7 @@ function clearHoleShots() {
   delete roundShots[key];
   delete roundShots[`${key}_meta`];
   delete roundShots[`${key}_offset`];
+  delete roundShots[`${key}_pendingPenalty`];
   saveRound(); clearShotLayer(); renderStrip(); closeReview(); updateInfo(); updateRecBanner();
 }
 

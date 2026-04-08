@@ -302,6 +302,11 @@ header{
 .rb.slice.sel {background:rgba(74,159,212,.2); border-color:var(--blue);color:var(--blue);}
 .rb.hook.sel  {background:rgba(224,82,82,.2);  border-color:var(--red); color:var(--red);}
 
+/* OB/ドロップ行 */
+.rv-shot-penalty{background:rgba(224,82,82,.08) !important;border:1px solid rgba(224,82,82,.3);}
+.rv-penalty-label{color:var(--red);font-size:12px;font-weight:700;}
+.hs-shot-penalty{background:rgba(224,82,82,.08) !important;border:1px solid rgba(224,82,82,.3);}
+
 /* ショット履歴・サマリーの評価バッジ */
 .rv-result,.hs-result{
   display:inline-block;margin-left:6px;padding:1px 7px;border-radius:10px;

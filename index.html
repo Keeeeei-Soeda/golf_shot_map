@@ -222,7 +222,10 @@
       <button class="pb" id="pbBtn4" onclick="selectPenalty(4)">プレ4<br><small>4打目から</small></button>
       <button class="pb" id="pbBtn5" onclick="selectPenalty(5)">プレ5<br><small>5打目から</small></button>
     </div>
-    <button class="pb-cancel" onclick="cancelPenalty()">↺ ペナルティなし（リセット）</button>
+    <div class="sp-btns">
+      <button class="sp-cancel" onclick="cancelPenalty()">↺ リセット</button>
+      <button class="sp-ok" id="spPenaltyOkBtn" onclick="confirmPenaltyDrop()" disabled>📍 ここに登録する</button>
+    </div>
   </div>
 </div>
 

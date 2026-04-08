@@ -19,10 +19,10 @@ function showDists(pos) {
   const h = hole(); if (!h || !hasData(h)) return;
   const shots = curShots();
 
-  // 起点：前打地点（なければティー）
+  // 起点：前打地点（なければ選択中ティー）
   const prevIsTee = shots.length === 0;
   const origin = prevIsTee
-    ? { lat: h.tee.lat, lng: h.tee.lng }
+    ? activeTee(h)
     : { lat: shots[shots.length-1].lat, lng: shots[shots.length-1].lng };
   const originLabel = prevIsTee ? 'ティーから' : `第${shots.length + 1}打から`;
   const originYd = Math.round(haversine(origin.lat, origin.lng, pos.lat(), pos.lng()) * 1.09361);

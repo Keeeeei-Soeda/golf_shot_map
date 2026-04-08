@@ -105,12 +105,14 @@ function setMode(m) {
 
 function updateInfo() {
   var h = hole(); var n = curShots().length + 1;
+  var teeDef = TEE_TYPES.find(function(t){ return t.key === st.teeType; }) || TEE_TYPES[0];
+  var teeTag = '<span style="color:' + teeDef.color + ';font-size:10px;margin-left:4px;">' + teeDef.icon + '</span>';
   if (appMode === 'measure') {
     document.getElementById('modeInfo').innerHTML =
-      h && hasData(h) ? '<strong>H' + h.no + ' PAR' + h.par + '</strong> タップ → ティーからの距離＋残り距離' : 'コースを選択';
+      h && hasData(h) ? '<strong>H' + h.no + ' PAR' + h.par + '</strong>' + teeTag + ' タップ → ティーからの距離＋残り距離' : 'コースを選択';
   } else {
     document.getElementById('modeInfo').innerHTML =
-      h && hasData(h) ? '<strong class="rec">🏌️ 記録</strong> ' + n + '打目 — 落下地点をタップ' : '座標未登録';
+      h && hasData(h) ? '<strong class="rec">🏌️ 記録</strong>' + teeTag + ' ' + n + '打目 — 落下地点をタップ' : '座標未登録';
   }
 }
 
@@ -195,6 +197,18 @@ function emSelectCourse(gcIdx, cIdx) {
     o.value = i; o.textContent = c.name; cs.appendChild(o);
   });
   cs.value = cIdx;
+  // ティー種別選択ステップへ進む
+  document.getElementById('emStepCourse').style.display = 'none';
+  document.getElementById('emStepTee').style.display = 'flex';
+}
+
+function emBackToCourse() {
+  document.getElementById('emStepTee').style.display = 'none';
+  document.getElementById('emStepCourse').style.display = 'flex';
+}
+
+function emSelectTee(teeType) {
+  st.teeType = teeType;
   emResetSelector();
   renderStrip(); loadHole(); updateHoleNavBtns();
 }
@@ -203,6 +217,7 @@ function emResetSelector() {
   document.getElementById('emStepPref').style.display = 'flex';
   document.getElementById('emStepGc').style.display = 'none';
   document.getElementById('emStepCourse').style.display = 'none';
+  document.getElementById('emStepTee').style.display = 'none';
   emSelectedGcIdx = null;
 }
 

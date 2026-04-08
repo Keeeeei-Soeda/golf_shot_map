@@ -21,7 +21,7 @@ function updatePendingPos(pos) {
   const holeOff = roundShots[holeKey() + '_offset'] || 0;
   const prevIsTee = shots.length === 0;
   const prevPos = prevIsTee
-    ? { lat: h.tee.lat, lng: h.tee.lng }
+    ? activeTee(h)
     : { lat: shots[shots.length-1].lat, lng: shots[shots.length-1].lng };
   const carryYd = Math.round(haversine(prevPos.lat, prevPos.lng, pos.lat(), pos.lng()) * 1.09361);
   const remYd   = Math.round(haversine(pos.lat(), pos.lng(), h.center.lat, h.center.lng) * 1.09361);
@@ -221,7 +221,7 @@ function confirmPenaltyDrop() {
 
   const prevIsTee = shots.length === 0;
   const prevPos = prevIsTee
-    ? { lat: h.tee.lat, lng: h.tee.lng }
+    ? activeTee(h)
     : { lat: shots[shots.length-1].lat, lng: shots[shots.length-1].lng };
   const carryYd = Math.round(haversine(prevPos.lat, prevPos.lng, pendingPos.lat(), pendingPos.lng()) * 1.09361);
   const remYd   = Math.round(haversine(pendingPos.lat(), pendingPos.lng(), h.center.lat, h.center.lng) * 1.09361);
@@ -285,7 +285,7 @@ function confirmShot() {
   const holeOff = roundShots[key + '_offset'] || 0;
   const prevIsTee = shots.length === 0;
   const prevPos = prevIsTee
-    ? { lat: h.tee.lat, lng: h.tee.lng }
+    ? activeTee(h)
     : { lat: shots[shots.length-1].lat, lng: shots[shots.length-1].lng };
   const no      = shots.length + 1 + holeOff;
   const carryYd = Math.round(haversine(prevPos.lat, prevPos.lng, pendingPos.lat(), pendingPos.lng()) * 1.09361);
@@ -514,7 +514,8 @@ function renderShotLayer() {
   const shots = curShots(); if (!shots.length) return;
   const h = hole(); if (!h) return;
 
-  const path = [{ lat: h.tee.lat, lng: h.tee.lng }, ...shots.map(s => ({ lat: s.lat, lng: s.lng }))];
+  const tee = activeTee(h);
+  const path = [{ lat: tee.lat, lng: tee.lng }, ...shots.map(s => ({ lat: s.lat, lng: s.lng }))];
   shotLines.push(new google.maps.Polyline({ path, map,
     strokeColor: '#4caf50', strokeOpacity: .6, strokeWeight: 2,
     icons: [{ icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 2.5 }, offset: '100%', repeat: '70px' }] }));

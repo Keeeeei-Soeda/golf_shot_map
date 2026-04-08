@@ -51,7 +51,8 @@ function updateYardagePanel(h) {
 
   let fromLat, fromLng, fromLabel;
   if (shots.length === 0) {
-    fromLat = h.tee.lat; fromLng = h.tee.lng;
+    const tee = activeTee(h);
+    fromLat = tee.lat; fromLng = tee.lng;
     fromLabel = `第${nextNo}打`;
   } else {
     const last = shots[shots.length - 1];
@@ -130,10 +131,11 @@ function loadHole() {
   clearMeasure(); clearPending();
   if (!mapsLoaded) return;
 
-  const bearing = calcBearing(h.tee.lat, h.tee.lng, h.center.lat, h.center.lng);
-  const midLat  = (h.tee.lat + h.center.lat) / 2;
-  const midLng  = (h.tee.lng + h.center.lng) / 2;
-  const holeDistM = haversine(h.tee.lat, h.tee.lng, h.center.lat, h.center.lng);
+  const tee = activeTee(h);
+  const bearing = calcBearing(tee.lat, tee.lng, h.center.lat, h.center.lng);
+  const midLat  = (tee.lat + h.center.lat) / 2;
+  const midLng  = (tee.lng + h.center.lng) / 2;
+  const holeDistM = haversine(tee.lat, tee.lng, h.center.lat, h.center.lng);
   const zoom = holeDistM > 400 ? 16 : holeDistM > 250 ? 17 : 18;
 
   if (!map) {
@@ -179,7 +181,7 @@ function placePins(h) {
     return m;
   };
   const pins = [
-    mk(h.tee,    '#4a9fd4', 'T', 'ティー',   null,     false),
+    mk(activeTee(h), '#4a9fd4', 'T', 'ティー', null, false),
     mk(h.front,  '#e05252', 'F', 'フロント', 'front',  true),
     mk(h.center, '#a78bfa', 'C', 'センター', 'center', false),
     mk(h.back,   '#e8c84a', 'B', 'バック',   'back',   true),

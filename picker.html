@@ -139,18 +139,19 @@ header{height:52px;flex-shrink:0;background:linear-gradient(135deg,#0a160a,var(-
 </div>
 <script>
 const POINT_DEFS = [
-  { key:'tee',    label:'ティー',       color:'#4a9fd4', letter:'T' },
-  { key:'front',  label:'フロント (F)', color:'#e05252', letter:'F' },
-  { key:'center', label:'センター (C)', color:'#a78bfa', letter:'C' },
-  { key:'back',   label:'バック (B)',   color:'#e8c84a', letter:'B' },
+  { key:'teeRegular', label:'レギュラーティー', color:'#4a9fd4', letter:'R' },
+  { key:'teeLadies',  label:'レディースティー',  color:'#f472b6', letter:'L', optional:true },
+  { key:'front',      label:'フロント (F)',       color:'#e05252', letter:'F' },
+  { key:'center',     label:'センター (C)',        color:'#a78bfa', letter:'C' },
+  { key:'back',       label:'バック (B)',          color:'#e8c84a', letter:'B' },
 ];
 
 const holeData = Array.from({ length: 18 }, (_, i) => ({
   no: i + 1, par: 4,
-  tee: null, front: null, center: null, back: null,
+  teeRegular: null, teeLadies: null, front: null, center: null, back: null,
 }));
 
-let currentHole = 0, currentPoint = 'tee', map = null, placedMarkers = {};
+let currentHole = 0, currentPoint = 'teeRegular', map = null, placedMarkers = {};
 
 function init() { renderHoleTabs(); renderPointBtns(); updateOutput(); }
 
@@ -161,12 +162,12 @@ function renderHoleTabs() {
   }).join('');
 }
 
-function isDone(i) { const h=holeData[i]; return !!(h.tee&&h.front&&h.center&&h.back); }
+function isDone(i) { const h=holeData[i]; return !!(h.teeRegular&&h.front&&h.center&&h.back); }
 
 function selectHole(i) {
-  currentHole=i; currentPoint='tee';
+  currentHole=i; currentPoint='teeRegular';
   renderHoleTabs(); renderPointBtns(); updateParBtns(); updateIndicator();
-  const h=holeData[i]; if(map&&h.tee) map.panTo({lat:h.tee.lat,lng:h.tee.lng});
+  const h=holeData[i]; if(map&&h.teeRegular) map.panTo({lat:h.teeRegular.lat,lng:h.teeRegular.lng});
 }
 
 function prevHole() { if(currentHole>0)  selectHole(currentHole-1); }
@@ -260,15 +261,18 @@ function fmtCoord(val) {
 }
 
 function makeBlock(courseName, holes, gcName, gcPref) {
-  const tees = holes.filter(h=>h.tee).map(h=>h.tee);
+  const tees = holes.filter(h=>h.teeRegular).map(h=>h.teeRegular);
   const lat  = tees.length ? (tees.reduce((a,t)=>a+t.lat,0)/tees.length).toFixed(4) : 'XX.XXXX';
   const lng  = tees.length ? (tees.reduce((a,t)=>a+t.lng,0)/tees.length).toFixed(4) : 'XXX.XXXX';
   const holesStr = holes.map(h => {
-    if (!h.tee&&!h.front&&!h.center&&!h.back)
+    if (!h.teeRegular&&!h.front&&!h.center&&!h.back)
       return `          { no:${h.no}, par:${h.par}, tee:null, front:null, center:null, back:null },`;
+    const reg = fmtCoord(h.teeRegular);
+    const lad = fmtCoord(h.teeLadies);
     return `          {
             no:${h.no}, par:${h.par},
-            tee:    ${fmtCoord(h.tee)},
+            tee:    ${h.teeRegular ? reg : 'null'},
+            tees:   { regular: ${reg}, ladies: ${lad} },
             front:  ${fmtCoord(h.front)},
             center: ${fmtCoord(h.center)},
             back:   ${fmtCoord(h.back)},

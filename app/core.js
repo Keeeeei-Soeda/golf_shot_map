@@ -46,7 +46,7 @@ function scoreDef(diff) {
 // グローバル状態
 // ============================================================
 let map = null, mapsLoaded = false;
-let st = { gcIdx: null, cIdx: null, hIdx: 0 };
+let st = { gcIdx: null, cIdx: null, hIdx: 0, teeType: 'regular' };
 let appMode = 'measure';
 
 // 測定モード
@@ -78,12 +78,27 @@ let cpSelectedDiff = null;
 let yardageInfoOpen = false;
 
 // ============================================================
+// ティー種別
+// ============================================================
+const TEE_TYPES = [
+  { key: 'regular', name: 'レギュラーティー', color: '#4a9fd4', icon: '⛳' },
+  { key: 'ladies',  name: 'レディースティー',  color: '#f472b6', icon: '🌸' },
+];
+
+// ============================================================
 // ヘルパー
 // ============================================================
 const gc       = () => st.gcIdx !== null ? COURSES[st.gcIdx] : null;
 const course   = () => gc() && st.cIdx !== null ? gc().courses[st.cIdx] : null;
 const hole     = () => course() ? course().holes[st.hIdx] : null;
-const hasData  = (h) => h && h.tee && h.front;
+
+// 選択中ティー種別の座標を返す（tees未定義ならh.teeにフォールバック）
+function activeTee(h) {
+  if (!h) return null;
+  if (h.tees && st.teeType && h.tees[st.teeType]) return h.tees[st.teeType];
+  return h.tee;
+}
+const hasData  = (h) => h && activeTee(h) && h.front;
 const holeKey  = () => `${st.gcIdx}_${st.cIdx}_${st.hIdx}`;
 const curShots = () => roundShots[holeKey()] || [];
 

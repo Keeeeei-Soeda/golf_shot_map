@@ -241,8 +241,9 @@ function renderStrategyLayer() {
 
   if (!validShots.length) { _updateStrategyUI(); return; }
 
-  // ライン（ティーから各ショットへ）
-  var path = [{ lat: h.tee.lat, lng: h.tee.lng }];
+  // ライン（選択中ティーから各ショットへ）
+  var teePos = activeTee(h);
+  var path = [{ lat: teePos.lat, lng: teePos.lng }];
   validShots.forEach(function(s){ path.push({ lat: s.lat, lng: s.lng }); });
   var line = new google.maps.Polyline({
     path: path, map: map,

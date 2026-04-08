@@ -20,7 +20,7 @@ function closeMenu() {
 
 function onGCSel() {
   var v = document.getElementById('gcSel').value;
-  st.gcIdx = v === '' ? null : parseInt(v); st.cIdx = null; st.hIdx = 0;
+  st.gcIdx = v === '' ? null : parseInt(v); st.cIdx = null; st.cIdx2 = null; st.hIdx = 0;
   var cs = document.getElementById('courseSel');
   cs.innerHTML = '<option value="">-- コース --</option>';
   if (gc()) gc().courses.forEach(function(c, i) {
@@ -31,7 +31,7 @@ function onGCSel() {
 
 function onCourseSel() {
   var v = document.getElementById('courseSel').value;
-  st.cIdx = v === '' ? null : parseInt(v); st.hIdx = 0;
+  st.cIdx = v === '' ? null : parseInt(v); st.cIdx2 = null; st.hIdx = 0;
   renderStrip(); loadHole(); updateHoleNavBtns();
   closeMenu();
 }
@@ -42,8 +42,13 @@ function onCourseSel() {
 function renderStrip() {
   var strip = document.getElementById('holeStrip');
   if (!course()) { strip.innerHTML = ''; updateHoleNavBtns(); return; }
-  strip.innerHTML = course().holes.map(function(h, i) {
-    var key = st.gcIdx + '_' + st.cIdx + '_' + i;
+  var total = totalHoles();
+  var html = '';
+  for (var i = 0; i < total; i++) {
+    var eCIdx = (st.cIdx2 !== null && i >= 9) ? st.cIdx2 : st.cIdx;
+    var eHIdx = (st.cIdx2 !== null && i >= 9) ? i - 9 : i;
+    var h = COURSES[st.gcIdx].courses[eCIdx].holes[eHIdx];
+    var key = st.gcIdx + '_' + eCIdx + '_' + eHIdx;
     var shots = roundShots[key] || [];
     var meta = roundShots[key + '_meta'] || {};
     var badge = '';
@@ -58,9 +63,12 @@ function renderStrip() {
     }
     var active = i === st.hIdx ? 'active' : '';
     var nodata = !hasData(h) ? 'no-data' : '';
-    return '<button class="h-btn ' + active + ' ' + nodata + '" onclick="selectHole(' + i + ')">'
-      + h.no + 'H<span class="par">PAR' + h.par + '</span>' + badge + '</button>';
-  }).join('');
+    // 2コースラウンドは通し番号、1コースは実ホール番号
+    var displayNo = (st.cIdx2 !== null) ? (i + 1) : h.no;
+    html += '<button class="h-btn ' + active + ' ' + nodata + '" onclick="selectHole(' + i + ')">'
+      + displayNo + 'H<span class="par">PAR' + h.par + '</span>' + badge + '</button>';
+  }
+  strip.innerHTML = html;
   updateHoleNavBtns();
 }
 
@@ -78,7 +86,7 @@ function prevHole() {
 }
 
 function nextHole() {
-  if (!course() || st.hIdx >= course().holes.length - 1) return;
+  if (!course() || st.hIdx >= totalHoles() - 1) return;
   selectHole(st.hIdx + 1);
 }
 
@@ -90,7 +98,7 @@ function updateHoleNavBtns() {
   var prev = document.getElementById('prevHoleBtn');
   var next = document.getElementById('nextHoleBtn');
   if (prev) prev.disabled = st.hIdx <= 0;
-  if (next) next.disabled = st.hIdx >= course().holes.length - 1;
+  if (next) next.disabled = st.hIdx >= totalHoles() - 1;
 }
 
 // ============================================================
@@ -107,12 +115,19 @@ function updateInfo() {
   var h = hole(); var n = curShots().length + 1;
   var teeDef = TEE_TYPES.find(function(t){ return t.key === st.teeType; }) || TEE_TYPES[0];
   var teeTag = '<span style="color:' + teeDef.color + ';font-size:10px;margin-left:4px;">' + teeDef.icon + '</span>';
+  // 2コースラウンド時は現在のコース名を表示
+  var courseTag = '';
+  if (st.cIdx2 !== null && st.gcIdx !== null) {
+    var eCIdx = st.hIdx >= 9 ? st.cIdx2 : st.cIdx;
+    var cName = COURSES[st.gcIdx].courses[eCIdx].name;
+    courseTag = '<span style="font-size:10px;color:var(--acc);margin-left:4px;">[' + cName + ']</span>';
+  }
   if (appMode === 'measure') {
     document.getElementById('modeInfo').innerHTML =
-      h && hasData(h) ? '<strong>H' + h.no + ' PAR' + h.par + '</strong>' + teeTag + ' タップ → ティーからの距離＋残り距離' : 'コースを選択';
+      h && hasData(h) ? '<strong>H' + h.no + ' PAR' + h.par + '</strong>' + teeTag + courseTag + ' タップ → ティーからの距離＋残り距離' : 'コースを選択';
   } else {
     document.getElementById('modeInfo').innerHTML =
-      h && hasData(h) ? '<strong class="rec">🏌️ 記録</strong>' + teeTag + ' ' + n + '打目 — 落下地点をタップ' : '座標未登録';
+      h && hasData(h) ? '<strong class="rec">🏌️ 記録</strong>' + teeTag + courseTag + ' ' + n + '打目 — 落下地点をタップ' : '座標未登録';
   }
 }
 
@@ -173,9 +188,22 @@ function emBackToPref() {
 function emSelectGc(gcIdx) {
   emSelectedGcIdx = gcIdx;
   var g = COURSES[gcIdx];
-  document.getElementById('emCourseBtns').innerHTML = g.courses.map(function(c, ci) {
-    return '<button class="em-course-btn" onclick="emSelectCourse(' + gcIdx + ',' + ci + ')">' + c.name + '</button>';
-  }).join('');
+  var html = '';
+  if (g.courses.length >= 3) {
+    // 27H（3コース）: 2コースの組み合わせボタンを全列挙
+    for (var i = 0; i < g.courses.length; i++) {
+      for (var j = i + 1; j < g.courses.length; j++) {
+        html += '<button class="em-course-btn" onclick="emSelectCourse(' + gcIdx + ',' + i + ',' + j + ')">'
+          + g.courses[i].name + '＋' + g.courses[j].name + '</button>';
+      }
+    }
+  } else {
+    // 18H以下: 個別コースボタン（既存動作）
+    html = g.courses.map(function(c, ci) {
+      return '<button class="em-course-btn" onclick="emSelectCourse(' + gcIdx + ',' + ci + ')">' + c.name + '</button>';
+    }).join('');
+  }
+  document.getElementById('emCourseBtns').innerHTML = html;
   document.getElementById('emStepGc').style.display = 'none';
   document.getElementById('emStepCourse').style.display = 'flex';
 }
@@ -185,8 +213,8 @@ function emBackToGc() {
   document.getElementById('emStepGc').style.display = 'flex';
 }
 
-function emSelectCourse(gcIdx, cIdx) {
-  st.gcIdx = gcIdx; st.cIdx = cIdx; st.hIdx = 0;
+function emSelectCourse(gcIdx, cIdx, cIdx2) {
+  st.gcIdx = gcIdx; st.cIdx = cIdx; st.cIdx2 = (cIdx2 !== undefined) ? cIdx2 : null; st.hIdx = 0;
   roundShots = {}; roundId = 'round_' + Date.now();
   var gcSel = document.getElementById('gcSel');
   gcSel.value = gcIdx;
@@ -198,8 +226,10 @@ function emSelectCourse(gcIdx, cIdx) {
   });
   cs.value = cIdx;
   // レディースティーデータが1ホールでもあればティー選択ステップへ、なければレギュラーで直進
-  var holes = COURSES[gcIdx].courses[cIdx].holes;
-  var hasLadies = holes.some(function(h){ return h.tees && h.tees.ladies; });
+  var holes1 = COURSES[gcIdx].courses[cIdx].holes;
+  var holes2 = (st.cIdx2 !== null) ? COURSES[gcIdx].courses[st.cIdx2].holes : [];
+  var allHoles = holes1.concat(holes2);
+  var hasLadies = allHoles.some(function(h){ return h.tees && h.tees.ladies; });
   if (hasLadies) {
     document.getElementById('emStepCourse').style.display = 'none';
     document.getElementById('emStepTee').style.display = 'flex';
@@ -248,9 +278,21 @@ function buildFullScorecard() {
   var g = gc();
   if (!g) return '';
 
+  // 2コースラウンドは選択コースのみ、それ以外は全コースを表示
+  var coursesToShow;
+  if (st.cIdx2 !== null) {
+    coursesToShow = [
+      { c: g.courses[st.cIdx],  ci: st.cIdx  },
+      { c: g.courses[st.cIdx2], ci: st.cIdx2 },
+    ];
+  } else {
+    coursesToShow = g.courses.map(function(c, ci) { return { c: c, ci: ci }; });
+  }
+
   var grandTotalPar = 0, grandTotalScore = 0, grandTotalDiff = 0, grandAny = false;
 
-  var cols = g.courses.map(function(c, ci) {
+  var cols = coursesToShow.map(function(item) {
+    var c = item.c, ci = item.ci;
     var holes = c.holes;
     var totalPar = 0, totalScore = 0, totalDiff = 0, anyScore = false;
 
@@ -304,7 +346,7 @@ function buildFullScorecard() {
   var grandLbl  = grandTotalDiff === 0 ? 'E' : (grandTotalDiff > 0 ? '+' + grandTotalDiff : String(grandTotalDiff));
   var diffCls   = grandTotalDiff === 0 ? 'even' : (grandTotalDiff > 0 ? 'plus' : 'minus');
   var grandHtml = '';
-  if (g.courses.length >= 2) {
+  if (coursesToShow.length >= 2) {
     var grandVal  = grandAny ? String(grandTotalScore) : '—';
     var grandDiff = grandAny ? '<span class="scp-grand-diff ' + diffCls + '">' + grandLbl + '</span>' : '';
     grandHtml = '<div class="scp-grand">'

@@ -46,7 +46,7 @@ function scoreDef(diff) {
 // グローバル状態
 // ============================================================
 let map = null, mapsLoaded = false;
-let st = { gcIdx: null, cIdx: null, hIdx: 0, teeType: 'regular' };
+let st = { gcIdx: null, cIdx: null, cIdx2: null, hIdx: 0, teeType: 'regular' };
 let appMode = 'measure';
 
 // 測定モード
@@ -88,9 +88,23 @@ const TEE_TYPES = [
 // ============================================================
 // ヘルパー
 // ============================================================
-const gc       = () => st.gcIdx !== null ? COURSES[st.gcIdx] : null;
-const course   = () => gc() && st.cIdx !== null ? gc().courses[st.cIdx] : null;
-const hole     = () => course() ? course().holes[st.hIdx] : null;
+const gc     = () => st.gcIdx !== null ? COURSES[st.gcIdx] : null;
+const course = () => gc() && st.cIdx !== null ? gc().courses[st.cIdx] : null;
+
+// 2コースラウンド時: hIdx>=9 は第2コース・hIdx-9 のホール
+const totalHoles = () => st.cIdx2 !== null ? 18 : 9;
+
+const hole = () => {
+  if (st.gcIdx === null || st.cIdx === null) return null;
+  const gcData = COURSES[st.gcIdx];
+  if (!gcData) return null;
+  if (st.cIdx2 !== null && st.hIdx >= 9) {
+    const c2 = gcData.courses[st.cIdx2];
+    return c2 ? c2.holes[st.hIdx - 9] : null;
+  }
+  const c = gcData.courses[st.cIdx];
+  return c ? c.holes[st.hIdx] : null;
+};
 
 // 選択中ティー種別の座標を返す（tees未定義ならh.teeにフォールバック）
 function activeTee(h) {
@@ -99,7 +113,13 @@ function activeTee(h) {
   return h.tee;
 }
 const hasData  = (h) => h && activeTee(h) && h.front;
-const holeKey  = () => `${st.gcIdx}_${st.cIdx}_${st.hIdx}`;
+
+// 2コースラウンド時は実際の (cIdx, hIdx) を使ったキーを返す
+const holeKey  = () => {
+  const eCIdx = (st.cIdx2 !== null && st.hIdx >= 9) ? st.cIdx2 : st.cIdx;
+  const eHIdx = (st.cIdx2 !== null && st.hIdx >= 9) ? st.hIdx - 9 : st.hIdx;
+  return `${st.gcIdx}_${eCIdx}_${eHIdx}`;
+};
 const curShots = () => roundShots[holeKey()] || [];
 
 function haversine(la1, lo1, la2, lo2) {
@@ -125,8 +145,9 @@ function saveRound() {
   if (!gc() || !course() || !roundId) return;
   const all = JSON.parse(localStorage.getItem('golfRounds') || '[]');
   const idx = all.findIndex(r => r.id === roundId);
+  const c2name = (st.cIdx2 !== null && gc().courses[st.cIdx2]) ? '＋' + gc().courses[st.cIdx2].name : '';
   const data = { id: roundId, date: new Date().toLocaleDateString('ja-JP'),
-    gcName: gc().name, courseName: course().name, shots: roundShots, updatedAt: Date.now() };
+    gcName: gc().name, courseName: course().name + c2name, shots: roundShots, updatedAt: Date.now() };
   if (idx >= 0) all[idx] = data; else all.unshift(data);
   localStorage.setItem('golfRounds', JSON.stringify(all.slice(0, 30)));
   updateBadge();

@@ -28,10 +28,12 @@ header{height:52px;flex-shrink:0;background:linear-gradient(135deg,#0a160a,var(-
 .gc-info input::placeholder{color:var(--gr);}
 .gc-row{display:flex;gap:8px;}
 .gc-row .gc-info-field{flex:1;}
-#holeTabWrap{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:8px;background:var(--g2);border-bottom:1px solid var(--g3);flex-shrink:0;}
-.hole-tab{padding:5px 2px;border-radius:5px;border:1px solid var(--g4);background:var(--g3);color:var(--w);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;position:relative;text-align:center;}
-.hole-tab.out{border-top:2px solid var(--blue);}
-.hole-tab.in{border-top:2px solid var(--pur);}
+#holeTabWrap{display:flex;flex-direction:column;gap:3px;padding:6px 8px;background:var(--g2);border-bottom:1px solid var(--g3);flex-shrink:0;}
+.course-tab-group{display:grid;grid-template-columns:repeat(9,1fr);gap:2px;}
+.hole-tab{padding:4px 1px;border-radius:4px;border:1px solid var(--g4);background:var(--g3);color:var(--w);font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;position:relative;text-align:center;}
+.hole-tab.out {border-top:2px solid var(--blue);}
+.hole-tab.in  {border-top:2px solid var(--pur);}
+.hole-tab.west{border-top:2px solid var(--gv);}
 .hole-tab.active{background:var(--org);border-color:var(--org);border-top-color:var(--org);color:#000;}
 .done-dot{position:absolute;top:-3px;right:-3px;width:7px;height:7px;border-radius:50%;background:var(--gv);border:1px solid var(--gd);display:none;}
 .hole-tab.done .done-dot{display:block;}
@@ -75,8 +77,8 @@ header{height:52px;flex-shrink:0;background:linear-gradient(135deg,#0a160a,var(-
 </head>
 <body>
 <header>
-  <div class="logo">⛳ PICKER<small>座標登録ツール（18H）</small></div>
-  <div class="hdr-prog" id="headerProg">0 / 18 ホール</div>
+  <div class="logo">⛳ PICKER<small>座標登録ツール（27H）</small></div>
+  <div class="hdr-prog" id="headerProg">0 / 27 ホール</div>
 </header>
 <div class="body-wrap">
   <div id="leftPanel">
@@ -93,12 +95,16 @@ header{height:52px;flex-shrink:0;background:linear-gradient(135deg,#0a160a,var(-
       </div>
       <div class="gc-row">
         <div class="gc-info-field">
-          <label>アウト コース名</label>
+          <label>コース1 名称</label>
           <input type="text" id="outName" placeholder="アウト" oninput="updateOutput()"/>
         </div>
         <div class="gc-info-field">
-          <label>イン コース名</label>
+          <label>コース2 名称</label>
           <input type="text" id="inName" placeholder="イン" oninput="updateOutput()"/>
+        </div>
+        <div class="gc-info-field">
+          <label>コース3 名称</label>
+          <input type="text" id="westName" placeholder="ウエスト" oninput="updateOutput()"/>
         </div>
       </div>
     </div>
@@ -121,8 +127,8 @@ header{height:52px;flex-shrink:0;background:linear-gradient(135deg,#0a160a,var(-
     </div>
     <div id="outputArea">
       <div class="output-title">
-        <span>courses.js 出力（アウト＋イン）</span>
-        <span class="progress" id="progressLabel">0/18H</span>
+        <span>courses.js 出力（3コース）</span>
+        <span class="progress" id="progressLabel">0/27H</span>
       </div>
       <div id="outputBox">← 地図をクリックして座標を入力してください</div>
       <button class="copy-btn" id="copyBtn" onclick="copyOutput()" disabled>📋 courses.js 形式でコピー</button>
@@ -146,20 +152,34 @@ const POINT_DEFS = [
   { key:'back',       label:'バック (B)',          color:'#e8c84a', letter:'B' },
 ];
 
-const holeData = Array.from({ length: 18 }, (_, i) => ({
-  no: i + 1, par: 4,
+// ホールデータ：9H×3コース = 27H
+// no は各コース内の 1〜9 で管理（出力時にリセット）
+const holeData = Array.from({ length: 27 }, (_, i) => ({
+  no: (i % 9) + 1, par: 4,
   teeRegular: null, teeLadies: null, front: null, center: null, back: null,
 }));
+
+// コース区分ラベル
+const COURSE_LABELS = ['コース1', 'コース2', 'コース3'];
+const COURSE_CLS    = ['out', 'in', 'west'];
 
 let currentHole = 0, currentPoint = 'teeRegular', map = null, placedMarkers = {};
 
 function init() { renderHoleTabs(); renderPointBtns(); updateOutput(); }
 
 function renderHoleTabs() {
-  document.getElementById('holeTabWrap').innerHTML = holeData.map((h, i) => {
-    const done = isDone(i), cls = i < 9 ? 'out' : 'in';
-    return `<button class="hole-tab ${cls} ${i===currentHole?'active':''} ${done?'done':''}" onclick="selectHole(${i})">${h.no}H<div class="done-dot"></div></button>`;
-  }).join('');
+  // 3コース分をグループごとに並べる
+  let html = '';
+  for (let c = 0; c < 3; c++) {
+    html += `<div class="course-tab-group">`;
+    for (let h = 0; h < 9; h++) {
+      const i = c * 9 + h;
+      const done = isDone(i);
+      html += `<button class="hole-tab ${COURSE_CLS[c]} ${i===currentHole?'active':''} ${done?'done':''}" onclick="selectHole(${i})">${holeData[i].no}H<div class="done-dot"></div></button>`;
+    }
+    html += `</div>`;
+  }
+  document.getElementById('holeTabWrap').innerHTML = html;
 }
 
 function isDone(i) { const h=holeData[i]; return !!(h.teeRegular&&h.front&&h.center&&h.back); }
@@ -171,7 +191,7 @@ function selectHole(i) {
 }
 
 function prevHole() { if(currentHole>0)  selectHole(currentHole-1); }
-function nextHole() { if(currentHole<17) selectHole(currentHole+1); }
+function nextHole() { if(currentHole<26) selectHole(currentHole+1); }
 
 function renderPointBtns() {
   const h = holeData[currentHole];
@@ -196,9 +216,14 @@ function updateParBtns() {
 
 function updateIndicator() {
   const h=holeData[currentHole], pd=POINT_DEFS.find(p=>p.key===currentPoint);
-  const sec=currentHole<9?'アウト':'イン';
+  const cIdx = Math.floor(currentHole / 9);
+  const courseName = [
+    document.getElementById('outName').value  || 'コース1',
+    document.getElementById('inName').value   || 'コース2',
+    document.getElementById('westName').value || 'コース3',
+  ][cIdx];
   const el=document.getElementById('indicator');
-  el.textContent=`${sec} H${h.no} — ${pd.label} をクリックして登録`;
+  el.textContent=`${courseName} H${h.no} — ${pd.label} をクリックして登録`;
   el.style.display='block';
 }
 
@@ -297,16 +322,18 @@ ${holesStr}
 }
 
 function updateOutput() {
-  const gcName  = document.getElementById('gcName').value  || 'ゴルフ場名';
-  const gcPref  = document.getElementById('gcPref').value  || '○○県';
-  const outName = document.getElementById('outName').value || 'アウト';
-  const inName  = document.getElementById('inName').value  || 'イン';
-  const outBlock = makeBlock(outName, holeData.slice(0,9),  gcName, gcPref);
-  const inBlock  = makeBlock(inName,  holeData.slice(9,18), gcName, gcPref);
-  document.getElementById('outputBox').textContent = outBlock + '\n\n' + inBlock;
+  const gcName   = document.getElementById('gcName').value   || 'ゴルフ場名';
+  const gcPref   = document.getElementById('gcPref').value   || '○○県';
+  const outName  = document.getElementById('outName').value  || 'アウト';
+  const inName   = document.getElementById('inName').value   || 'イン';
+  const westName = document.getElementById('westName').value || 'ウエスト';
+  const outBlock  = makeBlock(outName,  holeData.slice(0,9),   gcName, gcPref);
+  const inBlock   = makeBlock(inName,   holeData.slice(9,18),  gcName, gcPref);
+  const westBlock = makeBlock(westName, holeData.slice(18,27), gcName, gcPref);
+  document.getElementById('outputBox').textContent = outBlock + '\n\n' + inBlock + '\n\n' + westBlock;
   const done = holeData.filter((_,i)=>isDone(i)).length;
-  document.getElementById('progressLabel').textContent = `${done}/18H`;
-  document.getElementById('headerProg').textContent    = `${done} / 18 ホール`;
+  document.getElementById('progressLabel').textContent = `${done}/27H`;
+  document.getElementById('headerProg').textContent    = `${done} / 27 ホール`;
   document.getElementById('copyBtn').disabled = done===0;
 }
 

@@ -91,6 +91,27 @@ header{
 }
 .menu-sel-wrap select option{background:#1e3a1e;}
 
+/* サイドバー: 3コース時の組み合わせ（前半×後半の順） */
+.menu-course-combo-wrap{margin-bottom:4px;}
+.menu-combo-btns{display:flex;flex-direction:column;gap:6px;}
+.menu-combo-btn{
+  width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--gv);
+  background:rgba(76,175,80,.12);color:var(--gv);
+  font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;text-align:center;
+}
+.menu-combo-btn:hover{background:var(--gv);color:#000;}
+.menu-combo-btn-active{border-color:var(--acc) !important;color:var(--acc) !important;background:rgba(232,200,74,.12) !important;}
+.menu-sidebar-tee{margin-top:4px;}
+.menu-tee-btns{display:flex;flex-direction:column;gap:6px;}
+.menu-tee-btn{
+  width:100%;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .15s;text-align:left;
+}
+.menu-tee-btn.regular{border:1px solid var(--blue);background:rgba(74,159,212,.12);color:var(--blue);}
+.menu-tee-btn.ladies{border:1px solid var(--pur);background:rgba(167,139,250,.12);color:var(--pur);}
+.menu-tee-btn.regular:hover{background:rgba(74,159,212,.3);}
+.menu-tee-btn.ladies:hover{background:rgba(167,139,250,.3);}
+
 /* ホールストリップ（メニュー内） */
 #holeStrip{
   display:flex;flex-wrap:wrap;gap:6px;padding:4px 0;

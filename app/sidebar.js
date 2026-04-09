@@ -10,6 +10,7 @@ function toggleMenu() {
   panel.classList.toggle('open', !isOpen);
   overlay.classList.toggle('show', !isOpen);
   btn.classList.toggle('open', !isOpen);
+  if (!isOpen) refreshMenuCourseUI();
 }
 
 function closeMenu() {
@@ -18,20 +19,133 @@ function closeMenu() {
   document.getElementById('hbgBtn').classList.remove('open');
 }
 
+// サイドバー: 3コース以上の組み合わせボタンHTML（前半×後半の順で固定）
+function buildCourseComboButtonHtml(gcIdx, highlightSelection) {
+  var g = COURSES[gcIdx];
+  var n = g.courses.length;
+  if (n < 3) return '';
+  var html = '';
+  function pair(i, j) {
+    var sel = '';
+    if (highlightSelection && st.gcIdx === gcIdx && st.cIdx === i && st.cIdx2 === j)
+      sel = ' menu-combo-btn-active';
+    html += '<button type="button" class="menu-combo-btn' + sel + '" onclick="selectSidebarCourseCombo(' + gcIdx + ',' + i + ',' + j + ')">'
+      + g.courses[i].name + '×' + g.courses[j].name + '</button>';
+  }
+  if (n === 3) {
+    pair(0, 1); pair(1, 2); pair(2, 0);
+  } else {
+    for (var i = 0; i < n; i++) {
+      for (var j = i + 1; j < n; j++) pair(i, j);
+    }
+  }
+  return html;
+}
+
+function refreshMenuCourseUI() {
+  if (!gc()) {
+    document.getElementById('courseComboWrap').style.display = 'none';
+    document.getElementById('courseSel').style.display = 'block';
+    return;
+  }
+  var n = gc().courses.length;
+  var comboWrap = document.getElementById('courseComboWrap');
+  var cs = document.getElementById('courseSel');
+  if (n >= 3) {
+    cs.style.display = 'none';
+    comboWrap.style.display = 'block';
+    document.getElementById('courseComboBtns').innerHTML = buildCourseComboButtonHtml(st.gcIdx, true);
+  } else {
+    comboWrap.style.display = 'none';
+    cs.style.display = 'block';
+  }
+}
+
 function onGCSel() {
   var v = document.getElementById('gcSel').value;
   st.gcIdx = v === '' ? null : parseInt(v); st.cIdx = null; st.cIdx2 = null; st.hIdx = 0;
   var cs = document.getElementById('courseSel');
+  var comboWrap = document.getElementById('courseComboWrap');
+  var teeRow = document.getElementById('sidebarTeeRow');
+  teeRow.style.display = 'none';
   cs.innerHTML = '<option value="">-- コース --</option>';
-  if (gc()) gc().courses.forEach(function(c, i) {
-    var o = document.createElement('option'); o.value = i; o.textContent = c.name; cs.appendChild(o);
-  });
+  if (!gc()) {
+    comboWrap.style.display = 'none';
+    cs.style.display = 'block';
+    roundShots = {}; roundId = 'round_' + Date.now();
+    renderStrip(); loadHole(); updateHoleNavBtns();
+    return;
+  }
+  var n = gc().courses.length;
+  if (n >= 3) {
+    cs.style.display = 'none';
+    comboWrap.style.display = 'block';
+    document.getElementById('courseComboBtns').innerHTML = buildCourseComboButtonHtml(st.gcIdx, true);
+  } else {
+    comboWrap.style.display = 'none';
+    cs.style.display = 'block';
+    gc().courses.forEach(function(c, i) {
+      var o = document.createElement('option'); o.value = i; o.textContent = c.name; cs.appendChild(o);
+    });
+  }
   roundShots = {}; roundId = 'round_' + Date.now();
+  renderStrip(); loadHole(); updateHoleNavBtns();
 }
 
 function onCourseSel() {
   var v = document.getElementById('courseSel').value;
   st.cIdx = v === '' ? null : parseInt(v); st.cIdx2 = null; st.hIdx = 0;
+  document.getElementById('sidebarTeeRow').style.display = 'none';
+  if (st.gcIdx !== null && st.cIdx !== null && roundHasLadiesTeeData(st.gcIdx, st.cIdx, null)) {
+    document.getElementById('sidebarTeeRow').style.display = 'block';
+    renderStrip(); loadHole(); updateHoleNavBtns();
+    return;
+  }
+  st.teeType = 'regular';
+  renderStrip(); loadHole(); updateHoleNavBtns();
+  closeMenu();
+}
+
+function roundHasLadiesTeeData(gcIdx, cIdx, cIdx2) {
+  var holes1 = COURSES[gcIdx].courses[cIdx].holes;
+  var holes2 = (cIdx2 !== null && cIdx2 !== undefined) ? COURSES[gcIdx].courses[cIdx2].holes : [];
+  return holes1.concat(holes2).some(function(h) { return h.tees && h.tees.ladies; });
+}
+
+function applyRoundCourseState(gcIdx, cIdx, cIdx2) {
+  st.gcIdx = gcIdx;
+  st.cIdx = cIdx;
+  // 第3引数省略時のみ9H（ブルー×レッド等で cIdx2===0 があり得る）
+  st.cIdx2 = (arguments.length >= 3) ? cIdx2 : null;
+  st.hIdx = 0;
+  roundShots = {}; roundId = 'round_' + Date.now();
+  document.getElementById('gcSel').value = String(gcIdx);
+  var cs = document.getElementById('courseSel');
+  cs.innerHTML = '<option value="">-- コース --</option>';
+  COURSES[gcIdx].courses.forEach(function(c, i) {
+    var o = document.createElement('option');
+    o.value = i; o.textContent = c.name; cs.appendChild(o);
+  });
+  cs.value = String(cIdx);
+}
+
+function selectSidebarCourseCombo(gcIdx, cIdx, cIdx2) {
+  applyRoundCourseState(gcIdx, cIdx, cIdx2);
+  document.getElementById('courseComboBtns').innerHTML = buildCourseComboButtonHtml(gcIdx, true);
+  document.getElementById('sidebarTeeRow').style.display = 'none';
+  if (roundHasLadiesTeeData(gcIdx, cIdx, cIdx2)) {
+    document.getElementById('sidebarTeeRow').style.display = 'block';
+    renderStrip(); loadHole(); updateHoleNavBtns();
+    return;
+  }
+  st.teeType = 'regular';
+  renderStrip(); loadHole(); updateHoleNavBtns();
+  closeMenu();
+}
+
+function sidebarSelectTee(teeType) {
+  st.teeType = teeType;
+  document.getElementById('sidebarTeeRow').style.display = 'none';
   renderStrip(); loadHole(); updateHoleNavBtns();
   closeMenu();
 }
@@ -190,15 +304,22 @@ function emSelectGc(gcIdx) {
   var g = COURSES[gcIdx];
   var html = '';
   if (g.courses.length >= 3) {
-    // 27H（3コース）: 2コースの組み合わせボタンを全列挙
-    for (var i = 0; i < g.courses.length; i++) {
-      for (var j = i + 1; j < g.courses.length; j++) {
+    if (g.courses.length === 3) {
+      // 前半×後半の順（サイドバーと同一）: 0×1, 1×2, 2×0
+      [[0, 1], [1, 2], [2, 0]].forEach(function(p) {
+        var i = p[0], j = p[1];
         html += '<button class="em-course-btn" onclick="emSelectCourse(' + gcIdx + ',' + i + ',' + j + ')">'
-          + g.courses[i].name + '＋' + g.courses[j].name + '</button>';
+          + g.courses[i].name + '×' + g.courses[j].name + '</button>';
+      });
+    } else {
+      for (var i = 0; i < g.courses.length; i++) {
+        for (var j = i + 1; j < g.courses.length; j++) {
+          html += '<button class="em-course-btn" onclick="emSelectCourse(' + gcIdx + ',' + i + ',' + j + ')">'
+            + g.courses[i].name + '×' + g.courses[j].name + '</button>';
+        }
       }
     }
   } else {
-    // 18H以下: 個別コースボタン（既存動作）
     html = g.courses.map(function(c, ci) {
       return '<button class="em-course-btn" onclick="emSelectCourse(' + gcIdx + ',' + ci + ')">' + c.name + '</button>';
     }).join('');
@@ -214,23 +335,8 @@ function emBackToGc() {
 }
 
 function emSelectCourse(gcIdx, cIdx, cIdx2) {
-  st.gcIdx = gcIdx; st.cIdx = cIdx; st.cIdx2 = (cIdx2 !== undefined) ? cIdx2 : null; st.hIdx = 0;
-  roundShots = {}; roundId = 'round_' + Date.now();
-  var gcSel = document.getElementById('gcSel');
-  gcSel.value = gcIdx;
-  var cs = document.getElementById('courseSel');
-  cs.innerHTML = '<option value="">-- コース --</option>';
-  COURSES[gcIdx].courses.forEach(function(c, i) {
-    var o = document.createElement('option');
-    o.value = i; o.textContent = c.name; cs.appendChild(o);
-  });
-  cs.value = cIdx;
-  // レディースティーデータが1ホールでもあればティー選択ステップへ、なければレギュラーで直進
-  var holes1 = COURSES[gcIdx].courses[cIdx].holes;
-  var holes2 = (st.cIdx2 !== null) ? COURSES[gcIdx].courses[st.cIdx2].holes : [];
-  var allHoles = holes1.concat(holes2);
-  var hasLadies = allHoles.some(function(h){ return h.tees && h.tees.ladies; });
-  if (hasLadies) {
+  applyRoundCourseState(gcIdx, cIdx, cIdx2);
+  if (roundHasLadiesTeeData(gcIdx, cIdx, st.cIdx2)) {
     document.getElementById('emStepCourse').style.display = 'none';
     document.getElementById('emStepTee').style.display = 'flex';
   } else {

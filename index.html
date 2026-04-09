@@ -43,6 +43,16 @@
     <div class="menu-sel-wrap">
       <select id="courseSel" onchange="onCourseSel()"><option value="">-- コース --</option></select>
     </div>
+    <div id="courseComboWrap" class="menu-course-combo-wrap" style="display:none">
+      <div id="courseComboBtns" class="menu-combo-btns"></div>
+    </div>
+    <div id="sidebarTeeRow" class="menu-sidebar-tee" style="display:none">
+      <div class="menu-label">ティー種別</div>
+      <div class="menu-tee-btns">
+        <button type="button" class="menu-tee-btn regular" onclick="sidebarSelectTee('regular')">⛳ レギュラーティー</button>
+        <button type="button" class="menu-tee-btn ladies" onclick="sidebarSelectTee('ladies')">🌸 レディースティー</button>
+      </div>
+    </div>
     <div class="menu-label">ホール選択</div>
     <div id="holeStrip"></div>
     <!-- アクションボタン -->

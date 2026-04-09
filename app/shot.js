@@ -427,7 +427,8 @@ function openHoleSummary() {
 function closeHoleSummary() {
   document.getElementById('holeSummaryPanel').classList.remove('open');
   const nextIdx = st.hIdx + 1;
-  if (course() && nextIdx < course().holes.length) selectHole(nextIdx);
+  // 2コース18H時は totalHoles()（18）。course().holes.length は第1コースの9のみで後半に進めないバグになる
+  if (course() && nextIdx < totalHoles()) selectHole(nextIdx);
 }
 
 // ============================================================

@@ -201,13 +201,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gd);color:var(--w);d
 <!-- ===== API KEY MODAL ===== -->
 <div id="apiKeyModal">
   <div class="modal-box">
-    <h3>🔑 Anthropic APIキー設定</h3>
+    <h3>🔑 OpenAI APIキー設定</h3>
     <p>
-      Claude APIを利用するにはAPIキーが必要です。<br>
+      ChatGPT API（GPT-4o）を利用するにはAPIキーが必要です。<br>
       キーはこのデバイスのブラウザにのみ保存されます。<br>
-      <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a> で発行できます。
+      <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a> で発行できます。
     </p>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…"/>
+    <input type="password" id="apiKeyInput" placeholder="sk-proj-…"/>
     <div class="modal-btns">
       <button class="btn-save" onclick="saveApiKey()">保存して開始</button>
       <button class="btn-cancel" onclick="closeApiKeyModal()">キャンセル</button>
@@ -220,8 +220,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gd);color:var(--w);d
 // 定数・設定
 // ============================================================
 const CHATS_KEY   = 'golfAiChats';
-const APIKEY_KEY  = 'anthropicApiKey';
-const MODEL       = 'claude-3-5-sonnet-20241022';
+const APIKEY_KEY  = 'openaiApiKey';
+const MODEL       = 'gpt-4o';
 const MAX_HISTORY = 40; // 直近の会話数（トークン節約）
 
 // ============================================================
@@ -477,20 +477,23 @@ async function sendMessage() {
     // APIに渡すメッセージ（直近 MAX_HISTORY 件）
     const apiMsgs = chat.messages.slice(-MAX_HISTORY).map(m => ({ role: m.role, content: m.content }));
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    // OpenAI Chat Completions API（ストリーミング）
+    const openaiMsgs = [
+      { role: 'system', content: getSystemPrompt() },
+      ...apiMsgs
+    ];
+
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 2048,
         stream: true,
-        system: getSystemPrompt(),
-        messages: apiMsgs
+        messages: openaiMsgs
       })
     });
 
@@ -499,7 +502,7 @@ async function sendMessage() {
       throw new Error(err.error?.message || `HTTP ${res.status}`);
     }
 
-    // SSE ストリーミング読み取り
+    // SSE ストリーミング読み取り（OpenAI形式）
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buf = '';
@@ -513,11 +516,12 @@ async function sendMessage() {
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
         const raw = line.slice(6).trim();
-        if (!raw) continue;
+        if (!raw || raw === '[DONE]') continue;
         try {
           const ev = JSON.parse(raw);
-          if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
-            aiText += ev.delta.text;
+          const delta = ev.choices?.[0]?.delta?.content;
+          if (delta) {
+            aiText += delta;
             updateStreamBubble(bubId, aiText, false);
           }
         } catch(e) {}

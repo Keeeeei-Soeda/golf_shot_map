@@ -115,8 +115,12 @@ function roundHasLadiesTeeData(gcIdx, cIdx, cIdx2) {
 function applyRoundCourseState(gcIdx, cIdx, cIdx2) {
   st.gcIdx = gcIdx;
   st.cIdx = cIdx;
-  // 第3引数省略時のみ9H（ブルー×レッド等で cIdx2===0 があり得る）
-  st.cIdx2 = (arguments.length >= 3) ? cIdx2 : null;
+  // 第3引数省略時のみ9H（ブルー×レッド等で cIdx2===0 があり得る）。undefined は null に
+  if (arguments.length >= 3) {
+    st.cIdx2 = (typeof cIdx2 === 'number' && !isNaN(cIdx2)) ? cIdx2 : null;
+  } else {
+    st.cIdx2 = null;
+  }
   st.hIdx = 0;
   roundShots = {}; roundId = 'round_' + Date.now();
   document.getElementById('gcSel').value = String(gcIdx);
@@ -154,13 +158,15 @@ function sidebarSelectTee(teeType) {
 // ホールストリップ
 // ============================================================
 function renderStrip() {
+  sanitizeRoundState();
   var strip = document.getElementById('holeStrip');
   if (!course()) { strip.innerHTML = ''; updateHoleNavBtns(); return; }
   var total = totalHoles();
   var html = '';
   for (var i = 0; i < total; i++) {
-    var eCIdx = (st.cIdx2 !== null && i >= 9) ? st.cIdx2 : st.cIdx;
-    var eHIdx = (st.cIdx2 !== null && i >= 9) ? i - 9 : i;
+    var pair = isPairRound();
+    var eCIdx = (pair && i >= 9) ? st.cIdx2 : st.cIdx;
+    var eHIdx = (pair && i >= 9) ? i - 9 : i;
     var h = COURSES[st.gcIdx].courses[eCIdx].holes[eHIdx];
     var key = st.gcIdx + '_' + eCIdx + '_' + eHIdx;
     var shots = roundShots[key] || [];
@@ -178,7 +184,7 @@ function renderStrip() {
     var active = i === st.hIdx ? 'active' : '';
     var nodata = !hasData(h) ? 'no-data' : '';
     // 2コースラウンドは通し番号、1コースは実ホール番号
-    var displayNo = (st.cIdx2 !== null) ? (i + 1) : h.no;
+    var displayNo = pair ? (i + 1) : h.no;
     html += '<button class="h-btn ' + active + ' ' + nodata + '" onclick="selectHole(' + i + ')">'
       + displayNo + 'H<span class="par">PAR' + h.par + '</span>' + badge + '</button>';
   }
@@ -231,7 +237,7 @@ function updateInfo() {
   var teeTag = '<span style="color:' + teeDef.color + ';font-size:10px;margin-left:4px;">' + teeDef.icon + '</span>';
   // 2コースラウンド時は現在のコース名を表示
   var courseTag = '';
-  if (st.cIdx2 !== null && st.gcIdx !== null) {
+  if (isPairRound() && st.gcIdx !== null) {
     var eCIdx = st.hIdx >= 9 ? st.cIdx2 : st.cIdx;
     var cName = COURSES[st.gcIdx].courses[eCIdx].name;
     courseTag = '<span style="font-size:10px;color:var(--acc);margin-left:4px;">[' + cName + ']</span>';
@@ -386,7 +392,7 @@ function buildFullScorecard() {
 
   // 2コースラウンドは選択コースのみ、それ以外は全コースを表示
   var coursesToShow;
-  if (st.cIdx2 !== null) {
+  if (isPairRound()) {
     coursesToShow = [
       { c: g.courses[st.cIdx],  ci: st.cIdx  },
       { c: g.courses[st.cIdx2], ci: st.cIdx2 },

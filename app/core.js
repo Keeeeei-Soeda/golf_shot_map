@@ -91,14 +91,43 @@ const TEE_TYPES = [
 const gc     = () => st.gcIdx !== null ? COURSES[st.gcIdx] : null;
 const course = () => gc() && st.cIdx !== null ? gc().courses[st.cIdx] : null;
 
-// 2コースラウンド時: hIdx>=9 は第2コース・hIdx-9 のホール
-const totalHoles = () => st.cIdx2 !== null ? 18 : 9;
+// 第2コースが有効な数値インデックスで、現在のGCに存在するときだけ18H
+function isPairRound() {
+  if (st.gcIdx === null || st.cIdx === null) return false;
+  const g = COURSES[st.gcIdx];
+  if (!g || !g.courses) return false;
+  const c2 = st.cIdx2;
+  if (typeof c2 !== 'number' || c2 < 0 || c2 >= g.courses.length) return false;
+  const a = g.courses[st.cIdx];
+  const b = g.courses[c2];
+  return !!(a && b && a.holes && b.holes);
+}
+
+// 無効な cIdx2（undefined・範囲外・GC切替後の残り）を除去（st.cIdx2!==null は undefined を弾けないため）
+function sanitizeRoundState() {
+  if (st.gcIdx === null || st.cIdx === null) return;
+  const g = COURSES[st.gcIdx];
+  if (!g || !g.courses || st.cIdx < 0 || st.cIdx >= g.courses.length || !g.courses[st.cIdx]) {
+    st.gcIdx = null; st.cIdx = null; st.cIdx2 = null; st.hIdx = 0;
+    return;
+  }
+  const c2 = st.cIdx2;
+  const ok = typeof c2 === 'number' && c2 >= 0 && c2 < g.courses.length && g.courses[c2] && g.courses[c2].holes;
+  if (!ok) {
+    st.cIdx2 = null;
+    if (st.hIdx > 8) st.hIdx = Math.min(st.hIdx, 8);
+  }
+}
+
+function totalHoles() {
+  return isPairRound() ? 18 : 9;
+}
 
 const hole = () => {
   if (st.gcIdx === null || st.cIdx === null) return null;
   const gcData = COURSES[st.gcIdx];
   if (!gcData) return null;
-  if (st.cIdx2 !== null && st.hIdx >= 9) {
+  if (isPairRound() && st.hIdx >= 9) {
     const c2 = gcData.courses[st.cIdx2];
     return c2 ? c2.holes[st.hIdx - 9] : null;
   }
@@ -116,8 +145,9 @@ const hasData  = (h) => h && activeTee(h) && h.front;
 
 // 2コースラウンド時は実際の (cIdx, hIdx) を使ったキーを返す
 const holeKey  = () => {
-  const eCIdx = (st.cIdx2 !== null && st.hIdx >= 9) ? st.cIdx2 : st.cIdx;
-  const eHIdx = (st.cIdx2 !== null && st.hIdx >= 9) ? st.hIdx - 9 : st.hIdx;
+  const pair = isPairRound();
+  const eCIdx = pair && st.hIdx >= 9 ? st.cIdx2 : st.cIdx;
+  const eHIdx = pair && st.hIdx >= 9 ? st.hIdx - 9 : st.hIdx;
   return `${st.gcIdx}_${eCIdx}_${eHIdx}`;
 };
 const curShots = () => roundShots[holeKey()] || [];
@@ -145,7 +175,7 @@ function saveRound() {
   if (!gc() || !course() || !roundId) return;
   const all = JSON.parse(localStorage.getItem('golfRounds') || '[]');
   const idx = all.findIndex(r => r.id === roundId);
-  const c2name = (st.cIdx2 !== null && gc().courses[st.cIdx2]) ? '＋' + gc().courses[st.cIdx2].name : '';
+  const c2name = isPairRound() && gc().courses[st.cIdx2] ? '＋' + gc().courses[st.cIdx2].name : '';
   const data = { id: roundId, date: new Date().toLocaleDateString('ja-JP'),
     gcName: gc().name, courseName: course().name + c2name, shots: roundShots, updatedAt: Date.now() };
   if (idx >= 0) all[idx] = data; else all.unshift(data);

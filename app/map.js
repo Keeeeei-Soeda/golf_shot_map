@@ -109,6 +109,7 @@ function updateYardageMeasure(fromLabel, fromYd, toName, toYd) {
 // ホール読み込み
 // ============================================================
 function loadHole() {
+  sanitizeRoundState();
   const h = hole();
   document.getElementById('reviewBtn').style.display = 'none';
   updateCupBtn();

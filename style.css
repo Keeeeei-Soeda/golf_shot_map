@@ -621,6 +621,8 @@ header{
   cursor:pointer;font-family:inherit;text-align:center;
 }
 .menu-club-btn:hover{background:rgba(232,200,74,.15);}
+.menu-btn-ai{border-color:#a78bfa;color:#a78bfa;}
+.menu-btn-ai:hover{background:rgba(167,139,250,.15);}
 
 /* ホールナビ（前H/次H） */
 .hole-nav{display:flex;gap:4px;flex-shrink:0;}

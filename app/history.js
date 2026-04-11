@@ -36,7 +36,7 @@ function recordCurrentGps() {
       updatePendingPos(gpsMarker.getPosition());
       if (!document.getElementById('shotPanel').classList.contains('open')) openShotPanelUI();
     }, err => {
-      if (btn) btn.textContent = '✏️ 現在地を記録';
+      if (btn) btn.textContent = '✏️';
       alert('GPS取得失敗: ' + err.message);
     }, { enableHighAccuracy: true, timeout: 10000 });
   }
@@ -49,7 +49,7 @@ function updateGpsRecordBtn() {
   const show = appMode === 'record' && hole() && hasData(hole());
   btn.classList.toggle('visible', show);
   // ラベルを正常に戻す（取得中表示が残らないよう）
-  if (show) btn.textContent = '✏️ 現在地を記録';
+  if (show) btn.textContent = '✏️';
 }
 
 function startGPS() {

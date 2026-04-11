@@ -6,12 +6,50 @@
 // GPS
 // ============================================================
 function onGpsBtn() {
-  if (appMode === 'record' && gpsActive && gpsMarker && map) {
+  gpsActive ? stopGPS() : startGPS();
+}
+
+// 現在地をそのままショット記録に使う
+function recordCurrentGps() {
+  if (!hole() || !hasData(hole())) return;
+  if (gpsActive && gpsMarker && map) {
+    // GPS取得済み → 即記録パネルを開く
     updatePendingPos(gpsMarker.getPosition());
     if (!document.getElementById('shotPanel').classList.contains('open')) openShotPanelUI();
   } else {
-    gpsActive ? stopGPS() : startGPS();
+    // GPS未起動 → 起動して最初の位置を取得してから開く
+    if (!navigator.geolocation) { alert('GPS非対応'); return; }
+    const btn = document.getElementById('gpsRecBtn');
+    if (btn) btn.textContent = '⏳ GPS取得中…';
+    navigator.geolocation.getCurrentPosition(pos => {
+      const ll = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if (!map) return;
+      if (!gpsMarker) {
+        gpsMarker = new google.maps.Marker({ position: { lat: ll.lat, lng: ll.lng }, map, title: '現在地',
+          icon: { path: google.maps.SymbolPath.CIRCLE, scale: 9,
+            fillColor: '#4a9fd4', fillOpacity: .9, strokeColor: '#fff', strokeWeight: 2.5 } });
+      } else {
+        gpsMarker.setPosition({ lat: ll.lat, lng: ll.lng });
+      }
+      // 継続追跡も開始
+      if (!gpsActive) startGPS();
+      updatePendingPos(gpsMarker.getPosition());
+      if (!document.getElementById('shotPanel').classList.contains('open')) openShotPanelUI();
+    }, err => {
+      if (btn) btn.textContent = '✏️ 現在地を記録';
+      alert('GPS取得失敗: ' + err.message);
+    }, { enableHighAccuracy: true, timeout: 10000 });
   }
+}
+
+// 記録モード・ホール有効・GPSのいずれかが変わったときにボタン表示を更新
+function updateGpsRecordBtn() {
+  const btn = document.getElementById('gpsRecBtn');
+  if (!btn) return;
+  const show = appMode === 'record' && hole() && hasData(hole());
+  btn.classList.toggle('visible', show);
+  // ラベルを正常に戻す（取得中表示が残らないよう）
+  if (show) btn.textContent = '✏️ 現在地を記録';
 }
 
 function startGPS() {
@@ -27,6 +65,7 @@ function startGPS() {
           fillColor: '#4a9fd4', fillOpacity: .9, strokeColor: '#fff', strokeWeight: 2.5 } });
     } else gpsMarker.setPosition(ll);
   }, err => { alert('GPS取得失敗: ' + err.message); stopGPS(); }, { enableHighAccuracy: true, maximumAge: 3000 });
+  updateGpsRecordBtn();
 }
 
 function stopGPS() {
@@ -34,6 +73,7 @@ function stopGPS() {
   document.getElementById('gpsBtn').classList.remove('active');
   if (gpsWatch) { navigator.geolocation.clearWatch(gpsWatch); gpsWatch = null; }
   if (gpsMarker) { gpsMarker.setMap(null); gpsMarker = null; }
+  updateGpsRecordBtn();
 }
 
 // ============================================================

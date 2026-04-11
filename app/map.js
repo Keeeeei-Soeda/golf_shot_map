@@ -155,6 +155,7 @@ function loadHole() {
   }
   window._currentBearing = bearing;
   placePins(h); renderShotLayer(); updateInfo(); updateRecBanner();
+  if (typeof updateGpsRecordBtn === 'function') updateGpsRecordBtn();
 }
 
 // ============================================================

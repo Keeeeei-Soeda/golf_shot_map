@@ -175,6 +175,16 @@ header{
 }
 .yi-toggle-btn:hover{background:rgba(232,200,74,.2);}
 .yi-toggle-btn.open{background:var(--acc);color:#000;}
+/* 現在地を記録ボタン */
+.gps-rec-btn{
+  height:32px;padding:0 10px;border-radius:8px;
+  background:rgba(10,22,10,.9);border:1px solid var(--gv);
+  color:var(--gv);font-size:11px;font-weight:700;cursor:pointer;
+  display:none;align-items:center;justify-content:center;gap:4px;
+  transition:all .15s;font-family:inherit;flex-shrink:0;white-space:nowrap;
+}
+.gps-rec-btn:hover{background:rgba(76,175,80,.25);}
+.gps-rec-btn.visible{display:flex;}
 /* 回転ボタン */
 .rotate-btn{
   width:32px;height:32px;border-radius:8px;

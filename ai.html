@@ -132,8 +132,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gd);color:var(--w);d
 #sendBtn:disabled{background:var(--g3);color:var(--gr);cursor:default;}
 #sendBtn:not(:disabled):hover{background:var(--gvd);}
 
-/* ===== API KEY MODAL ===== */
-#apiKeyModal{
+/* ===== SETUP NOTICE ===== */
+#setupNotice{
   display:none;position:fixed;inset:0;z-index:200;
   background:rgba(0,0,0,.75);align-items:center;justify-content:center;
 }
@@ -142,19 +142,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gd);color:var(--w);d
   padding:24px;width:min(440px,92vw);
 }
 .modal-box h3{font-size:16px;color:var(--acc);margin-bottom:10px;}
-.modal-box p{font-size:12px;color:var(--gr);line-height:1.8;margin-bottom:14px;}
-.modal-box a{color:var(--blue);}
-.modal-box input{
-  width:100%;background:var(--g3);border:1px solid var(--g4);border-radius:8px;
-  color:var(--w);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;margin-bottom:14px;
-}
-.modal-box input:focus{border-color:var(--gv);}
-.modal-btns{display:flex;gap:8px;}
-.modal-btns button{
-  flex:1;padding:10px;border-radius:8px;font-weight:700;font-family:inherit;cursor:pointer;font-size:13px;
-}
-.btn-save{background:var(--gv);border:none;color:#000;}
-.btn-cancel{background:var(--g3);border:1px solid var(--g4);color:var(--w);}
+.modal-box p{font-size:13px;color:var(--gr);line-height:1.9;margin-bottom:14px;}
+.modal-box code{background:var(--g3);padding:2px 7px;border-radius:4px;font-family:monospace;color:var(--gv);font-size:12px;}
 
 /* ===== MOBILE ===== */
 @media(max-width:680px){
@@ -180,7 +169,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gd);color:var(--w);d
   <div class="chat-list" id="chatList"></div>
   <div class="sb-footer">
     <button class="sb-footer-btn" onclick="window.location.href='index.html'">← アプリへ</button>
-    <button class="sb-footer-btn" onclick="openApiKeyModal()">🔑 APIキー</button>
   </div>
 </div>
 
@@ -198,30 +186,28 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gd);color:var(--w);d
   </div>
 </div>
 
-<!-- ===== API KEY MODAL ===== -->
-<div id="apiKeyModal">
+<!-- ===== SETUP NOTICE（GAS URL未設定時のみ表示） ===== -->
+<div id="setupNotice">
   <div class="modal-box">
-    <h3>🔑 OpenAI APIキー設定</h3>
+    <h3>⚙️ セットアップが必要です</h3>
     <p>
-      ChatGPT API（GPT-4o）を利用するにはAPIキーが必要です。<br>
-      キーはこのデバイスのブラウザにのみ保存されます。<br>
-      <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a> で発行できます。
+      <code>ai.html</code> の <code>GAS_URL</code> にGoogle Apps ScriptのURLを設定してください。<br><br>
+      手順: <code>gas/Code.gs</code> をGASにデプロイ → 発行されたURLを<br>
+      <code>ai.html</code> の先頭の <code>GAS_URL = '...'</code> に貼り付け
     </p>
-    <input type="password" id="apiKeyInput" placeholder="sk-proj-…"/>
-    <div class="modal-btns">
-      <button class="btn-save" onclick="saveApiKey()">保存して開始</button>
-      <button class="btn-cancel" onclick="closeApiKeyModal()">キャンセル</button>
-    </div>
   </div>
 </div>
 
 <script>
 // ============================================================
-// 定数・設定
+// 設定 ★ GASデプロイ後にこのURLを書き換えてください ★
+// ============================================================
+const GAS_URL = ''; // 例: 'https://script.google.com/macros/s/AKfycb.../exec'
+
+// ============================================================
+// 定数
 // ============================================================
 const CHATS_KEY   = 'golfAiChats';
-const APIKEY_KEY  = 'openaiApiKey';
-const MODEL       = 'gpt-4o';
 const MAX_HISTORY = 40; // 直近の会話数（トークン節約）
 
 // ============================================================
@@ -446,15 +432,17 @@ function addUserBubble(text) {
 }
 
 // ============================================================
-// Claude API 呼び出し（ストリーミング）
+// GAS プロキシ経由で OpenAI を呼び出す
 // ============================================================
 async function sendMessage() {
   const input = document.getElementById('userInput');
   const text = input.value.trim();
   if (!text || isLoading) return;
 
-  const apiKey = localStorage.getItem(APIKEY_KEY);
-  if (!apiKey) { openApiKeyModal(); return; }
+  if (!GAS_URL) {
+    document.getElementById('setupNotice').style.display = 'flex';
+    return;
+  }
 
   if (!currentChatId) newChat();
   const chat = getChat();
@@ -469,74 +457,35 @@ async function sendMessage() {
   input.value = '';
   autoResize(input);
   addUserBubble(text);
-  const bubId = addStreamBubble();
+  const bubId = addStreamBubble(); // ローディングアニメーション表示
   setLoading(true);
 
-  let aiText = '';
   try {
-    // APIに渡すメッセージ（直近 MAX_HISTORY 件）
-    const apiMsgs = chat.messages.slice(-MAX_HISTORY).map(m => ({ role: m.role, content: m.content }));
-
-    // OpenAI Chat Completions API（ストリーミング）
-    const openaiMsgs = [
+    // GASに渡すメッセージ（system込み、直近 MAX_HISTORY 件）
+    const messages = [
       { role: 'system', content: getSystemPrompt() },
-      ...apiMsgs
+      ...chat.messages.slice(-MAX_HISTORY).map(m => ({ role: m.role, content: m.content }))
     ];
 
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch(GAS_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 2048,
-        stream: true,
-        messages: openaiMsgs
-      })
+      body: JSON.stringify({ messages })
+      // Content-Type ヘッダーを省略することで GAS の CORS をシンプルリクエストとして通す
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || `HTTP ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    // SSE ストリーミング読み取り（OpenAI形式）
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buf = '';
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'GASエラー');
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += decoder.decode(value, { stream: true });
-      const lines = buf.split('\n');
-      buf = lines.pop() || '';
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const raw = line.slice(6).trim();
-        if (!raw || raw === '[DONE]') continue;
-        try {
-          const ev = JSON.parse(raw);
-          const delta = ev.choices?.[0]?.delta?.content;
-          if (delta) {
-            aiText += delta;
-            updateStreamBubble(bubId, aiText, false);
-          }
-        } catch(e) {}
-      }
-    }
-
-    updateStreamBubble(bubId, aiText, true);
-    chat.messages.push({ role: 'assistant', content: aiText });
+    updateStreamBubble(bubId, data.content, true);
+    chat.messages.push({ role: 'assistant', content: data.content });
     saveChats();
     renderChatList();
 
   } catch(err) {
-    const msg = `⚠️ エラーが発生しました\n\n${err.message}\n\nAPIキーをご確認ください。`;
-    updateStreamBubble(bubId, msg, true);
-    chat.messages.pop(); // ユーザーメッセージを戻す
+    updateStreamBubble(bubId, `⚠️ エラーが発生しました\n\n${err.message}`, true);
+    chat.messages.pop();
     saveChats();
   }
 
@@ -619,29 +568,14 @@ function closeSidebar() {
 }
 
 // ============================================================
-// APIキーモーダル
-// ============================================================
-function openApiKeyModal() {
-  document.getElementById('apiKeyInput').value = localStorage.getItem(APIKEY_KEY) || '';
-  document.getElementById('apiKeyModal').style.display = 'flex';
-}
-function closeApiKeyModal() {
-  document.getElementById('apiKeyModal').style.display = 'none';
-}
-function saveApiKey() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (key) localStorage.setItem(APIKEY_KEY, key);
-  closeApiKeyModal();
-}
-
-// ============================================================
 // 初期化
 // ============================================================
 function init() {
   loadChats();
   renderChatList();
   renderMessages();
-  if (!localStorage.getItem(APIKEY_KEY)) openApiKeyModal();
+  // GAS_URL 未設定の場合はセットアップ案内を表示（開発者向け）
+  if (!GAS_URL) document.getElementById('setupNotice').style.display = 'flex';
 }
 init();
 </script>

@@ -122,7 +122,9 @@ function loadHole() {
     document.getElementById('recBanner').style.display = 'none';
     const mapBtns = document.getElementById('mapBtns');
     if (mapBtns) mapBtns.style.display = 'none';
-    clearMeasure(); clearPending(); clearShotLayer(); updateInfo(); return;
+    clearMeasure(); clearPending(); clearShotLayer(); updateInfo();
+    if (typeof updateGpsRecordBtn === 'function') updateGpsRecordBtn();
+    return;
   }
   document.getElementById('emptyMap').style.display = 'none';
   document.getElementById('map').style.display = 'block';
@@ -154,8 +156,7 @@ function loadHole() {
     map.panTo({ lat: midLat, lng: midLng });
   }
   window._currentBearing = bearing;
-  placePins(h); renderShotLayer(); updateInfo(); updateRecBanner();
-  if (typeof updateGpsRecordBtn === 'function') updateGpsRecordBtn();
+  placePins(h); renderShotLayer(); updateInfo(); updateRecBanner(); updateGpsRecordBtn();
 }
 
 // ============================================================

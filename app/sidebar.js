@@ -228,8 +228,7 @@ function setMode(m) {
   appMode = m;
   document.getElementById('tabMeasure').classList.toggle('active', m === 'measure');
   document.getElementById('tabRecord').classList.toggle('active', m === 'record');
-  clearMeasure(); clearPending(); updateInfo(); updateRecBanner(); updateCupBtn();
-  if (typeof updateGpsRecordBtn === 'function') updateGpsRecordBtn();
+  clearMeasure(); clearPending(); updateInfo(); updateRecBanner(); updateCupBtn(); updateGpsRecordBtn();
 }
 
 function updateInfo() {

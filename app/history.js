@@ -12,6 +12,8 @@ function onGpsBtn() {
 // 現在地をそのままショット記録に使う
 function recordCurrentGps() {
   if (!hole() || !hasData(hole())) return;
+  // 測定モードなら記録モードへ切り替え
+  if (appMode !== 'record') setMode('record');
   if (gpsActive && gpsMarker && map) {
     // GPS取得済み → 即記録パネルを開く
     updatePendingPos(gpsMarker.getPosition());
@@ -42,14 +44,13 @@ function recordCurrentGps() {
   }
 }
 
-// 記録モード・ホール有効・GPSのいずれかが変わったときにボタン表示を更新
+// ホールが有効なときは常に表示（モード問わず）
 function updateGpsRecordBtn() {
   const btn = document.getElementById('gpsRecBtn');
   if (!btn) return;
-  const show = appMode === 'record' && hole() && hasData(hole());
+  const show = !!(hole() && hasData(hole()));
   btn.classList.toggle('visible', show);
-  // ラベルを正常に戻す（取得中表示が残らないよう）
-  if (show) btn.textContent = '✏️';
+  if (show && btn.textContent !== '✏️') btn.textContent = '✏️';
 }
 
 function startGPS() {

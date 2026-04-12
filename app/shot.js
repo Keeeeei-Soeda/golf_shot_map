@@ -88,12 +88,8 @@ function openShotPanelUI() {
   const key = holeKey();
   const shots = curShots();
   const holeOff = roundShots[key + '_offset'] || 0;
-  const pendingN = roundShots[key + '_pendingPenalty'];
   const n = shots.length + 1 + holeOff;
-
-  document.getElementById('spShotNo').textContent = pendingN
-    ? `ドロップ地点 → ${pendingN}打目を登録`
-    : `${n}打目を登録`;
+  document.getElementById('spShotNo').textContent = n + '打目を登録';
   document.getElementById('clubGrid').innerHTML = CLUBS.map((c, i) =>
     c ? `<button class="cb" onclick="selectClub('${c}')">${c}</button>`
       : `<div class="cb-empty"></div>`
@@ -105,44 +101,29 @@ function openShotPanelUI() {
   // 評価ボタンのリセット
   document.querySelectorAll('.rb').forEach(b => b.classList.remove('sel'));
 
-  // ペナルティタブUIを更新（登録ボタンの有効/無効も反映）
-  _updatePenaltyTabUI(shots, holeOff);
+  // ペナルティタブのリセット（OB種別・状態）
+  shotObType = null;
+  document.querySelectorAll('.sp-ob-btn').forEach(b => b.classList.remove('sel'));
+  const spPenaltyStatus = document.getElementById('spPenaltyStatus');
+  if (spPenaltyStatus) spPenaltyStatus.textContent = 'マップをタップしてドロップ地点を選択';
+  // pendingPosが設定済みなので登録ボタンを有効化
+  const spPenaltyOkBtn = document.getElementById('spPenaltyOkBtn');
+  if (spPenaltyOkBtn) spPenaltyOkBtn.disabled = false;
 
   switchSpTab('record');
   document.getElementById('shotPanel').classList.add('open');
   document.getElementById('recBanner').style.display = 'none';
 }
 
-function _updatePenaltyTabUI(shots, holeOff) {
-  const key = holeKey();
-  const pendingN = roundShots[key + '_pendingPenalty'];
-  const statusEl = document.getElementById('spPenaltyStatus');
-  if (!statusEl) return;
-
-  if (pendingN) {
-    statusEl.textContent = `🔄 プレ${pendingN}を選択中 → 「📍 ここに登録する」で確定`;
-    statusEl.className = 'sp-penalty-status active';
-  } else if (holeOff > 0) {
-    const nextNo = shots.length + 1 + holeOff;
-    statusEl.textContent = '設定中: 次打は ' + nextNo + '打目';
-    statusEl.className = 'sp-penalty-status active';
+// ショットパネル ペナルティ種別選択（トグル）
+function selectShotObType(btn, type) {
+  if (shotObType === type) {
+    shotObType = null;
+    document.querySelectorAll('.sp-ob-btn').forEach(b => b.classList.remove('sel'));
   } else {
-    statusEl.textContent = '通常打順（ペナルティなし）';
-    statusEl.className = 'sp-penalty-status';
+    shotObType = type;
+    document.querySelectorAll('.sp-ob-btn').forEach(b => b.classList.toggle('sel', b.dataset.type === type));
   }
-
-  // プレボタンの選択状態・無効化
-  const currentNo = shots.length + 1 + holeOff;
-  [3, 4, 5].forEach(n => {
-    const btn = document.getElementById('pbBtn' + n);
-    if (!btn) return;
-    btn.classList.toggle('sel', n === pendingN);
-    btn.disabled = (n < currentNo);
-  });
-
-  // 登録ボタンの有効/無効
-  const okBtn = document.getElementById('spPenaltyOkBtn');
-  if (okBtn) okBtn.disabled = !pendingN;
 }
 
 function switchSpTab(tab) {
@@ -191,30 +172,14 @@ function selectResult(r) {
 }
 
 // ============================================================
-// プレ4/3 ペナルティ機能
+// ペナルティ記録機能（1打罰自動計算）
 // ============================================================
-function selectPenalty(n) {
-  const key = holeKey();
-  const shots = curShots();
-  const holeOff = roundShots[key + '_offset'] || 0;
-  const currentNo = shots.length + 1 + holeOff;
-
-  if (n < currentNo) return; // 既に通過済みの打数は無効
-
-  // 選択を一時保存（確定は confirmPenaltyDrop で行う）
-  roundShots[key + '_pendingPenalty'] = n;
-
-  // ヘッダー更新（プレタブに留まる）
-  document.getElementById('spShotNo').textContent = `ドロップ地点 → ${n}打目を登録`;
-  _updatePenaltyTabUI(shots, holeOff);
-}
 
 function confirmPenaltyDrop() {
-  const key = holeKey();
-  const n = roundShots[key + '_pendingPenalty'];
-  if (!n || !pendingPos) return;
+  if (!pendingPos) return;
 
   const h = hole(); if (!h) return;
+  const key = holeKey();
   if (!roundShots[key]) roundShots[key] = [];
   const shots = roundShots[key];
   const holeOff = roundShots[key + '_offset'] || 0;
@@ -225,8 +190,11 @@ function confirmPenaltyDrop() {
     : { lat: shots[shots.length-1].lat, lng: shots[shots.length-1].lng };
   const carryYd = Math.round(haversine(prevPos.lat, prevPos.lng, pendingPos.lat(), pendingPos.lng()) * 1.09361);
   const remYd   = Math.round(haversine(pendingPos.lat(), pendingPos.lng(), h.center.lat, h.center.lng) * 1.09361);
-  const fromLabel = prevIsTee ? 'ティー' : `${shots[shots.length-1].no}打目地点`;
+  const fromLabel = prevIsTee ? 'ティー' : shots[shots.length-1].no + '打目地点';
   const dropNo = shots.length + 1 + holeOff;
+
+  // 1打罰を自動計算: ドロップ後の次打 = 現在記録数 + 1(ドロップ) + 1(罰打) + 1(次打)
+  const n = shots.length + 3 + holeOff;
 
   shots.push({
     no: dropNo,
@@ -237,15 +205,17 @@ function confirmPenaltyDrop() {
     fromLabel,
     isPenalty: true,
     penaltyTarget: n,
+    obType: shotObType || null,
   });
 
-  // ドロップ記録後、次のショットが n 打目になるようにオフセット再計算
+  // 次のショットが n 打目になるようにオフセット再計算
   const newOffset = n - (shots.length + 1);
   if (newOffset > 0) {
     roundShots[key + '_offset'] = newOffset;
   } else {
     delete roundShots[key + '_offset'];
   }
+  // pendingPenaltyは不要になったが念のため削除
   delete roundShots[key + '_pendingPenalty'];
 
   saveRound();
@@ -263,12 +233,14 @@ function cancelPenalty() {
   delete roundShots[key + '_pendingPenalty'];
   saveRound();
 
+  // OB種別リセット
+  shotObType = null;
+  document.querySelectorAll('.sp-ob-btn').forEach(b => b.classList.remove('sel'));
+
   const shots = curShots();
   const n = shots.length + 1;
-  document.getElementById('spShotNo').textContent = `${n}打目を登録`;
-  _updatePenaltyTabUI(shots, 0);
+  document.getElementById('spShotNo').textContent = n + '打目を登録';
 
-  // 登録ボタンを無効化してから記録タブへ
   const okBtn = document.getElementById('spPenaltyOkBtn');
   if (okBtn) okBtn.disabled = true;
   switchSpTab('record');
@@ -321,12 +293,14 @@ function openCupPanel() {
   const shots = curShots();
   const holeOff = roundShots[key + '_offset'] || 0;
 
-  // ペナルティ・パット数をリセット
-  cpPenaltyFrom = 0;
+  // 罰打数・OB種別・パット数をリセット
+  cpStrokePenalty = 0;
+  cpObType = null;
   cpPutts = null;
-  document.querySelectorAll('.cup-penalty-btn').forEach(b => {
-    b.classList.toggle('sel', b.dataset.from === '0');
+  document.querySelectorAll('.cup-stroke-pen-btn').forEach(b => {
+    b.classList.toggle('sel', b.dataset.pen === '0');
   });
+  document.querySelectorAll('.cup-ob-btn').forEach(b => b.classList.remove('sel'));
   document.querySelectorAll('.cup-putts-btn').forEach(b => b.classList.remove('sel'));
 
   // ペナルティオフセットを考慮した打数
@@ -365,28 +339,31 @@ function selectCupScore(diff) {
   });
 }
 
-function selectCupPenalty(btn, from) {
-  cpPenaltyFrom = from;
-  document.querySelectorAll('.cup-penalty-btn').forEach(b => b.classList.remove('sel'));
+// カップイン: 罰打数選択（0〜5）
+function selectCupStrokePenalty(btn, n) {
+  cpStrokePenalty = n;
+  document.querySelectorAll('.cup-stroke-pen-btn').forEach(b => b.classList.remove('sel'));
   btn.classList.add('sel');
-  // ペナルティに応じてスコア表示を更新
+  // 罰打数を加えたスコアをリアルタイム更新
   const h = hole(); if (!h) return;
-  const shots = curShots();
-  const holeOff = roundShots[holeKey() + '_offset'] || 0;
-  const base = from > 0
-    ? Math.max(shots.length + 1 + holeOff, from)
-    : shots.length + 1 + holeOff;
-  const diff = base - h.par;
-  cpSelectedDiff = diff;
-  document.getElementById('cpShots').textContent = base;
+  const total = h.par + cpSelectedDiff + n;
+  const diff  = total - h.par;
+  document.getElementById('cpShots').textContent = total;
   const sd = scoreDef(diff);
   const lbl = document.getElementById('cpScoreLabel');
   lbl.textContent = sd.name + '（' + (diff > 0 ? '+' : '') + diff + '）';
   lbl.className = 'cup-score-label ' + sd.cls;
-  document.querySelectorAll('.score-btn').forEach(b => {
-    const d = parseInt(b.getAttribute('onclick').match(/-?\d+/)[0]);
-    b.classList.toggle('sel', d === diff);
-  });
+}
+
+// カップイン: OB種別選択（トグル）
+function selectCupObType(btn, type) {
+  if (cpObType === type) {
+    cpObType = null;
+    document.querySelectorAll('.cup-ob-btn').forEach(b => b.classList.remove('sel'));
+  } else {
+    cpObType = type;
+    document.querySelectorAll('.cup-ob-btn').forEach(b => b.classList.toggle('sel', b.dataset.type === type));
+  }
 }
 
 function selectCupPutts(btn, n) {
@@ -406,12 +383,15 @@ function confirmCupIn() {
   const key = holeKey();
   if (!roundShots[key]) roundShots[key] = [];
   const totalShots = h.par + cpSelectedDiff;
+  const finalTotal = totalShots + cpStrokePenalty;
+  const finalDiff  = finalTotal - h.par;
   roundShots[`${key}_meta`] = {
     cupIn: true,
-    scoreDiff: cpSelectedDiff,
+    scoreDiff: finalDiff,
     par: h.par,
-    totalShots,
-    penaltyFrom: cpPenaltyFrom > 0 ? cpPenaltyFrom : null,
+    totalShots: finalTotal,
+    strokePenalty: cpStrokePenalty > 0 ? cpStrokePenalty : null,
+    obType: cpObType || null,
     putts: cpPutts
   };
   saveRound(); closeCupPanel(); renderStrip(); updateInfo(); updateRecBanner();
@@ -435,14 +415,14 @@ function openHoleSummary() {
 
   const shotRows = shots.map(s => {
     if (s.isPenalty) {
-      return `
-      <div class="hs-shot hs-shot-penalty">
-        <div class="hs-no" style="background:var(--red);font-size:9px;">OB</div>
-        <div class="hs-club" style="color:var(--red);font-size:11px;">⚠️ ドロップ地点</div>
-        <div class="hs-dists">
-          <span style="color:var(--red);font-weight:700;">→ ${s.penaltyTarget}打目へ</span>
-        </div>
-      </div>`;
+      const obLabel = s.obType ? ' (' + s.obType + ')' : '';
+      return '<div class="hs-shot hs-shot-penalty">'
+        + '<div class="hs-no" style="background:var(--red);font-size:9px;">罰</div>'
+        + '<div class="hs-club" style="color:var(--red);font-size:11px;">⚠️ ドロップ地点' + obLabel + '</div>'
+        + '<div class="hs-dists">'
+        + '<span style="color:var(--red);font-weight:700;">1打罰 → ' + s.penaltyTarget + '打目へ</span>'
+        + '</div>'
+        + '</div>';
     }
     const resultBadge = s.result
       ? `<span class="hs-result ${_resultCls(s.result)}">${_resultIcon(s.result)} ${s.result}</span>`

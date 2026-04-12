@@ -431,17 +431,38 @@ header{
 .score-btn.dbl.sel{background:var(--dbl);color:#fff;}
 .score-btn.tpl{border-color:var(--tpl);color:var(--tpl);}
 .score-btn.tpl.sel{background:var(--tpl);color:#fff;}
-/* OB・ペナルティ選択 */
-.cup-penalty-area{padding:0 16px 4px;}
+/* カップイン: 罰打数 */
+.cup-stroke-pen-area{padding:0 16px 4px;}
 .cup-penalty-label{font-size:10px;color:var(--gr);margin-bottom:5px;letter-spacing:1px;}
-.cup-penalty-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px;}
-.cup-penalty-btn{
-  padding:6px 4px;border-radius:8px;border:1px solid var(--g3);
+.cup-stroke-pen-btns{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:10px;}
+.cup-stroke-pen-btn{
+  padding:7px 2px;border-radius:8px;border:1px solid var(--g3);
   background:rgba(255,255,255,.04);color:var(--gr);font-size:10px;
-  line-height:1.4;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s;
+  cursor:pointer;font-family:inherit;text-align:center;transition:all .15s;
 }
-.cup-penalty-btn small{font-size:9px;opacity:.7;}
-.cup-penalty-btn.sel{border-color:var(--red);background:rgba(224,82,82,.15);color:var(--red);}
+.cup-stroke-pen-btn.sel{border-color:var(--red);background:rgba(224,82,82,.15);color:var(--red);}
+
+/* カップイン: OB種別 */
+.cup-ob-type-area{padding:0 16px 4px;}
+.cup-ob-type-btns{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:10px;}
+.cup-ob-btn{
+  padding:7px 4px;border-radius:8px;border:1px solid var(--g3);
+  background:rgba(255,255,255,.04);color:var(--gr);font-size:11px;
+  cursor:pointer;font-family:inherit;transition:all .15s;text-align:left;padding-left:8px;
+}
+.cup-ob-btn.sel{border-color:var(--org);background:rgba(245,158,11,.15);color:var(--org);}
+
+/* ショットパネル: ペナルティ種別 */
+.sp-ob-type-label{font-size:10px;color:var(--gr);margin:8px 0 5px;letter-spacing:1px;}
+.sp-ob-type-btns{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:8px;}
+.sp-ob-btn{
+  padding:8px 6px;border-radius:8px;border:1px solid var(--g3);
+  background:rgba(255,255,255,.04);color:var(--gr);font-size:11px;line-height:1.5;
+  cursor:pointer;font-family:inherit;transition:all .15s;text-align:left;
+}
+.sp-ob-btn small{font-size:9px;display:block;opacity:.7;}
+.sp-ob-btn.sel{border-color:var(--org);background:rgba(245,158,11,.15);color:var(--org);}
+.sp-penalty-info{font-size:11px;color:var(--gr);text-align:center;margin:4px 0 8px;opacity:.8;}
 
 /* パット数選択 */
 .cup-putts-area{padding:0 16px 10px;}

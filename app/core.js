@@ -72,9 +72,13 @@ let gpsMarker = null, gpsWatch = null, gpsActive = false;
 let roundShots = {}, roundId = null;
 
 // カップイン
-let cpSelectedDiff = null;
-let cpPenaltyFrom  = 0;    // 0=通常, 3/4/5=プレN
-let cpPutts        = null; // null=未選択, 1〜4
+let cpSelectedDiff   = null;
+let cpStrokePenalty  = 0;    // 0〜5: 罰打数（confirmCupIn時にtotalShotsへ加算）
+let cpObType         = null; // null | 'ペナルティエリア' | 'アンプレヤブル' | '紛失球' | 'OB'
+let cpPutts          = null; // null=未選択, 1〜4
+
+// ショットパネル ペナルティタブ
+let shotObType = null; // null | 'ペナルティエリア' | 'アンプレヤブル' | '紛失球' | 'OB'
 
 // ヤードパネル
 let yardageInfoOpen = false;

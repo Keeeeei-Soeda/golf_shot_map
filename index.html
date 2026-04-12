@@ -196,7 +196,7 @@
   <div class="sp-tabs">
     <button class="sp-tab active" id="spTabRecord" onclick="switchSpTab('record')">🏌️ 記録</button>
     <button class="sp-tab" id="spTabDist" onclick="switchSpTab('dist')">📏 飛距離</button>
-    <button class="sp-tab" id="spTabPenalty" onclick="switchSpTab('penalty')">🔄 プレ</button>
+    <button class="sp-tab" id="spTabPenalty" onclick="switchSpTab('penalty')">⚠️ ペナルティ</button>
   </div>
   <!-- 記録タブ：クラブ選択 + 評価 -->
   <div id="spBodyRecord">
@@ -233,15 +233,17 @@
     </div>
     <div class="sp-hint-small">地図をタップして位置を調整できます</div>
   </div>
-  <!-- プレ4/3タブ：OB・ペナルティ後の打数設定 -->
+  <!-- ペナルティタブ：1打罰ドロップ記録 -->
   <div id="spBodyPenalty" style="display:none">
-    <div id="spPenaltyStatus" class="sp-penalty-status">通常打順（ペナルティなし）</div>
-    <div class="sp-penalty-title">OB・ペナルティ後の打数を指定</div>
-    <div class="sp-penalty-btns">
-      <button class="pb" id="pbBtn3" onclick="selectPenalty(3)">プレ3<br><small>3打目から</small></button>
-      <button class="pb" id="pbBtn4" onclick="selectPenalty(4)">プレ4<br><small>4打目から</small></button>
-      <button class="pb" id="pbBtn5" onclick="selectPenalty(5)">プレ5<br><small>5打目から</small></button>
+    <div id="spPenaltyStatus" class="sp-penalty-status">マップをタップしてドロップ地点を選択</div>
+    <div class="sp-ob-type-label">ペナルティ種別（任意）</div>
+    <div class="sp-ob-type-btns">
+      <button class="sp-ob-btn" data-type="ペナルティエリア" onclick="selectShotObType(this,'ペナルティエリア')">🏊 ペナルティエリア<br><small>池・川など</small></button>
+      <button class="sp-ob-btn" data-type="アンプレヤブル"   onclick="selectShotObType(this,'アンプレヤブル')">🌳 アンプレヤブル<br><small>打てない場所</small></button>
+      <button class="sp-ob-btn" data-type="紛失球"           onclick="selectShotObType(this,'紛失球')">🔍 紛失球<br><small>ロストボール</small></button>
+      <button class="sp-ob-btn" data-type="OB"               onclick="selectShotObType(this,'OB')">🚫 OB<br><small>白杭・黄杭外</small></button>
     </div>
+    <div class="sp-penalty-info">1打罰を自動加算して記録します</div>
     <div class="sp-btns">
       <button class="sp-cancel" onclick="cancelPenalty()">↺ リセット</button>
       <button class="sp-ok" id="spPenaltyOkBtn" onclick="confirmPenaltyDrop()" disabled>📍 ここに登録する</button>
@@ -261,14 +263,26 @@
     <div class="cup-manual-title">スコアを確認・変更</div>
     <div class="cup-manual-btns" id="cpScoreBtns"></div>
   </div>
-  <!-- OB・ペナルティ選択 -->
-  <div class="cup-penalty-area">
-    <div class="cup-penalty-label">OB・ペナルティ</div>
-    <div class="cup-penalty-btns">
-      <button class="cup-penalty-btn sel" data-from="0" onclick="selectCupPenalty(this,0)">通常</button>
-      <button class="cup-penalty-btn" data-from="3" onclick="selectCupPenalty(this,3)">プレ3<br><small>3打目〜</small></button>
-      <button class="cup-penalty-btn" data-from="4" onclick="selectCupPenalty(this,4)">プレ4<br><small>4打目〜</small></button>
-      <button class="cup-penalty-btn" data-from="5" onclick="selectCupPenalty(this,5)">プレ5<br><small>5打目〜</small></button>
+  <!-- 罰打数 -->
+  <div class="cup-stroke-pen-area">
+    <div class="cup-penalty-label">罰打数</div>
+    <div class="cup-stroke-pen-btns">
+      <button class="cup-stroke-pen-btn sel" data-pen="0" onclick="selectCupStrokePenalty(this,0)">罰なし</button>
+      <button class="cup-stroke-pen-btn" data-pen="1" onclick="selectCupStrokePenalty(this,1)">1打罰</button>
+      <button class="cup-stroke-pen-btn" data-pen="2" onclick="selectCupStrokePenalty(this,2)">2打罰</button>
+      <button class="cup-stroke-pen-btn" data-pen="3" onclick="selectCupStrokePenalty(this,3)">3打罰</button>
+      <button class="cup-stroke-pen-btn" data-pen="4" onclick="selectCupStrokePenalty(this,4)">4打罰</button>
+      <button class="cup-stroke-pen-btn" data-pen="5" onclick="selectCupStrokePenalty(this,5)">5打罰</button>
+    </div>
+  </div>
+  <!-- ペナルティ種別 -->
+  <div class="cup-ob-type-area">
+    <div class="cup-penalty-label">ペナルティ種別（任意）</div>
+    <div class="cup-ob-type-btns">
+      <button class="cup-ob-btn" data-type="ペナルティエリア" onclick="selectCupObType(this,'ペナルティエリア')">🏊 ペナルティエリア</button>
+      <button class="cup-ob-btn" data-type="アンプレヤブル"   onclick="selectCupObType(this,'アンプレヤブル')">🌳 アンプレヤブル</button>
+      <button class="cup-ob-btn" data-type="紛失球"           onclick="selectCupObType(this,'紛失球')">🔍 紛失球</button>
+      <button class="cup-ob-btn" data-type="OB"               onclick="selectCupObType(this,'OB')">🚫 OB</button>
     </div>
   </div>
   <!-- パット数 -->

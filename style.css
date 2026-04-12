@@ -433,7 +433,12 @@ header{
 .score-btn.tpl.sel{background:var(--tpl);color:#fff;}
 /* カップイン: 罰打数 */
 .cup-stroke-pen-area{padding:0 16px 4px;}
-.cup-penalty-label{font-size:10px;color:var(--gr);margin-bottom:5px;letter-spacing:1px;}
+.cup-penalty-label{font-size:10px;color:var(--gr);margin-bottom:5px;letter-spacing:1px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.cp-recorded-penalty-badge{
+  font-size:10px;color:var(--red);background:rgba(224,82,82,.12);
+  border:1px solid rgba(224,82,82,.4);border-radius:4px;
+  padding:1px 7px;letter-spacing:0;font-weight:700;
+}
 .cup-stroke-pen-btns{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:10px;}
 .cup-stroke-pen-btn{
   padding:7px 2px;border-radius:8px;border:1px solid var(--g3);

@@ -337,6 +337,21 @@ function openCupPanel() {
   document.querySelectorAll('.cup-ob-btn').forEach(b => b.classList.remove('sel'));
   document.querySelectorAll('.cup-putts-btn').forEach(b => b.classList.remove('sel'));
 
+  // ラウンド中に記録済みのペナルティ打数を計算して表示
+  // 各ドロップ記録の (penaltyTarget - shot.no - 1) が実際の罰打数
+  const recordedPenalties = shots.filter(s => s.isPenalty).reduce((sum, s) => {
+    return sum + Math.max(0, (s.penaltyTarget || 0) - s.no - 1);
+  }, 0);
+  const badge = document.getElementById('cpRecordedPenaltyBadge');
+  if (badge) {
+    if (recordedPenalties > 0) {
+      badge.textContent = 'ラウンド中: ' + recordedPenalties + '打罰記録済み（打数に含む）';
+      badge.style.display = 'inline';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
   // ペナルティオフセットを考慮した打数
   const defaultTotal = shots.length + 1 + holeOff;
   const diff = defaultTotal - h.par;

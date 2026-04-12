@@ -101,14 +101,25 @@ function openShotPanelUI() {
   // 評価ボタンのリセット
   document.querySelectorAll('.rb').forEach(b => b.classList.remove('sel'));
 
-  // ペナルティタブのリセット（OB種別・状態）
+  // ペナルティタブのリセット
   shotObType = null;
   document.querySelectorAll('.sp-ob-btn').forEach(b => b.classList.remove('sel'));
-  const spPenaltyStatus = document.getElementById('spPenaltyStatus');
-  if (spPenaltyStatus) spPenaltyStatus.textContent = 'マップをタップしてドロップ地点を選択';
-  // pendingPosが設定済みなので登録ボタンを有効化
+  document.querySelectorAll('.pb').forEach(b => b.classList.remove('sel'));
+
+  // 1打目か2打目以降かでUIを出し分け
+  const isTeeShot = (shots.length === 0);
+  const teeSection    = document.getElementById('spPenaltyTeeSection');
+  const hazardSection = document.getElementById('spPenaltyHazardSection');
+  const statusEl      = document.getElementById('spPenaltyStatus');
+  if (teeSection)    teeSection.style.display    = isTeeShot ? 'block' : 'none';
+  if (hazardSection) hazardSection.style.display = isTeeShot ? 'none'  : 'block';
+  if (statusEl) statusEl.textContent = isTeeShot
+    ? 'OBの場合: 次の打数を選択 → 登録'
+    : 'ドロップ地点が選択されました（1打罰を加算）';
+
+  // 1打目はプレN選択まで登録ボタンを無効、2打目以降は即有効
   const spPenaltyOkBtn = document.getElementById('spPenaltyOkBtn');
-  if (spPenaltyOkBtn) spPenaltyOkBtn.disabled = false;
+  if (spPenaltyOkBtn) spPenaltyOkBtn.disabled = isTeeShot;
 
   switchSpTab('record');
   document.getElementById('shotPanel').classList.add('open');
@@ -172,8 +183,27 @@ function selectResult(r) {
 }
 
 // ============================================================
-// ペナルティ記録機能（1打罰自動計算）
+// ペナルティ記録機能
 // ============================================================
+
+// 【1打目専用】プレ3/4/5 選択（絶対打数を指定）
+function selectPenalty(n) {
+  const key = holeKey();
+  const shots = curShots();
+  const holeOff = roundShots[key + '_offset'] || 0;
+  const currentNo = shots.length + 1 + holeOff;
+  if (n < currentNo) return;
+
+  roundShots[key + '_pendingPenalty'] = n;
+  document.getElementById('spShotNo').textContent = 'ドロップ地点 → ' + n + '打目を登録';
+
+  // ボタン選択状態を更新して登録ボタンを有効化
+  document.querySelectorAll('.pb').forEach(b => {
+    b.classList.toggle('sel', parseInt(b.id.replace('pbBtn', '')) === n);
+  });
+  const okBtn = document.getElementById('spPenaltyOkBtn');
+  if (okBtn) okBtn.disabled = false;
+}
 
 function confirmPenaltyDrop() {
   if (!pendingPos) return;
@@ -193,8 +223,11 @@ function confirmPenaltyDrop() {
   const fromLabel = prevIsTee ? 'ティー' : shots[shots.length-1].no + '打目地点';
   const dropNo = shots.length + 1 + holeOff;
 
-  // 1打罰を自動計算: ドロップ後の次打 = 現在記録数 + 1(ドロップ) + 1(罰打) + 1(次打)
-  const n = shots.length + 3 + holeOff;
+  // 次打数の決定:
+  //   1打目(ティー)モード → pendingPenalty に選択済みのプレN が入っている
+  //   2打目以降モード     → 1打罰を自動計算 (shots_old.length + 3 + holeOff)
+  const pendingN = roundShots[key + '_pendingPenalty'];
+  const n = pendingN || (shots.length + 3 + holeOff);
 
   shots.push({
     no: dropNo,
@@ -233,9 +266,10 @@ function cancelPenalty() {
   delete roundShots[key + '_pendingPenalty'];
   saveRound();
 
-  // OB種別リセット
+  // OB種別・プレボタンリセット
   shotObType = null;
   document.querySelectorAll('.sp-ob-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelectorAll('.pb').forEach(b => b.classList.remove('sel'));
 
   const shots = curShots();
   const n = shots.length + 1;

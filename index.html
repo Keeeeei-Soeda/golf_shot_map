@@ -233,17 +233,32 @@
     </div>
     <div class="sp-hint-small">地図をタップして位置を調整できます</div>
   </div>
-  <!-- ペナルティタブ：1打罰ドロップ記録 -->
+  <!-- ペナルティタブ（1打目：プレ3/4/5 / 2打目以降：1打罰自動） -->
   <div id="spBodyPenalty" style="display:none">
-    <div id="spPenaltyStatus" class="sp-penalty-status">マップをタップしてドロップ地点を選択</div>
-    <div class="sp-ob-type-label">ペナルティ種別（任意）</div>
-    <div class="sp-ob-type-btns">
-      <button class="sp-ob-btn" data-type="ペナルティエリア" onclick="selectShotObType(this,'ペナルティエリア')">🏊 ペナルティエリア<br><small>池・川など</small></button>
-      <button class="sp-ob-btn" data-type="アンプレヤブル"   onclick="selectShotObType(this,'アンプレヤブル')">🌳 アンプレヤブル<br><small>打てない場所</small></button>
-      <button class="sp-ob-btn" data-type="紛失球"           onclick="selectShotObType(this,'紛失球')">🔍 紛失球<br><small>ロストボール</small></button>
-      <button class="sp-ob-btn" data-type="OB"               onclick="selectShotObType(this,'OB')">🚫 OB<br><small>白杭・黄杭外</small></button>
+    <div id="spPenaltyStatus" class="sp-penalty-status"></div>
+
+    <!-- 【1打目専用】プレ3/4/5 セクション -->
+    <div id="spPenaltyTeeSection" style="display:none">
+      <div class="sp-ob-type-label">OB後の打数を選択</div>
+      <div class="sp-penalty-btns">
+        <button class="pb" id="pbBtn3" onclick="selectPenalty(3)">プレ3<br><small>3打目から</small></button>
+        <button class="pb" id="pbBtn4" onclick="selectPenalty(4)">プレ4<br><small>4打目から</small></button>
+        <button class="pb" id="pbBtn5" onclick="selectPenalty(5)">プレ5<br><small>5打目から</small></button>
+      </div>
     </div>
-    <div class="sp-penalty-info">1打罰を自動加算して記録します</div>
+
+    <!-- 【2打目以降】1打罰自動 + OB種別 セクション -->
+    <div id="spPenaltyHazardSection" style="display:none">
+      <div class="sp-ob-type-label">ペナルティ種別（任意）</div>
+      <div class="sp-ob-type-btns">
+        <button class="sp-ob-btn" data-type="ペナルティエリア" onclick="selectShotObType(this,'ペナルティエリア')">🏊 ペナルティエリア<br><small>池・川など</small></button>
+        <button class="sp-ob-btn" data-type="アンプレヤブル"   onclick="selectShotObType(this,'アンプレヤブル')">🌳 アンプレヤブル<br><small>打てない場所</small></button>
+        <button class="sp-ob-btn" data-type="紛失球"           onclick="selectShotObType(this,'紛失球')">🔍 紛失球<br><small>ロストボール</small></button>
+        <button class="sp-ob-btn" data-type="OB"               onclick="selectShotObType(this,'OB')">🚫 OB<br><small>白杭・黄杭外</small></button>
+      </div>
+      <div class="sp-penalty-info">1打罰を自動加算して記録します</div>
+    </div>
+
     <div class="sp-btns">
       <button class="sp-cancel" onclick="cancelPenalty()">↺ リセット</button>
       <button class="sp-ok" id="spPenaltyOkBtn" onclick="confirmPenaltyDrop()" disabled>📍 ここに登録する</button>

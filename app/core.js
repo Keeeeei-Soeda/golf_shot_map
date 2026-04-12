@@ -73,6 +73,8 @@ let roundShots = {}, roundId = null;
 
 // カップイン
 let cpSelectedDiff = null;
+let cpPenaltyFrom  = 0;    // 0=通常, 3/4/5=プレN
+let cpPutts        = null; // null=未選択, 1〜4
 
 // ヤードパネル
 let yardageInfoOpen = false;

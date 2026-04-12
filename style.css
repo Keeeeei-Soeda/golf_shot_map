@@ -431,6 +431,32 @@ header{
 .score-btn.dbl.sel{background:var(--dbl);color:#fff;}
 .score-btn.tpl{border-color:var(--tpl);color:var(--tpl);}
 .score-btn.tpl.sel{background:var(--tpl);color:#fff;}
+/* OB・ペナルティ選択 */
+.cup-penalty-area{padding:0 16px 4px;}
+.cup-penalty-label{font-size:10px;color:var(--gr);margin-bottom:5px;letter-spacing:1px;}
+.cup-penalty-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px;}
+.cup-penalty-btn{
+  padding:6px 4px;border-radius:8px;border:1px solid var(--g3);
+  background:rgba(255,255,255,.04);color:var(--gr);font-size:10px;
+  line-height:1.4;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s;
+}
+.cup-penalty-btn small{font-size:9px;opacity:.7;}
+.cup-penalty-btn.sel{border-color:var(--red);background:rgba(224,82,82,.15);color:var(--red);}
+
+/* パット数選択 */
+.cup-putts-area{padding:0 16px 10px;}
+.cup-putts-label{font-size:10px;color:var(--gr);margin-bottom:5px;letter-spacing:1px;}
+.cup-putts-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px;}
+.cup-putts-btn{
+  padding:7px 4px;border-radius:8px;border:1px solid var(--g3);
+  background:rgba(255,255,255,.04);color:var(--gr);font-size:11px;
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.cup-putts-btn.sel{border-color:var(--blue);background:rgba(74,159,212,.15);color:var(--blue);}
+
+/* スコアカードのパット数 */
+.sc-putts{font-size:9px;opacity:.65;margin-top:1px;}
+
 .cup-btns{display:flex;gap:8px;}
 .cup-ok{
   flex:1;padding:11px;border-radius:8px;background:var(--gv);border:none;

@@ -320,6 +320,15 @@ function openCupPanel() {
   const key = holeKey();
   const shots = curShots();
   const holeOff = roundShots[key + '_offset'] || 0;
+
+  // ペナルティ・パット数をリセット
+  cpPenaltyFrom = 0;
+  cpPutts = null;
+  document.querySelectorAll('.cup-penalty-btn').forEach(b => {
+    b.classList.toggle('sel', b.dataset.from === '0');
+  });
+  document.querySelectorAll('.cup-putts-btn').forEach(b => b.classList.remove('sel'));
+
   // ペナルティオフセットを考慮した打数
   const defaultTotal = shots.length + 1 + holeOff;
   const diff = defaultTotal - h.par;
@@ -356,12 +365,55 @@ function selectCupScore(diff) {
   });
 }
 
+function selectCupPenalty(btn, from) {
+  cpPenaltyFrom = from;
+  document.querySelectorAll('.cup-penalty-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  // ペナルティに応じてスコア表示を更新
+  const h = hole(); if (!h) return;
+  const shots = curShots();
+  const holeOff = roundShots[holeKey() + '_offset'] || 0;
+  const base = from > 0
+    ? Math.max(shots.length + 1 + holeOff, from)
+    : shots.length + 1 + holeOff;
+  const diff = base - h.par;
+  cpSelectedDiff = diff;
+  document.getElementById('cpShots').textContent = base;
+  const sd = scoreDef(diff);
+  const lbl = document.getElementById('cpScoreLabel');
+  lbl.textContent = sd.name + '（' + (diff > 0 ? '+' : '') + diff + '）';
+  lbl.className = 'cup-score-label ' + sd.cls;
+  document.querySelectorAll('.score-btn').forEach(b => {
+    const d = parseInt(b.getAttribute('onclick').match(/-?\d+/)[0]);
+    b.classList.toggle('sel', d === diff);
+  });
+}
+
+function selectCupPutts(btn, n) {
+  if (cpPutts === n) {
+    cpPutts = null;
+    document.querySelectorAll('.cup-putts-btn').forEach(b => b.classList.remove('sel'));
+  } else {
+    cpPutts = n;
+    document.querySelectorAll('.cup-putts-btn').forEach(b => {
+      b.classList.toggle('sel', parseInt(b.dataset.putts) === n);
+    });
+  }
+}
+
 function confirmCupIn() {
   const h = hole(); if (!h) return;
   const key = holeKey();
   if (!roundShots[key]) roundShots[key] = [];
   const totalShots = h.par + cpSelectedDiff;
-  roundShots[`${key}_meta`] = { cupIn: true, scoreDiff: cpSelectedDiff, par: h.par, totalShots };
+  roundShots[`${key}_meta`] = {
+    cupIn: true,
+    scoreDiff: cpSelectedDiff,
+    par: h.par,
+    totalShots,
+    penaltyFrom: cpPenaltyFrom > 0 ? cpPenaltyFrom : null,
+    putts: cpPutts
+  };
   saveRound(); closeCupPanel(); renderStrip(); updateInfo(); updateRecBanner();
   openHoleSummary();
 }
@@ -419,7 +471,8 @@ function openHoleSummary() {
   if (sd) {
     document.getElementById('hsScore').textContent = sd.name;
     document.getElementById('hsScore').className = `hs-score-badge ${sd.cls}`;
-    document.getElementById('hsHoleInfo').textContent = `H${h.no} PAR${h.par}　${totalShots}打`;
+    const puttsText = meta.putts ? '　' + meta.putts + 'パット' : '';
+    document.getElementById('hsHoleInfo').textContent = 'H' + h.no + ' PAR' + h.par + '　' + totalShots + '打' + puttsText;
   }
   document.getElementById('holeSummaryPanel').classList.add('open');
 }
@@ -445,8 +498,9 @@ function buildScoreCard() {
     const s     = meta.totalShots || (meta.par + (meta.scoreDiff || 0));
     const diff  = s - meta.par;
     const sd    = scoreDef(diff);
-    const label = diff === 0 ? 'E' : diff > 0 ? `+${diff}` : String(diff);
-    return `<td class="sc-cell ${sd.cls}">${s}<br><small>${label}</small></td>`;
+    const label = diff === 0 ? 'E' : diff > 0 ? '+' + diff : String(diff);
+    const puttsLabel = meta.putts ? '<div class="sc-putts">' + meta.putts + 'P</div>' : '';
+    return '<td class="sc-cell ' + sd.cls + '">' + s + '<br><small>' + label + '</small>' + puttsLabel + '</td>';
   }).join('');
   const totalPar   = holes.reduce((a, h) => a + h.par, 0);
   const totalDiff  = holes.reduce((a, h, i) => {

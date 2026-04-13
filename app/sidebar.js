@@ -257,8 +257,11 @@ function updateRecBanner() {
       document.getElementById('shotPanel').classList.contains('open')) {
     banner.style.display = 'none'; return;
   }
-  var shots = curShots(); var n = shots.length + 1;
-  var from = shots.length === 0 ? 'ティーから' : shots.length + '打目から';
+  var shots = curShots();
+  var holeOff = (roundShots[holeKey() + '_offset'] || 0);
+  var n = shots.length + 1 + holeOff;
+  var prevNo = shots.length > 0 ? shots[shots.length - 1].no : 0;
+  var from = shots.length === 0 ? 'ティーから' : prevNo + '打目から';
   banner.textContent = n + '打目 — ' + from + 'の落下地点をタップ';
   banner.style.display = 'block';
 }

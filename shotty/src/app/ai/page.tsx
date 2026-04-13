@@ -209,9 +209,14 @@ export default function AiPage() {
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{height:100%;background:var(--gd);color:var(--w);font-family:'Noto Sans JP',sans-serif;}
         .ai-root{display:flex;height:100vh;overflow:hidden;}
+        /* デスクトップ: サイドバー常時表示 */
         .ai-sidebar{width:240px;flex-shrink:0;background:var(--g1);border-right:2px solid var(--g3);display:flex;flex-direction:column;height:100vh;transition:transform .28s ease;z-index:60;}
-        .ai-sidebar.closed{transform:translateX(-100%);}
-        @media(max-width:640px){.ai-sidebar{position:fixed;top:0;left:0;bottom:0;}}
+        @media(min-width:641px){.ai-sidebar{transform:none !important;position:relative;}}
+        /* モバイル: スライド開閉 */
+        @media(max-width:640px){
+          .ai-sidebar{position:fixed;top:0;left:0;bottom:0;}
+          .ai-sidebar.closed{transform:translateX(-100%);}
+        }
         .sb-header{padding:14px 12px 10px;border-bottom:1px solid var(--g3);}
         .sb-logo{font-size:14px;font-weight:700;color:var(--acc);margin-bottom:8px;letter-spacing:2px;}
         .new-chat-btn{width:100%;padding:10px;border-radius:8px;border:1px dashed var(--gv);background:transparent;color:var(--gv);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;}
@@ -230,6 +235,8 @@ export default function AiPage() {
         .ai-main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0;}
         .ai-header{height:48px;flex-shrink:0;background:linear-gradient(135deg,#0a160a,var(--g1));border-bottom:2px solid var(--gv);display:flex;align-items:center;gap:10px;padding:0 12px;}
         .hbg-btn{background:none;border:none;color:var(--w);font-size:22px;cursor:pointer;padding:4px;}
+        /* デスクトップではハンバーガーボタン非表示 */
+        @media(min-width:641px){.hbg-btn{display:none;}}
         .ai-header-title{font-size:14px;font-weight:700;color:var(--acc);letter-spacing:2px;}
         #messages{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:14px;}
         .welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px;text-align:center;gap:12px;}
@@ -255,6 +262,10 @@ export default function AiPage() {
         .send-btn:disabled{opacity:.5;cursor:not-allowed;}
         .overlay{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);}
         .overlay.show{display:block;}
+        /* モバイル: サイドバーが閉じているときの「メニューを表示」ボタン */
+        .menu-show-btn{display:none;position:fixed;bottom:16px;left:16px;z-index:45;padding:8px 14px;border-radius:20px;border:1px solid var(--g4);background:var(--g2);color:var(--w);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;}
+        .menu-show-btn:hover{background:var(--g3);}
+        @media(max-width:640px){.menu-show-btn{display:block;}}
       `}</style>
       <div className="ai-root">
         {/* サイドバー */}
@@ -275,8 +286,11 @@ export default function AiPage() {
             }
           </div>
           <div className="sb-footer">
+            <a href="/swing" style={{display:'block',marginBottom:'6px'}}>
+              <button className="sb-back-btn" style={{borderColor:'var(--gv)',color:'var(--gv)'}}>🎥 スイング解析</button>
+            </a>
             <a href="/" style={{display:'block'}}>
-              <button className="sb-back-btn">← マップに戻る</button>
+              <button className="sb-back-btn">← メニューを表示</button>
             </a>
           </div>
         </div>
@@ -326,7 +340,7 @@ export default function AiPage() {
             <textarea
               ref={inputRef}
               className="ai-input"
-              placeholder="ゴルフの相談を入力..."
+              placeholder="ゴルフについて何でも聞いてください..."
               value={input}
               onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 140) + 'px' }}
               onKeyDown={handleKeyDown}
@@ -339,6 +353,10 @@ export default function AiPage() {
         </div>
       </div>
 
+      {/* モバイル: サイドバーが閉じているときのメニューボタン */}
+      {!sidebarOpen && (
+        <button className="menu-show-btn" onClick={() => setSidebarOpen(true)}>☰ メニューを表示</button>
+      )}
       {sidebarOpen && <div className="overlay show" onClick={() => setSidebarOpen(false)} />}
     </>
   )

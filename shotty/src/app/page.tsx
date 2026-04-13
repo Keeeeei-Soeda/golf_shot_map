@@ -176,6 +176,7 @@ export default function Page() {
           <button className="menu-club-btn" onClick={openStrategySelector}>📍 マップで過去記録を見る</button>
           <button className="menu-club-btn" style={{marginTop:'6px'}} onClick={openScorecard}>📊 スコアカード</button>
           <a className="menu-club-btn" style={{display:'block',marginTop:'6px',textDecoration:'none',textAlign:'left'}} href="/ai" target="_blank" rel="noopener noreferrer">🤖 AI相談モード</a>
+          <a className="menu-club-btn" style={{display:'block',marginTop:'6px',textDecoration:'none',textAlign:'left'}} href="/swing" target="_blank" rel="noopener noreferrer">🎥 スイング解析</a>
           <button className="menu-club-btn" style={{marginTop:'6px'}} onClick={openClubEditor}>🏌️ クラブセット編集</button>
         </div>
       </div>

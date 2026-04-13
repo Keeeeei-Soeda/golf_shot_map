@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🎥 スイング解析 — Shotty</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gd:#0f1f0f;--g1:#162816;--g2:#1e3a1e;--g3:#2d4f2d;--g4:#3d6b3d;
+  --gv:#4caf50;--w:#eef4ee;--gr:#7a957a;--acc:#e8c84a;--red:#e05252;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--gd);color:var(--w);font-family:'Noto Sans JP',sans-serif;}
+.sw-root{max-width:680px;margin:0 auto;padding:16px 16px 48px;}
+.sw-header{display:flex;align-items:center;gap:12px;padding:12px 0 20px;border-bottom:2px solid var(--g3);margin-bottom:20px;}
+.sw-back{background:none;border:1px solid var(--g3);border-radius:8px;color:var(--gr);font-size:12px;font-weight:700;cursor:pointer;padding:6px 12px;font-family:inherit;text-decoration:none;display:inline-block;transition:all .15s;}
+.sw-back:hover{border-color:var(--gv);color:var(--gv);}
+.sw-title{font-size:18px;font-weight:700;color:var(--acc);letter-spacing:2px;}
+.sw-sub{font-size:11px;color:var(--gr);margin-top:2px;}
+
+.angle-row{display:flex;gap:8px;margin-bottom:16px;}
+.angle-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--g3);background:var(--g2);color:var(--gr);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
+.angle-btn.sel{border-color:var(--gv);background:rgba(76,175,80,.15);color:var(--gv);}
+.angle-btn:hover:not(.sel){border-color:var(--g4);color:var(--w);}
+
+.drop-zone{border:2px dashed var(--g3);border-radius:14px;background:var(--g2);padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px;}
+.drop-zone.drag-over,.drop-zone:hover{border-color:var(--g4);}
+.drop-zone.drag-over{background:rgba(76,175,80,.08);}
+.dz-icon{font-size:40px;margin-bottom:8px;}
+.dz-label{font-size:14px;color:var(--w);font-weight:700;margin-bottom:4px;}
+.dz-sub{font-size:11px;color:var(--gr);}
+.dz-file-info{font-size:12px;color:var(--gv);margin-top:8px;font-weight:700;}
+#fileInput{display:none;}
+video{width:100%;border-radius:12px;background:#000;max-height:240px;display:block;margin-bottom:14px;}
+.memo-label{font-size:12px;color:var(--gr);margin-bottom:6px;font-weight:700;}
+textarea{width:100%;background:var(--g2);border:1px solid var(--g3);border-radius:10px;padding:10px 14px;color:var(--w);font-size:13px;font-family:inherit;resize:none;outline:none;min-height:52px;max-height:100px;line-height:1.6;margin-bottom:14px;}
+textarea:focus{border-color:var(--gv);}
+textarea::placeholder{color:var(--gr);}
+.analyze-btn{width:100%;padding:14px;border-radius:12px;border:none;background:var(--gv);color:#000;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;margin-bottom:20px;}
+.analyze-btn:disabled{opacity:.45;cursor:not-allowed;}
+.analyze-btn:not(:disabled):hover{opacity:.85;}
+.error-box{background:rgba(224,82,82,.12);border:1px solid var(--red);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--red);margin-bottom:16px;display:none;}
+.loading-box{text-align:center;padding:32px 0;color:var(--gr);display:none;}
+.spinner{width:44px;height:44px;border:4px solid var(--g3);border-top-color:var(--gv);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.result-card{background:var(--g1);border:1px solid var(--g3);border-radius:16px;overflow:hidden;display:none;}
+.result-hero{background:linear-gradient(135deg,#0a160a,var(--g2));padding:20px;display:flex;align-items:center;gap:20px;border-bottom:1px solid var(--g3);}
+.result-summary-label{font-size:11px;color:var(--gr);font-weight:700;letter-spacing:1px;margin-bottom:4px;}
+.result-summary-text{font-size:15px;color:var(--w);line-height:1.6;font-weight:500;}
+.point-tabs{display:flex;border-bottom:1px solid var(--g3);}
+.point-tab{flex:1;padding:10px 6px;background:none;border:none;border-bottom:2px solid transparent;color:var(--gr);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;}
+.point-tab.active{color:var(--acc);border-bottom-color:var(--acc);}
+.point-tab:hover:not(.active){color:var(--w);}
+.point-body{padding:16px 18px;font-size:14px;line-height:1.8;color:var(--w);min-height:80px;}
+.drill-box{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:12px;padding:14px 16px;margin:0 18px 18px;}
+.drill-label{font-size:11px;color:var(--gv);font-weight:700;letter-spacing:1px;margin-bottom:6px;}
+.drill-text{font-size:14px;color:var(--w);line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="sw-root">
+  <!-- ヘッダー -->
+  <div class="sw-header">
+    <a class="sw-back" onclick="history.back()">← 戻る</a>
+    <div>
+      <div class="sw-title">🎥 スイング解析</div>
+      <div class="sw-sub">動画をアップロードして Shotty にコードレビューしてもらおう</div>
+    </div>
+  </div>
+
+  <!-- 撮影角度 -->
+  <div style="font-size:12px;color:var(--gr);font-weight:700;margin-bottom:8px;">撮影方向</div>
+  <div class="angle-row">
+    <button class="angle-btn sel" id="btnSide" onclick="selectAngle('side')">🎯 後方（飛球線後方）</button>
+    <button class="angle-btn" id="btnFront" onclick="selectAngle('front')">👁 正面（ターゲット方向）</button>
+  </div>
+
+  <!-- ドロップゾーン -->
+  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()"
+    ondragover="onDragOver(event)" ondragleave="onDragLeave()" ondrop="onDrop(event)">
+    <input type="file" id="fileInput" accept="video/*" onchange="onFileChange(event)"/>
+    <div class="dz-icon" id="dzIcon">📱</div>
+    <div class="dz-label" id="dzLabel">動画をドロップ、またはタップして選択</div>
+    <div class="dz-sub">MP4・MOV・WebM ／ 最大 30 秒・100MB</div>
+    <div class="dz-file-info" id="dzFileInfo"></div>
+  </div>
+
+  <!-- 動画プレビュー -->
+  <video id="videoPreview" style="display:none" controls playsinline muted></video>
+
+  <!-- メモ -->
+  <div class="memo-label">特に見てほしい点（任意）</div>
+  <textarea id="memoInput" placeholder="例：インパクトでのフェースの開き（右へのミスの原因）をデバッグしてください" rows="2"></textarea>
+
+  <!-- 解析ボタン -->
+  <button class="analyze-btn" id="analyzeBtn" onclick="analyze()" disabled>🔍 Shotty に解析させる</button>
+
+  <!-- エラー -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- ローディング -->
+  <div class="loading-box" id="loadingBox">
+    <div class="spinner"></div>
+    <div style="font-size:13px">Shotty がスイングをデバッグ中...</div>
+    <div style="font-size:11px;margin-top:6px;color:var(--gr)">動画の長さにより 15〜30 秒かかります</div>
+  </div>
+
+  <!-- 解析結果 -->
+  <div class="result-card" id="resultCard">
+    <div class="result-hero">
+      <svg id="scoreRing" width="96" height="96" viewBox="0 0 96 96">
+        <circle cx="48" cy="48" r="38" fill="none" stroke="#2d4f2d" stroke-width="8"/>
+        <circle id="scoreArc" cx="48" cy="48" r="38" fill="none" stroke="#4caf50" stroke-width="8"
+          stroke-dasharray="0 239" stroke-linecap="round" transform="rotate(-90 48 48)"
+          style="transition:stroke-dasharray .8s ease"/>
+        <text id="scoreNum" x="48" y="44" text-anchor="middle" fill="#4caf50" font-size="22" font-weight="700" font-family="sans-serif">0</text>
+        <text x="48" y="60" text-anchor="middle" fill="#7a957a" font-size="10" font-family="sans-serif">/ 100</text>
+      </svg>
+      <div>
+        <div class="result-summary-label">SHOTTY の診断</div>
+        <div class="result-summary-text" id="resultSummary"></div>
+      </div>
+    </div>
+
+    <div class="point-tabs">
+      <button class="point-tab active" onclick="switchTab('setup')">① セットアップ</button>
+      <button class="point-tab" onclick="switchTab('swing')">② バックスイング</button>
+      <button class="point-tab" onclick="switchTab('impact')">③ インパクト</button>
+    </div>
+    <div class="point-body" id="pointBody"></div>
+
+    <div class="drill-box">
+      <div class="drill-label">🔧 修正ドリル（最優先）</div>
+      <div class="drill-text" id="drillText"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const GEMINI_API_KEY = 'AIzaSyAfszb6KfCL7MkJ01vbGuAkFGllPSCjj38';
+/** 2.x で 503 / 高負荷のときは gemini-1.5-flash 等に変更 */
+const GEMINI_MODEL = 'gemini-1.5-flash';
+const SYSTEM_INSTRUCTION = `# Role
+あなたはゴルフスイング解析のスペシャリスト「Shotty」です。
+ユーザー（エンジニア気質の戦略派ゴルファー）のスイング動画を解析し、論理的かつ辛口なアドバイスを提供します。
+コードレビューのようなトーンで、曖昧な表現は一切使いません。
+
+# ユーザースペック
+- ドライバー飛距離: 200-220yd
+- 得意クラブ: 56度・60度ウェッジ
+- 目標: 飛距離アップより「安定した戦略的ゴルフ」
+
+# Analysis Parameters
+1. セットアップ（姿勢、ボール位置、グリップ）
+2. バックスイング（軌道、体の捻転）
+3. インパクト（フェースの向き、体重移動）
+4. フォロースルー（フィニッシュの安定性）
+
+# Guidelines
+- 抽象的な表現（「もっとガバッと」など）は絶対禁止。角度・タイミング・重心位置などの論理的な言葉のみ使用。
+- 飛距離アップよりも「安定した再現性」を優先した修正案を提案する。
+- 性格：少しおせっかいで、エンジニアに対する「コードレビュー」のようなトーン。
+- 必ず日本語で回答する。
+
+# Output Format（必ずこのJSON形式のみで返すこと）
+{"score":0-100の整数,"summary":"スイング全体の一言要約","points":{"setup":"セットアップの評価","swing":"バックスイングの評価","impact":"インパクトの評価"},"debug_code":"最優先ドリル（1つ）"}`;
+
+let selectedAngle = 'side';
+let videoFile = null;
+let analysisResult = null;
+let activeTab = 'setup';
+
+function selectAngle(a) {
+  selectedAngle = a;
+  document.getElementById('btnSide').classList.toggle('sel', a === 'side');
+  document.getElementById('btnFront').classList.toggle('sel', a === 'front');
+}
+
+function onFileChange(e) { if (e.target.files[0]) setFile(e.target.files[0]); }
+function onDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('drag-over'); }
+function onDragLeave() { document.getElementById('dropZone').classList.remove('drag-over'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+}
+
+function setFile(f) {
+  if (!f.type.startsWith('video/')) { showError('動画ファイル（MP4・MOV・WebMなど）を選択してください'); return; }
+  if (f.size > 100 * 1024 * 1024) { showError('ファイルサイズは 100MB 以下にしてください'); return; }
+  hideError();
+  document.getElementById('resultCard').style.display = 'none';
+  videoFile = f;
+  document.getElementById('dzIcon').textContent = '🎬';
+  document.getElementById('dzLabel').textContent = '動画を変更';
+  document.getElementById('dzFileInfo').textContent = `✅ ${f.name}（${(f.size/1024/1024).toFixed(1)} MB）`;
+  const url = URL.createObjectURL(f);
+  const v = document.getElementById('videoPreview');
+  v.src = url;
+  v.style.display = 'block';
+  document.getElementById('analyzeBtn').disabled = false;
+}
+
+async function analyze() {
+  if (!videoFile) return;
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('loadingBox').style.display = 'block';
+  document.getElementById('resultCard').style.display = 'none';
+  hideError();
+
+  try {
+    const base64 = await toBase64(videoFile);
+    const angleLabel = selectedAngle === 'side' ? '後方（飛球線後方）' : '正面（ターゲット方向）';
+    const memo = document.getElementById('memoInput').value;
+    const userPrompt = `このゴルフスイング動画を解析してください。\n撮影方向: ${angleLabel}\n${memo ? `特に注目してほしい点: ${memo}` : '全体的に解析してください。'}\n\n出力は必ず指定したJSON形式のみで返してください。`;
+
+    const body = {
+      system_instruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+      contents: [{
+        role: 'user',
+        parts: [
+          { inline_data: { mime_type: videoFile.type, data: base64 } },
+          { text: userPrompt }
+        ]
+      }],
+      generation_config: { temperature: 0.3 }
+    };
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('AIの応答をパースできませんでした');
+    analysisResult = JSON.parse(m[0]);
+    renderResult(analysisResult);
+  } catch(e) {
+    showError(e.message);
+  } finally {
+    document.getElementById('loadingBox').style.display = 'none';
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+}
+
+function renderResult(r) {
+  const circ = 2 * Math.PI * 38;
+  const arc = document.getElementById('scoreArc');
+  const num = document.getElementById('scoreNum');
+  const color = r.score >= 75 ? '#4caf50' : r.score >= 50 ? '#e8c84a' : '#e05252';
+  arc.setAttribute('stroke', color);
+  arc.setAttribute('stroke-dasharray', `${circ * r.score / 100} ${circ * (1 - r.score / 100)}`);
+  num.setAttribute('fill', color);
+  num.textContent = r.score;
+  document.getElementById('resultSummary').textContent = r.summary;
+  document.getElementById('drillText').textContent = r.debug_code;
+  switchTab('setup');
+  document.getElementById('resultCard').style.display = 'block';
+  document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  const tabs = { setup: '① セットアップ', swing: '② バックスイング', impact: '③ インパクト' };
+  document.querySelectorAll('.point-tab').forEach((btn, i) => {
+    const key = ['setup','swing','impact'][i];
+    btn.classList.toggle('active', key === tab);
+  });
+  if (analysisResult) {
+    document.getElementById('pointBody').textContent = analysisResult.points[tab] || '';
+  }
+}
+
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBox');
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+}
+function hideError() {
+  document.getElementById('errorBox').style.display = 'none';
+}
+</script>
+</body>
+</html>

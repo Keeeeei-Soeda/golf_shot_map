@@ -540,20 +540,20 @@ function buildScoreCard(metaKey:string){
 }
 export function makeShotIcon(s:any){
   const G=(window as any).google.maps
-  // バブル(36px) + 下向き三角ポインター(16px) = 52px
-  // アンカーを三角の先端(y=52)に設定 → 旗竿でなくバルーン吹き出し型
+  // バブル(42px) + 下向き三角ポインター(16px) = 58px
+  // アンカーを三角の先端(y=58)に設定 → バルーン吹き出し型
   if(s.isPenalty){
     const label=`→${s.penaltyTarget}打目`
-    const w=Math.max(84,label.length*8+24)
+    const w=Math.max(92,label.length*9+24)
     const half=Math.round(w/2)
-    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="52"><rect x="1" y="1" width="${w-2}" height="36" rx="8" fill="#f59e0b" stroke="#fff" stroke-width="1.5" stroke-dasharray="5 2"/><text x="${half}" y="15" font-size="10" fill="#000" text-anchor="middle" font-family="sans-serif" font-weight="bold">OB（${s.no}打目）</text><text x="${half}" y="29" font-size="10" fill="#000" text-anchor="middle" font-family="sans-serif">${label}</text><polygon points="${half-7},37 ${half+7},37 ${half},52" fill="#f59e0b"/></svg>`
-    return {url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new G.Size(w,52),anchor:new G.Point(half,52)}
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="58"><rect x="1" y="1" width="${w-2}" height="42" rx="9" fill="#f59e0b" stroke="#fff" stroke-width="1.5" stroke-dasharray="5 2"/><text x="${half}" y="18" font-size="12" fill="#000" text-anchor="middle" font-family="sans-serif" font-weight="bold">OB（${s.no}打目）</text><text x="${half}" y="34" font-size="12" fill="#000" text-anchor="middle" font-family="sans-serif">${label}</text><polygon points="${half-8},43 ${half+8},43 ${half},58" fill="#f59e0b"/></svg>`
+    return {url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new G.Size(w,58),anchor:new G.Point(half,58)}
   }
   const label=`${s.carry}yd→${s.remaining}yd`
-  const w=Math.max(88,label.length*7+16)
+  const w=Math.max(96,label.length*8+20)
   const half=Math.round(w/2)
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="52"><rect x="1" y="1" width="${w-2}" height="36" rx="8" fill="#60a5fa" stroke="#fff" stroke-width="1.5"/><text x="${half}" y="16" font-size="13" fill="#000" text-anchor="middle" font-family="sans-serif" font-weight="bold">${s.no}</text><text x="${half}" y="29" font-size="9" fill="#000" text-anchor="middle" font-family="sans-serif">${label}</text><polygon points="${half-7},37 ${half+7},37 ${half},52" fill="#60a5fa"/></svg>`
-  return {url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new G.Size(w,52),anchor:new G.Point(half,52)}
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="58"><rect x="1" y="1" width="${w-2}" height="42" rx="9" fill="#60a5fa" stroke="#fff" stroke-width="1.5"/><text x="${half}" y="18" font-size="14" fill="#000" text-anchor="middle" font-family="sans-serif" font-weight="bold">${s.no}</text><text x="${half}" y="34" font-size="12" fill="#000" text-anchor="middle" font-family="sans-serif">${label}</text><polygon points="${half-8},43 ${half+8},43 ${half},58" fill="#60a5fa"/></svg>`
+  return {url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new G.Size(w,58),anchor:new G.Point(half,58)}
 }
 export function renderShotLayer(){
   clearShotLayer()

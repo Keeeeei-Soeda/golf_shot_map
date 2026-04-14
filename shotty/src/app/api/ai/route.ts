@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { resolveGeminiModel } from '@/lib/gemini'
+import { resolveGeminiModel, withGeminiRetries } from '@/lib/gemini'
 
 const SYSTEM_INSTRUCTION = `あなたは「Golf System Architect & Debugger」です。ユーザーの「100切り」を最短で達成させるための戦略的キャディかつデータサイエンティストとして振る舞ってください。
 
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     const history = contents.slice(0, -1)
 
     const chat = model.startChat({ history })
-    const result = await chat.sendMessage(lastUser.parts[0].text)
+    const result = await withGeminiRetries(() => chat.sendMessage(lastUser.parts[0].text))
     const content = result.response.text()
 
     return NextResponse.json({ ok: true, content })
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     const msg = String(e?.message || e)
     const hint =
       /quota|429|503|RESOURCE_EXHAUSTED|high demand/i.test(msg)
-        ? '（しばらく待つか、.env の GEMINI_MODEL を gemini-1.5-flash などに変更。https://ai.google.dev/gemini-api/docs/rate-limits ）'
+        ? '（時間をおいて再試行するか、.env の GEMINI_MODEL を変更。既定は gemini-2.5-flash-lite。https://ai.google.dev/gemini-api/docs/rate-limits ）'
         : ''
     return NextResponse.json({ ok: false, error: msg + hint }, { status: 500 })
   }

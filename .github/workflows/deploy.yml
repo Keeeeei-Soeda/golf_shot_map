@@ -1,0 +1,26 @@
+name: Deploy Shotty
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            cd /var/www/shotty
+            git fetch origin
+            git reset --hard origin/main
+            cd shotty
+            npm install
+            npm run build
+            pm2 restart shotty
+            echo "Deployed at $(date)"

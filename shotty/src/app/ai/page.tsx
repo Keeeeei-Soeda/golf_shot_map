@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 const CHATS_KEY = 'golfAiChats'
@@ -286,12 +287,17 @@ export default function AiPage() {
             }
           </div>
           <div className="sb-footer">
-            <a href="/swing" style={{display:'block',marginBottom:'6px'}}>
-              <button className="sb-back-btn" style={{borderColor:'var(--gv)',color:'var(--gv)'}}>🎥 スイング解析</button>
-            </a>
-            <a href="/" style={{display:'block'}}>
-              <button className="sb-back-btn">← メニューを表示</button>
-            </a>
+            <Link
+              href="/swing"
+              prefetch={false}
+              className="sb-back-btn"
+              style={{ display: 'block', marginBottom: '6px', borderColor: 'var(--gv)', color: 'var(--gv)', textAlign: 'center', textDecoration: 'none' }}
+            >
+              🎥 スイング解析
+            </Link>
+            <Link href="/" prefetch={false} className="sb-back-btn" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+              ← メニューを表示
+            </Link>
           </div>
         </div>
 

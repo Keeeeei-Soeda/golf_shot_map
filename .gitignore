@@ -1,1 +1,5 @@
 .DS_Store
+
+# 秘密情報・鍵（リポジトリに含めない）
+*.pem
+update/api.memo

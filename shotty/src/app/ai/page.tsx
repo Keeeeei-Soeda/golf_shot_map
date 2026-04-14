@@ -36,6 +36,22 @@ interface Chat {
   messages: Message[]
 }
 
+/** localStorage の golfRounds 用（型は緩めにしつつ any を避ける） */
+interface StoredRound {
+  date?: string
+  gcName?: string
+  courseName?: string
+  shots: Record<string, unknown>
+}
+interface StoredShot {
+  no: number
+  isPenalty?: boolean
+  club?: string
+  carry?: number
+  remaining?: number
+  result?: string
+}
+
 function buildContext(): string {
   let ctx = '\n\n━━━━━━━━━━ ユーザーデータ ━━━━━━━━━━'
   try {
@@ -44,7 +60,7 @@ function buildContext(): string {
     if (valid.length) ctx += `\n\n▼ クラブセット構成\n${valid.join('、')}`
   } catch {}
   try {
-    const rounds = JSON.parse(localStorage.getItem('golfRounds') || '[]') as any[]
+    const rounds = JSON.parse(localStorage.getItem('golfRounds') || '[]') as StoredRound[]
     if (rounds.length) {
       ctx += '\n\n▼ 直近のラウンドデータ（最新3件）'
       rounds.slice(0, 3).forEach(r => {
@@ -55,15 +71,16 @@ function buildContext(): string {
           const parts = key.split('_')
           if (parts.length < 3) return
           const hIdx = parseInt(parts[2])
-          const meta = (r.shots as any)[key + '_meta'] || {}
+          const meta = (r.shots[key + '_meta'] as Record<string, unknown> | undefined) || {}
           if (!meta.cupIn) return
-          const score = meta.totalShots || val.length
-          const par = meta.par || '?'
-          const diff = meta.scoreDiff || 0
+          const score = (meta.totalShots as number | undefined) || val.length
+          const par = meta.par ?? '?'
+          const diff = (meta.scoreDiff as number | undefined) || 0
           const diffS = diff === 0 ? 'E' : diff > 0 ? `+${diff}` : String(diff)
-          const details = (val as any[]).slice(0, 5).filter((s: any) => !s.isPenalty && s.club)
-            .map((s: any) => `${s.no}打:${s.club} ${s.carry}yd`).join(' / ')
-          const evals = (val as any[]).filter((s: any) => s.result).map((s: any) => `${s.no}打=${s.result}`).join(',')
+          const shotsArr = val as StoredShot[]
+          const details = shotsArr.slice(0, 5).filter(s => !s.isPenalty && s.club)
+            .map(s => `${s.no}打:${s.club} ${s.carry}yd`).join(' / ')
+          const evals = shotsArr.filter(s => s.result).map(s => `${s.no}打=${s.result}`).join(',')
           results.push(`H${hIdx + 1} PAR${par} ${score}打${diffS}${evals ? ` (${evals})` : ''}${details ? ` [${details}]` : ''}`)
         })
         if (results.length) ctx += '\n' + results.join('\n')
@@ -189,8 +206,9 @@ export default function AiPage() {
       const finalChat = { ...chat, messages: [...chat.messages, aiMsg], updatedAt: Date.now() }
       const finalChats = newChats.map(c => c.id === finalChat.id ? finalChat : c)
       saveChats(finalChats)
-    } catch (e: any) {
-      setStreamText(`⚠️ エラーが発生しました\n\n${e.message}`)
+    } catch (e: unknown) {
+      const errMsg = e instanceof Error ? e.message : String(e)
+      setStreamText(`⚠️ エラーが発生しました\n\n${errMsg}`)
     } finally {
       setLoading(false)
       scrollBottom()

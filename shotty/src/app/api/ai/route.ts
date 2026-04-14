@@ -54,8 +54,8 @@ export async function POST(req: NextRequest) {
     const content = result.response.text()
 
     return NextResponse.json({ ok: true, content })
-  } catch (e: any) {
-    const msg = String(e?.message || e)
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e)
     const hint =
       /quota|429|503|RESOURCE_EXHAUSTED|high demand/i.test(msg)
         ? '（時間をおいて再試行するか、.env の GEMINI_MODEL を変更。既定は gemini-2.5-flash-lite。https://ai.google.dev/gemini-api/docs/rate-limits ）'

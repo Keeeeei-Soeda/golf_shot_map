@@ -582,7 +582,7 @@ export function openReview(){
   if(meta.cupIn){const sd=scoreDef(meta.scoreDiff);titleHtml+=` <span class="rv-score-badge ${sd.cls}">${sd.name}</span>`}
   const t=document.getElementById('rvTitle');if(t)t.innerHTML=titleHtml
   const rl=document.getElementById('rvList')
-  if(rl){if(shots.length===0){rl.innerHTML='<div class="rv-empty">まだショットが記録されていません</div>'}else{const holeOff=gs.roundShots[key+'_offset']||0;rl.innerHTML=shots.map((s:any,i:number)=>`<div class="rv-row"><div class="rv-no">${s.no}</div><div class="rv-info"><div class="rv-club">${s.club||'—'}${s.result?' '+_resultIcon(s.result)+' '+s.result:''}</div><div class="rv-dist">carry ${s.carry}yd 残${s.remaining}yd</div></div><button class="rv-del" onclick="deleteShot(${i})">✕</button></div>`).join('')}}
+  if(rl){if(shots.length===0){rl.innerHTML='<div class="rv-empty">まだショットが記録されていません</div>'}else{rl.innerHTML=shots.map((s:any,i:number)=>`<div class="rv-row"><div class="rv-no">${s.no}</div><div class="rv-info"><div class="rv-club">${s.club||'—'}${s.result?' '+_resultIcon(s.result)+' '+s.result:''}</div><div class="rv-dist">carry ${s.carry}yd 残${s.remaining}yd</div></div><button class="rv-del" onclick="deleteShot(${i})">✕</button></div>`).join('')}}
   const p=document.getElementById('reviewPanel'),o=document.getElementById('reviewOverlay')
   if(p)p.classList.add('open');if(o)o.classList.add('show')
 }
@@ -1033,5 +1033,5 @@ export function restoreStrategyState(){
       const r=all.find((x:any)=>x.id===gs.strategyRoundId)
       if(r)_applyLocalRound(r,false)
     }
-  }catch(e){}
+  }catch{/* ignore corrupt localStorage */}
 }

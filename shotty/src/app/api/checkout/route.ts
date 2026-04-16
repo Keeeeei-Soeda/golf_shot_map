@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { priceId, amount, productName } = body;
 
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = priceId
+    const lineItems = priceId
       ? [{ price: priceId, quantity: 1 }]
       : [
           {

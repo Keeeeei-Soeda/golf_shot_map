@@ -1933,7 +1933,7 @@ export const COURSES: GolfCourse[] = [
           {
             no:17, par:3,
             tee:    { lat: 34.871066, lng: 135.040667 },
-            tees:   { regular: { lat: 34.871066, lng: 135.040667 }, ladies: null },
+            tees:   { regular: { lat: 34.871066, lng: 135.040667 }, ladies: undefined },
             front:  { lat: 34.869914, lng: 135.041427 },
             center: { lat: 34.869789, lng: 135.04152 },
             back:   { lat: 34.869666, lng: 135.04159 },

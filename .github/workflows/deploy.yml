@@ -21,6 +21,7 @@ jobs:
             git reset --hard origin/main
             cd shotty
             npm install
+            rm -rf .next
             npm run build
             pm2 restart shotty
             echo "Deployed at $(date)"

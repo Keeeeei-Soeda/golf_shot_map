@@ -145,6 +145,20 @@ npm run build
 pm2 restart shotty
 ```
 
+### ビルドキャッシュ破損でサービスが起動しない
+
+> ⚠️ `deploy.yml` に `rm -rf .next` は絶対に入れないこと。
+> GitHub Actions がタイムアウトしてビルドが中断すると `.next` が存在しない状態になりサービス停止する。
+> キャッシュ破損が疑われる場合のみ、VPS に SSH して手動で実行する。
+
+```bash
+pm2 stop shotty
+cd /var/www/shotty/shotty
+rm -rf .next
+npm run build       # 約1〜2分かかる
+pm2 start shotty
+```
+
 ### pm2 が止まっている
 
 ```bash

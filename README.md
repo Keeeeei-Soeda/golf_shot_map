@@ -191,19 +191,25 @@ courses.js に貼り付けてプッシュ
 
 ---
 
-## 7. GitHubアップ手順
+## 7. デプロイ手順
+
+> ⚠️ 詳細は `docs/deploy.md` を参照すること（Cursor AIエージェントはそちらを正とする）
 
 ```bash
 cd ~/golf_shot_map
 git add .
 git commit -m "変更内容のメモ"
-git fetch origin
-git rebase origin/main
 git push origin main
 ```
 
-**反映まで1〜2分。確認URL：**
-`https://keeeeei-soeda.github.io/golf_shot_map/`
+**`git push` の1コマンドで以下が自動実行される：**
+
+| 対象 | 反映先 | 反映時間 |
+|---|---|---|
+| GitHub Pages | `https://keeeeei-soeda.github.io/golf_shot_map/` | 1〜2分 |
+| ConoHa VPS | `https://shotty.net` | 2〜3分 |
+
+VPS へのデプロイは GitHub Actions（`.github/workflows/deploy.yml`）が SSH 経由で自動実行する。
 
 ---
 

@@ -363,24 +363,6 @@ export default function Page() {
           <div className="cup-manual-title">スコアを確認・変更</div>
           <div id="cpScoreBtns" className="cup-manual-btns" suppressHydrationWarning></div>
         </div>
-        <div className="cup-stroke-pen-area">
-          <div className="cup-penalty-label">罰打数<span id="cpRecordedPenaltyBadge" className="cp-recorded-penalty-badge" style={{display:'none'}}></span></div>
-          <div className="cup-stroke-pen-btns">
-            {[0,1,2,3,4,5].map(n=>(
-              <button key={n} className="cup-stroke-pen-btn" data-pen={String(n)} onClick={e=>selectCupStrokePenalty(e.currentTarget as HTMLElement,n)}>
-                {n===0?'罰なし':`${n}打罰`}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="cup-ob-type-area">
-          <div className="cup-penalty-label">ペナルティ種別（任意）</div>
-          <div className="cup-ob-type-btns">
-            {[{type:'ペナルティエリア',icon:'🏊'},{type:'アンプレヤブル',icon:'🌳'},{type:'紛失球',icon:'🔍'},{type:'OB',icon:'🚫'}].map(ob=>(
-              <button key={ob.type} className="cup-ob-btn" data-type={ob.type} onClick={e=>selectCupObType(e.currentTarget as HTMLElement,ob.type)}>{ob.icon} {ob.type}</button>
-            ))}
-          </div>
-        </div>
         <div className="cup-putts-area">
           <div className="cup-putts-label">パット数（任意）</div>
           <div className="cup-putts-btns">

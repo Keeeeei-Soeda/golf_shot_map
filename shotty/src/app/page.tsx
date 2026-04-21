@@ -186,8 +186,6 @@ export default function Page() {
           <Link className="menu-club-btn" style={{ display: 'block', marginTop: '6px', textDecoration: 'none' }} href="/swing" prefetch={false} target="_blank" rel="noopener noreferrer">🎥 スイング解析</Link>
           <button className="menu-club-btn" style={{marginTop:'6px'}} onClick={openClubEditor}>🏌️ クラブセット編集</button>
           <div className="menu-divider"></div>
-          <div style={{padding:'4px 0 2px',fontSize:'10px',color:'var(--gr)',letterSpacing:'1px'}}>プレミアムプラン</div>
-          <CheckoutButton amount={500} productName="Shotty プレミアムプラン" label="⭐ プレミアムに申し込む" />
         </div>
       </div>
 

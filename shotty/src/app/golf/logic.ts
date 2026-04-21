@@ -65,19 +65,20 @@ export function resumeActiveRound(): boolean {
     gs.roundShots = d.roundShots || {}
     // サイドバーのコース選択を同期
     const gcSel = document.getElementById('gcSel') as HTMLSelectElement
-    if (gcSel) gcSel.value = String(st.gcIdx)
-    const n  = COURSES[st.gcIdx]?.courses?.length ?? 0
+    const gcIdx = st.gcIdx!
+    if (gcSel) gcSel.value = String(gcIdx)
+    const n  = COURSES[gcIdx]?.courses?.length ?? 0
     const cw = document.getElementById('courseComboWrap')
     const cs = document.getElementById('courseSel') as HTMLSelectElement
     if (n >= 3) {
       if (cs) cs.style.display = 'none'
-      if (cw) { cw.style.display = 'block'; const btn = document.getElementById('courseComboBtns'); if (btn) btn.innerHTML = buildCourseComboButtonHtml(st.gcIdx, true) }
+      if (cw) { cw.style.display = 'block'; const btn = document.getElementById('courseComboBtns'); if (btn) btn.innerHTML = buildCourseComboButtonHtml(gcIdx, true) }
     } else {
       if (cw) cw.style.display = 'none'
-      if (cs && COURSES[st.gcIdx]) {
+      if (cs && COURSES[gcIdx]) {
         cs.style.display = 'block'
         cs.innerHTML = '<option value="">-- コース --</option>'
-        COURSES[st.gcIdx].courses.forEach((c, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = c.name; cs.appendChild(o) })
+        COURSES[gcIdx].courses.forEach((c, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = c.name; cs.appendChild(o) })
         cs.value = String(st.cIdx)
       }
     }

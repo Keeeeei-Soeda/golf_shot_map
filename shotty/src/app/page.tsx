@@ -21,6 +21,7 @@ import {
   emSelectPref, emBackToPref, emSelectGc, emBackToGc, emSelectCourse, emBackToCourse, emSelectTee,
   openStrategySelector, closeStrategySelector, setStrategySourceTab,
   activateStrategyLocal, deactivateStrategy,
+  resumeActiveRound, updateResumeBanner,
 } from './golf/logic'
 
 // ============================================================
@@ -96,6 +97,8 @@ declare global {
     setStrategySourceTab: (src: string) => void
     activateStrategyLocal: (id: string) => void
     deactivateStrategy: () => void
+    resumeActiveRound: () => boolean
+    updateResumeBanner: () => void
   }
 }
 
@@ -121,6 +124,7 @@ export default function Page() {
       emSelectPref, emBackToPref, emSelectGc, emBackToGc, emSelectCourse, emBackToCourse, emSelectTee,
       openStrategySelector, closeStrategySelector, setStrategySourceTab,
       activateStrategyLocal, deactivateStrategy,
+      resumeActiveRound, updateResumeBanner,
     })
     initApp()
   }, [])
@@ -238,6 +242,7 @@ export default function Page() {
         <div id="yardageInfo" style={{display:'none'}} suppressHydrationWarning></div>
         <div id="strategyBanner" className="strategy-banner" style={{display:'none'}}></div>
         <div id="recBanner" style={{display:'none'}}></div>
+        <div id="resumeBanner" className="resume-banner" style={{display:'none'}}></div>
         <div id="map" style={{display:'none'}}></div>
         <div id="emptyMap">
           <div className="ico">⛳</div>
@@ -274,7 +279,7 @@ export default function Page() {
         </div>
         <div id="modeInfo" className="mode-info">コースを選択</div>
         <div id="holeNavBtns" className="hole-nav" style={{display:'none'}}>
-          <button id="prevHoleBtn" className="hole-nav-btn" onClick={prevHole} disabled>◀ 前H</button>
+          <button id="prevHoleBtn" className="hole-nav-btn" onClick={prevHole}>◀ 前H</button>
           <button id="nextHoleBtn" className="hole-nav-btn" onClick={nextHole}>次H ▶</button>
         </div>
         <button id="cupBtn" onClick={openCupPanel} style={{display:'none'}}>⛳ IN</button>

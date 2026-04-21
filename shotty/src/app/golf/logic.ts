@@ -10,7 +10,83 @@ import {
 // ============================================================
 export function initMap() {
   gs.mapsLoaded = true
-  if (gs.appInitialized) loadHole()
+  if (gs.appInitialized) {
+    if (!resumeActiveRound()) loadHole()
+    restoreStrategyState()
+    updateResumeBanner()
+  }
+}
+
+// ============================================================
+// アクティブラウンド永続化（リロード・誤タッチ対策）
+// ============================================================
+const ACTIVE_ROUND_KEY = 'golfActiveRound'
+
+export function saveActiveRound() {
+  if (st.gcIdx === null || st.cIdx === null || !gs.roundId) return
+  try {
+    localStorage.setItem(ACTIVE_ROUND_KEY, JSON.stringify({
+      gcIdx: st.gcIdx, cIdx: st.cIdx, cIdx2: st.cIdx2,
+      hIdx: st.hIdx, teeType: st.teeType,
+      roundId: gs.roundId, roundShots: gs.roundShots,
+    }))
+  } catch {}
+}
+
+export function clearActiveRound() {
+  localStorage.removeItem(ACTIVE_ROUND_KEY)
+  updateResumeBanner()
+}
+
+export function updateResumeBanner() {
+  const b = document.getElementById('resumeBanner')
+  if (!b) return
+  try {
+    const s = localStorage.getItem(ACTIVE_ROUND_KEY)
+    if (!s) { b.style.display = 'none'; return }
+    const d = JSON.parse(s)
+    const gcName = d.gcIdx != null ? COURSES[d.gcIdx]?.name || '' : ''
+    const cName  = (d.gcIdx != null && d.cIdx != null) ? COURSES[d.gcIdx]?.courses[d.cIdx]?.name || '' : ''
+    const hNo    = (d.hIdx ?? 0) + 1
+    b.innerHTML = `<span>🔄 記録中のラウンドがあります — ${gcName} ${cName} H${hNo}</span><button onclick="resumeActiveRound()">▶ 再開する</button>`
+    b.style.display = 'flex'
+  } catch { b.style.display = 'none' }
+}
+
+export function resumeActiveRound(): boolean {
+  try {
+    const s = localStorage.getItem(ACTIVE_ROUND_KEY)
+    if (!s) return false
+    const d = JSON.parse(s)
+    if (d.gcIdx == null || d.cIdx == null) return false
+    st.gcIdx = d.gcIdx; st.cIdx = d.cIdx; st.cIdx2 = d.cIdx2 ?? null
+    st.hIdx  = d.hIdx ?? 0; st.teeType = d.teeType || 'regular'
+    gs.roundId    = d.roundId || gs.roundId
+    gs.roundShots = d.roundShots || {}
+    // サイドバーのコース選択を同期
+    const gcSel = document.getElementById('gcSel') as HTMLSelectElement
+    if (gcSel) gcSel.value = String(st.gcIdx)
+    const n  = COURSES[st.gcIdx]?.courses?.length ?? 0
+    const cw = document.getElementById('courseComboWrap')
+    const cs = document.getElementById('courseSel') as HTMLSelectElement
+    if (n >= 3) {
+      if (cs) cs.style.display = 'none'
+      if (cw) { cw.style.display = 'block'; const btn = document.getElementById('courseComboBtns'); if (btn) btn.innerHTML = buildCourseComboButtonHtml(st.gcIdx, true) }
+    } else {
+      if (cw) cw.style.display = 'none'
+      if (cs && COURSES[st.gcIdx]) {
+        cs.style.display = 'block'
+        cs.innerHTML = '<option value="">-- コース --</option>'
+        COURSES[st.gcIdx].courses.forEach((c, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = c.name; cs.appendChild(o) })
+        cs.value = String(st.cIdx)
+      }
+    }
+    renderStrip(); loadHole(); updateHoleNavBtns()
+    return true
+  } catch (e) {
+    console.error('[resumeActiveRound]', e)
+    return false
+  }
 }
 
 // ============================================================
@@ -131,9 +207,10 @@ export function initApp() {
   updateBadge()
   gs.appInitialized = true
   if (gs.mapsLoaded) {
-    loadHole()
+    if (!resumeActiveRound()) loadHole()
     restoreStrategyState()
   }
+  updateResumeBanner()
 }
 
 // ============================================================
@@ -411,7 +488,7 @@ export function confirmPenaltyDrop(){
     const newOffset=n-(shots.length+1)
     if(newOffset>0)gs.roundShots[key+'_offset']=newOffset; else delete gs.roundShots[key+'_offset']
     delete gs.roundShots[key+'_pendingPenalty']
-    saveRound();cancelShot();renderShotLayer();renderStrip();updateInfo();updateRecBanner();placePins(hole())
+    saveRound();saveActiveRound();cancelShot();renderShotLayer();renderStrip();updateInfo();updateRecBanner();placePins(hole())
     console.log('[confirmPenaltyDrop] success, shots:', gs.roundShots[key]?.length)
   } catch(e) {
     console.error('[confirmPenaltyDrop] error:', e)
@@ -455,7 +532,7 @@ export function confirmShot(){
     const remYd=Math.round(haversine(gs.pendingPos.lat(),gs.pendingPos.lng(),h.center.lat,h.center.lng)*1.09361)
     const fromLabel=prevIsTee?'ティー':`${shots[shots.length-1].no}打目地点`
     shots.push({no,lat:gs.pendingPos.lat(),lng:gs.pendingPos.lng(),club:gs.selectedClub,carry:carryYd,remaining:remYd,fromLabel,result:gs.selectedResult||null})
-    saveRound();cancelShot();renderShotLayer();renderStrip();updateInfo();updateRecBanner();updateYardagePanel();placePins(hole())
+    saveRound();saveActiveRound();cancelShot();renderShotLayer();renderStrip();updateInfo();updateRecBanner();updateYardagePanel();placePins(hole())
     console.log('[confirmShot] success, shots:', gs.roundShots[key]?.length)
   } catch(e) {
     console.error('[confirmShot] error:', e)
@@ -526,7 +603,7 @@ export function confirmCupIn(){
   const finalDiff=finalTotal-h.par
   const metaKey=key+'_meta'
   gs.roundShots[metaKey]={cupIn:true,par:h.par,scoreDiff:finalDiff,totalShots:finalTotal,strokePenalty:gs.cpStrokePenalty>0?gs.cpStrokePenalty:null,obType:gs.cpObType||null,putts:gs.cpPutts}
-  saveRound(); closeCupPanel(); renderStrip(); updateInfo(); updateRecBanner()
+  saveRound(); saveActiveRound(); closeCupPanel(); renderStrip(); updateInfo(); updateRecBanner()
   openHoleSummary()
 }
 export function closeCupPanel(){
@@ -637,7 +714,7 @@ export function clearHoleShots(){
   const key=holeKey()
   delete gs.roundShots[key];delete gs.roundShots[key+'_meta']
   delete gs.roundShots[key+'_offset'];delete gs.roundShots[key+'_pendingPenalty']
-  saveRound();clearShotLayer();renderStrip();closeReview();updateInfo();updateRecBanner()
+  saveRound();saveActiveRound();clearShotLayer();renderStrip();closeReview();updateInfo();updateRecBanner()
 }
 
 // ============================================================
@@ -798,6 +875,7 @@ export function roundHasLadiesTeeData(gcIdx:number,cIdx:number,cIdx2:number|null
   return [...h1,...h2].some(h=>(h as any).tees?.ladies)
 }
 export function applyRoundCourseState(gcIdx:number,cIdx:number,cIdx2?:number){
+  clearActiveRound()
   st.gcIdx=gcIdx;st.cIdx=cIdx;st.cIdx2=(typeof cIdx2==='number'&&!isNaN(cIdx2))?cIdx2:null;st.hIdx=0
   gs.roundShots={};gs.roundId='round_'+Date.now()
   const gs2=document.getElementById('gcSel') as HTMLSelectElement;if(gs2)gs2.value=String(gcIdx)
@@ -805,6 +883,7 @@ export function applyRoundCourseState(gcIdx:number,cIdx:number,cIdx2?:number){
   if(cs){cs.innerHTML='<option value="">-- コース --</option>';COURSES[gcIdx].courses.forEach((c,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=c.name;cs.appendChild(o)});cs.value=String(cIdx)}
 }
 export function onGCSel(){
+  clearActiveRound()
   const s=document.getElementById('gcSel') as HTMLSelectElement;st.gcIdx=s.value===''?null:parseInt(s.value);st.cIdx=null;st.cIdx2=null;st.hIdx=0
   const cs=document.getElementById('courseSel') as HTMLSelectElement,cw=document.getElementById('courseComboWrap'),tr=document.getElementById('sidebarTeeRow')
   if(tr)tr.style.display='none';if(cs)cs.innerHTML='<option value="">-- コース --</option>'
@@ -851,7 +930,7 @@ export function renderStrip(){
   }
   strip.innerHTML=html; updateHoleNavBtns()
 }
-export function selectHole(i:number){closeMenu();st.hIdx=i;renderStrip();loadHole();closeReview()}
+export function selectHole(i:number){closeMenu();st.hIdx=i;renderStrip();loadHole();closeReview();saveActiveRound()}
 export function prevHole(){if(!course()||st.hIdx<=0)return;selectHole(st.hIdx-1)}
 export function nextHole(){if(!course()||st.hIdx>=totalHoles()-1)return;selectHole(st.hIdx+1)}
 export function updateHoleNavBtns(){

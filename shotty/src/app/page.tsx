@@ -324,6 +324,12 @@ export default function Page() {
               <button id="pbBtn4" className="pb" onClick={()=>selectPenalty(4)}>プレ4<small>4打目から</small></button>
               <button id="pbBtn5" className="pb" onClick={()=>selectPenalty(5)}>プレ5<small>5打目から</small></button>
             </div>
+            <div className="sp-ob-type-label">ペナルティ種別（任意）</div>
+            <div className="sp-ob-type-btns">
+              {[{type:'ペナルティエリア',icon:'🏊',desc:'池・川など'},{type:'アンプレヤブル',icon:'🌳',desc:'打てない場所'},{type:'紛失球',icon:'🔍',desc:'ロストボール'},{type:'OB',icon:'🚫',desc:'白杭・黄杭外'}].map(ob=>(
+                <button key={ob.type} className="sp-ob-btn" data-type={ob.type} onClick={e=>selectShotObType(e.currentTarget as HTMLElement,ob.type)}>{ob.icon} {ob.type}<small>{ob.desc}</small></button>
+              ))}
+            </div>
           </div>
           <div id="spPenaltyHazardSection" style={{display:'none'}}>
             <div className="sp-ob-type-label">ペナルティ種別（任意）</div>

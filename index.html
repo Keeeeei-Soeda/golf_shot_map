@@ -246,6 +246,13 @@
         <button class="pb" id="pbBtn4" onclick="selectPenalty(4)">プレ4<br><small>4打目から</small></button>
         <button class="pb" id="pbBtn5" onclick="selectPenalty(5)">プレ5<br><small>5打目から</small></button>
       </div>
+      <div class="sp-ob-type-label">ペナルティ種別（任意）</div>
+      <div class="sp-ob-type-btns">
+        <button class="sp-ob-btn" data-type="ペナルティエリア" onclick="selectShotObType(this,'ペナルティエリア')">🏊 ペナルティエリア<br><small>池・川など</small></button>
+        <button class="sp-ob-btn" data-type="アンプレヤブル"   onclick="selectShotObType(this,'アンプレヤブル')">🌳 アンプレヤブル<br><small>打てない場所</small></button>
+        <button class="sp-ob-btn" data-type="紛失球"           onclick="selectShotObType(this,'紛失球')">🔍 紛失球<br><small>ロストボール</small></button>
+        <button class="sp-ob-btn" data-type="OB"               onclick="selectShotObType(this,'OB')">🚫 OB<br><small>白杭・黄杭外</small></button>
+      </div>
     </div>
 
     <!-- 【2打目以降】1打罰自動 + OB種別 セクション -->

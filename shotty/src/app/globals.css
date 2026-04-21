@@ -440,6 +440,10 @@ header{
 .score-btn.dbl.sel{background:var(--dbl);color:#fff;}
 .score-btn.tpl{border-color:var(--tpl);color:var(--tpl);}
 .score-btn.tpl.sel{background:var(--tpl);color:#fff;}
+.score-btn.other{border-color:#666;color:#aaa;}
+.score-btn.other.sel{background:#555;color:#fff;border-color:#888;}
+.score-btn-ext-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;width:100%;}
+.score-btn-ext{flex:1;min-width:36px;padding:5px 2px;font-size:10px;font-weight:600;border-radius:6px;}
 
 .cup-stroke-pen-area{padding:0 0 4px;}
 .cup-penalty-label{font-size:10px;color:var(--gr);margin-bottom:5px;letter-spacing:1px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}

@@ -390,11 +390,18 @@ function openCupPanel() {
   lbl.textContent   = shots.length > 0 ? `${sd.name}（${diff > 0 ? '+' : ''}${diff}）` : '（打数未記録）';
   lbl.className     = `cup-score-label ${sd.cls}`;
   lbl.style.background = shots.length > 0 ? '' : 'transparent';
-  document.getElementById('cpScoreBtns').innerHTML = SCORE_DEFS.map(d => {
+  const mainRow = SCORE_DEFS.map(d => {
     const label = d.diff === 0 ? 'E' : d.diff > 0 ? `+${d.diff}` : String(d.diff);
-    return `<button class="score-btn ${d.cls} ${d.diff === cpSelectedDiff ? 'sel' : ''}"
+    return `<button class="score-btn ${d.cls} ${d.diff === cpSelectedDiff ? 'sel' : ''}" data-diff="${d.diff}"
       onclick="selectCupScore(${d.diff})">${d.name}<br><small>${label}</small></button>`;
   }).join('');
+  const extRow = [8,9,10,11,12,13].map(n => {
+    const extDiff = n - h.par;
+    const label = extDiff > 0 ? `+${extDiff}` : String(extDiff);
+    return `<button class="score-btn score-btn-ext other ${extDiff === cpSelectedDiff ? 'sel' : ''}" data-diff="${extDiff}"
+      onclick="selectCupScore(${extDiff})">${n}打<br><small>${label}</small></button>`;
+  }).join('');
+  document.getElementById('cpScoreBtns').innerHTML = mainRow + `<div class="score-btn-ext-row">${extRow}</div>`;
   document.getElementById('cupPanel').classList.add('open');
   document.getElementById('recBanner').style.display = 'none';
 }
@@ -410,8 +417,7 @@ function selectCupScore(diff) {
     lbl.className   = `cup-score-label ${sd.cls}`;
   }
   document.querySelectorAll('.score-btn').forEach(b => {
-    const d = parseInt(b.getAttribute('onclick').match(/-?\d+/)[0]);
-    b.classList.toggle('sel', d === diff);
+    b.classList.toggle('sel', parseInt(b.dataset.diff) === diff);
   });
 }
 

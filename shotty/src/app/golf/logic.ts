@@ -487,7 +487,11 @@ export function openCupPanel(){
   const lbl=document.getElementById('cpScoreLabel')
   if(lbl){lbl.textContent=shots.length>0?`${sd.name}（${diff>0?'+':''}${diff}）`:'（打数未記録）';lbl.className=`cup-score-label ${sd.cls}`;lbl.style.background=shots.length>0?'':'transparent'}
   const cb=document.getElementById('cpScoreBtns')
-  if(cb) cb.innerHTML=SCORE_DEFS.map(d=>{const l=d.diff===0?'E':d.diff>0?'+'+d.diff:String(d.diff);return `<button class="score-btn ${d.cls}" onclick="selectCupScore(${d.diff})">${d.name}<br><small>${l}</small></button>`}).join('')
+  if(cb){
+    const mainRow=SCORE_DEFS.map(d=>{const l=d.diff===0?'E':d.diff>0?'+'+d.diff:String(d.diff);return `<button class="score-btn ${d.cls}" data-diff="${d.diff}" onclick="selectCupScore(${d.diff})">${d.name}<br><small>${l}</small></button>`}).join('')
+    const extRow=[8,9,10,11,12,13].map(n=>{const diff=n-h.par;const l=diff>0?'+'+diff:String(diff);return `<button class="score-btn score-btn-ext other" data-diff="${diff}" onclick="selectCupScore(${diff})">${n}打<br><small>${l}</small></button>`}).join('')
+    cb.innerHTML=mainRow+`<div class="score-btn-ext-row">${extRow}</div>`
+  }
   const cp=document.getElementById('cupPanel');if(cp)cp.classList.add('open')
   const rb=document.getElementById('recBanner');if(rb)rb.style.display='none'
 }

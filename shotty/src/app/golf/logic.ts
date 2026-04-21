@@ -369,28 +369,43 @@ export function selectPenalty(n:number){
   const key=holeKey(),shots=curShots(),holeOff=gs.roundShots[key+'_offset']||0,cur=shots.length+1+holeOff
   if(n<cur){ console.warn('[selectPenalty] n < cur, ignored', n, cur); return }
   gs.roundShots[key+'_pendingPenalty']=n
-  const el=document.getElementById('spShotNo');if(el)el.textContent='ドロップ地点 → '+n+'打目を登録'
+  const el=document.getElementById('spShotNo');if(el)el.textContent='プレ'+n+' → 次は'+n+'打目から'
+  const st2=document.getElementById('spPenaltyStatus');if(st2)st2.textContent='✅ プレ'+n+' 選択済 → 「ここに登録する」を押してください'
   document.querySelectorAll('.pb').forEach(b=>(b as HTMLElement).classList.toggle('sel',parseInt((b as HTMLElement).id.replace('pbBtn',''))===n))
   const ob=document.getElementById('spPenaltyOkBtn') as HTMLButtonElement;if(ob)ob.disabled=false
 }
 export function confirmPenaltyDrop(){
   console.log('[confirmPenaltyDrop] called', {pendingPos: gs.pendingPos})
-  if(!gs.pendingPos){
-    alert('ドロップ地点を地図上でタップしてから登録してください。')
-    console.warn('[confirmPenaltyDrop] abort: pendingPos is null')
-    return
-  }
   const h=hole()
   if(!h){ console.warn('[confirmPenaltyDrop] abort: hole() is null'); return }
   try {
     const key=holeKey();if(!gs.roundShots[key])gs.roundShots[key]=[]
     const shots=gs.roundShots[key],holeOff=gs.roundShots[key+'_offset']||0,prevIsTee=shots.length===0
+    const pendingN=gs.roundShots[key+'_pendingPenalty']
+
+    // ティーショットOBは pendingPos 不要 — プレN が選択されていればティー位置で自動登録
+    if(!gs.pendingPos){
+      if(prevIsTee && pendingN){
+        const tee=activeTee(h)
+        if(tee){
+          const G=(window as any).google.maps
+          gs.pendingPos=new G.LatLng(tee.lat,tee.lng)
+        }
+      }
+      if(!gs.pendingPos){
+        if(prevIsTee) alert('プレ3/プレ4/プレ5 をまず選択してください。')
+        else alert('ドロップ地点を地図上でタップしてから登録してください。')
+        console.warn('[confirmPenaltyDrop] abort: pendingPos is null')
+        return
+      }
+    }
+
     const prevPos=prevIsTee?activeTee(h):{lat:shots[shots.length-1].lat,lng:shots[shots.length-1].lng}
     const carryYd=Math.round(haversine(prevPos.lat,prevPos.lng,gs.pendingPos.lat(),gs.pendingPos.lng())*1.09361)
     const remYd=Math.round(haversine(gs.pendingPos.lat(),gs.pendingPos.lng(),h.center.lat,h.center.lng)*1.09361)
     const fromLabel=prevIsTee?'ティー':shots[shots.length-1].no+'打目地点'
     const dropNo=shots.length+1+holeOff
-    const pendingN=gs.roundShots[key+'_pendingPenalty'],n=pendingN||(shots.length+3+holeOff)
+    const n=pendingN||(shots.length+3+holeOff)
     console.log('[confirmPenaltyDrop] pendingPenalty:', pendingN, 'n:', n, 'dropNo:', dropNo)
     shots.push({no:dropNo,lat:gs.pendingPos.lat(),lng:gs.pendingPos.lng(),club:null,carry:carryYd,remaining:remYd,fromLabel,isPenalty:true,penaltyTarget:n,obType:gs.shotObType||null})
     const newOffset=n-(shots.length+1)

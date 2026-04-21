@@ -206,18 +206,33 @@ function selectPenalty(n) {
 }
 
 function confirmPenaltyDrop() {
-  if (!pendingPos) {
-    alert('ドロップ地点を地図上でタップしてから登録してください。');
-    return;
-  }
-
   const h = hole(); if (!h) return;
   const key = holeKey();
   if (!roundShots[key]) roundShots[key] = [];
   const shots = roundShots[key];
   const holeOff = roundShots[key + '_offset'] || 0;
-
   const prevIsTee = shots.length === 0;
+
+  // 次打数の決定:
+  //   1打目(ティー)モード → pendingPenalty に選択済みのプレN が入っている
+  //   2打目以降モード     → 1打罰を自動計算 (shots.length + 3 + holeOff)
+  const pendingN = roundShots[key + '_pendingPenalty'];
+
+  // ティーショットOBは pendingPos 不要 — プレN 選択後にティー位置で自動登録
+  if (!pendingPos) {
+    if (prevIsTee && pendingN) {
+      const tee = activeTee(h);
+      if (tee) {
+        pendingPos = new google.maps.LatLng(tee.lat, tee.lng);
+      }
+    }
+    if (!pendingPos) {
+      if (prevIsTee) alert('プレ3/プレ4/プレ5 をまず選択してください。');
+      else alert('ドロップ地点を地図上でタップしてから登録してください。');
+      return;
+    }
+  }
+
   const prevPos = prevIsTee
     ? activeTee(h)
     : { lat: shots[shots.length-1].lat, lng: shots[shots.length-1].lng };
@@ -225,11 +240,6 @@ function confirmPenaltyDrop() {
   const remYd   = Math.round(haversine(pendingPos.lat(), pendingPos.lng(), h.center.lat, h.center.lng) * 1.09361);
   const fromLabel = prevIsTee ? 'ティー' : shots[shots.length-1].no + '打目地点';
   const dropNo = shots.length + 1 + holeOff;
-
-  // 次打数の決定:
-  //   1打目(ティー)モード → pendingPenalty に選択済みのプレN が入っている
-  //   2打目以降モード     → 1打罰を自動計算 (shots_old.length + 3 + holeOff)
-  const pendingN = roundShots[key + '_pendingPenalty'];
   const n = pendingN || (shots.length + 3 + holeOff);
 
   shots.push({

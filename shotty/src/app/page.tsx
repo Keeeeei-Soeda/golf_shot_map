@@ -4,7 +4,6 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import Script from 'next/script'
-import CheckoutButton from '@/components/CheckoutButton'
 import {
   initMap, initApp,
   toggleMenu, closeMenu, onGCSel, onCourseSel, sidebarSelectTee, selectSidebarCourseCombo,

@@ -2131,6 +2131,7 @@ export const COURSES: GolfCourse[] = [
         name: 'ウエスト',
         cid:  0,
         // 座標未取得 - hasData() が false を返すため記録不可として扱われる
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         holes: [
           { no:1, par:4 }, { no:2, par:4 }, { no:3, par:4 },
           { no:4, par:4 }, { no:5, par:4 }, { no:6, par:4 },

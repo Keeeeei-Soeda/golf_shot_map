@@ -83,6 +83,7 @@ export function resumeActiveRound(): boolean {
       }
     }
     renderStrip(); loadHole(); updateHoleNavBtns()
+    const b = document.getElementById('resumeBanner'); if (b) b.style.display = 'none'
     return true
   } catch (e) {
     console.error('[resumeActiveRound]', e)

@@ -375,7 +375,11 @@ export function selectPenalty(n:number){
 }
 export function confirmPenaltyDrop(){
   console.log('[confirmPenaltyDrop] called', {pendingPos: gs.pendingPos})
-  if(!gs.pendingPos){ console.warn('[confirmPenaltyDrop] abort: pendingPos is null'); return }
+  if(!gs.pendingPos){
+    alert('ドロップ地点を地図上でタップしてから登録してください。')
+    console.warn('[confirmPenaltyDrop] abort: pendingPos is null')
+    return
+  }
   const h=hole()
   if(!h){ console.warn('[confirmPenaltyDrop] abort: hole() is null'); return }
   try {
@@ -407,6 +411,18 @@ export function cancelPenalty(){
   const el=document.getElementById('spShotNo');if(el)el.textContent=(curShots().length+1)+'打目を登録'
   const ob=document.getElementById('spPenaltyOkBtn') as HTMLButtonElement;if(ob)ob.disabled=true
   switchSpTab('record')
+}
+
+export function useReteePosition(){
+  const h=hole();if(!h||!hasData(h))return
+  const shots=curShots()
+  const prevPos=shots.length===0?activeTee(h):{lat:shots[shots.length-1].lat,lng:shots[shots.length-1].lng}
+  if(!prevPos)return
+  const G=(window as any).google.maps
+  const latLng=new G.LatLng(prevPos.lat,prevPos.lng)
+  updatePendingPos(latLng)
+  const info=document.getElementById('spPenaltyStatus')
+  if(info)info.textContent='打ち直し：前の打点に戻って記録します（1打罰）'
 }
 export function confirmShot(){
   console.log('[confirmShot] called', {pendingPos: gs.pendingPos, selectedClub: gs.selectedClub})

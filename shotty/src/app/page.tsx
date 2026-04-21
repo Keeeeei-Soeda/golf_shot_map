@@ -15,7 +15,7 @@ import {
   toggleClubPreset, removeClubSlot, addOtherClub,
   onGpsBtn, recordCurrentGps, rotateToHole, toggleYardageInfo,
   selectClub, selectResult, switchSpTab, selectPenalty, confirmPenaltyDrop, cancelPenalty,
-  selectShotObType, confirmShot, cancelShot,
+  selectShotObType, useReteePosition, confirmShot, cancelShot,
   selectCupScore, selectCupStrokePenalty, selectCupObType, selectCupPutts, confirmCupIn,
   deleteShot, openScorecard, closeScorecard,
   emSelectPref, emBackToPref, emSelectGc, emBackToGc, emSelectCourse, emBackToCourse, emSelectTee,
@@ -73,6 +73,7 @@ declare global {
     confirmPenaltyDrop: () => void
     cancelPenalty: () => void
     selectShotObType: (btn: HTMLElement, type: string) => void
+    useReteePosition: () => void
     confirmShot: () => void
     cancelShot: () => void
     selectCupScore: (diff: number) => void
@@ -114,7 +115,7 @@ export default function Page() {
       toggleClubPreset, removeClubSlot, addOtherClub,
       onGpsBtn, recordCurrentGps, rotateToHole, toggleYardageInfo,
       selectClub, selectResult, switchSpTab, selectPenalty, confirmPenaltyDrop, cancelPenalty,
-      selectShotObType, confirmShot, cancelShot,
+      selectShotObType, useReteePosition, confirmShot, cancelShot,
       selectCupScore, selectCupStrokePenalty, selectCupObType, selectCupPutts, confirmCupIn,
       deleteShot, openScorecard, closeScorecard,
       emSelectPref, emBackToPref, emSelectGc, emBackToGc, emSelectCourse, emBackToCourse, emSelectTee,
@@ -332,6 +333,10 @@ export default function Page() {
               ))}
             </div>
             <div className="sp-penalty-info">1打罰を自動加算して記録します</div>
+            <div className="sp-retee-area">
+              <div className="sp-retee-label">OB・紛失球の場合（打ち直し）</div>
+              <button className="sp-retee-btn" onClick={useReteePosition}>↩ 前の打点に戻る（打ち直し）</button>
+            </div>
           </div>
           <div className="sp-btns" style={{marginTop:'8px'}}>
             <button id="spPenaltyOkBtn" className="sp-ok" onClick={confirmPenaltyDrop}>📍 ここに登録する</button>

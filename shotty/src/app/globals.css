@@ -392,6 +392,14 @@ header{
 .sp-ob-btn small{font-size:9px;display:block;opacity:.7;}
 .sp-ob-btn.sel{border-color:var(--org);background:rgba(245,158,11,.15);color:var(--org);}
 .sp-penalty-info{font-size:11px;color:var(--gr);text-align:center;margin:4px 0 8px;opacity:.8;}
+.sp-retee-area{border-top:1px solid var(--g3);margin-top:6px;padding-top:8px;}
+.sp-retee-label{font-size:10px;color:var(--gr);margin-bottom:5px;letter-spacing:.5px;}
+.sp-retee-btn{
+  width:100%;padding:8px;border-radius:8px;border:1px solid #e86b3a;
+  background:rgba(232,107,58,.12);color:#e86b3a;font-size:12px;
+  cursor:pointer;font-family:inherit;transition:all .15s;font-weight:600;
+}
+.sp-retee-btn:hover,.sp-retee-btn:active{background:rgba(232,107,58,.25);}
 
 /* ===== カップインパネル ===== */
 #cupPanel{

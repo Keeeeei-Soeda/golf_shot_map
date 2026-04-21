@@ -206,7 +206,10 @@ function selectPenalty(n) {
 }
 
 function confirmPenaltyDrop() {
-  if (!pendingPos) return;
+  if (!pendingPos) {
+    alert('ドロップ地点を地図上でタップしてから登録してください。');
+    return;
+  }
 
   const h = hole(); if (!h) return;
   const key = holeKey();
@@ -278,6 +281,20 @@ function cancelPenalty() {
   const okBtn = document.getElementById('spPenaltyOkBtn');
   if (okBtn) okBtn.disabled = true;
   switchSpTab('record');
+}
+
+function useReteePosition() {
+  const h = hole(); if (!h || !hasData(h)) return;
+  const shots = curShots();
+  const prevPos = shots.length === 0
+    ? activeTee(h)
+    : { lat: shots[shots.length-1].lat, lng: shots[shots.length-1].lng };
+  if (!prevPos) return;
+  const G = window.google.maps;
+  const latLng = new G.LatLng(prevPos.lat, prevPos.lng);
+  updatePendingPos(latLng);
+  const info = document.getElementById('spPenaltyStatus');
+  if (info) info.textContent = '打ち直し：前の打点に戻って記録します（1打罰）';
 }
 
 function confirmShot() {

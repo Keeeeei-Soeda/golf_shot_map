@@ -1,0 +1,7 @@
+{
+  "name": "golf-shot-map",
+  "private": true,
+  "scripts": {
+    "build:courses": "node scripts/build-courses.js"
+  }
+}

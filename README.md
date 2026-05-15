@@ -32,7 +32,11 @@ golf_shot_map/
 ├── README.md         ← このファイル
 ├── index.html        ← HTML骨格のみ
 ├── style.css         ← スタイル全て
-├── courses.js        ← ★編集するコースデータ
+├── courses.js        ← 自動生成（`npm run build:courses`）
+├── courses/regions/  ← ★コースデータの編集先（関東・関西・東海・九州沖縄の4ファイル）
+├── scripts/
+│   └── build-courses.js  ← 上記から courses.js / shotty の courses を生成
+├── package.json      ← `build:courses` スクリプト
 ├── picker.html       ← 座標登録ツール（別ページ）
 └── app/              ← アプリロジック（機能別に分割）
     ├── core.js       状態・定数・ヘルパー・ラウンド保存
@@ -182,7 +186,7 @@ T → F → C → B の順で地図をクリック（自動で次の地点へ）
   ↓
 「courses.js形式でコピー」ボタン
   ↓
-courses.js に貼り付けてプッシュ
+該当エリアの `courses/regions/*.js` に貼り付け → `npm run build:courses` → 生成された `courses.js` をコミットしてプッシュ
 ```
 
 - 1ホール = 4クリック、18ホール = 72クリック（約20〜30分）

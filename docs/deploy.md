@@ -81,14 +81,14 @@ GitHub Actions の Secrets（`Settings > Secrets > Actions`）:
 
 ## コースデータを編集した場合の注意
 
-このリポジトリにはコースデータが **2箇所** ある。
+コースの**編集元**は `courses/regions/` 内の JavaScript（関東・関西・東海・九州沖縄の4ファイル）である。
 
-| ファイル | 対象 |
+| 生成物 | 対象 |
 |---|---|
 | `/courses.js`（リポジトリルート） | バニラJS版（GitHub Pages） |
 | `/shotty/src/data/courses.ts` | Next.js版（shotty.net） |
 
-**コースを追加・変更したときは両方のファイルを更新すること。**
+リポジトリルートで **`npm run build:courses`**（`node scripts/build-courses.js`）を実行すると、上記2ファイルが同時に再生成される。**編集後は必ずビルドしてからコミットすること。**
 
 ---
 

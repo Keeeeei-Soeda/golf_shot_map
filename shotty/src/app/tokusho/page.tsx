@@ -7,8 +7,8 @@ export const metadata: Metadata = {
 }
 
 const items: { label: string; value: string | ReactNode }[] = [
-  { label: '販売業者', value: '副田 圭一' },
-  { label: '代表責任者', value: '副田 圭一' },
+  { label: '販売業者', value: '副田 渓' },
+  { label: '代表責任者', value: '副田 渓' },
   {
     label: '所在地',
     value: (

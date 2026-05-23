@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Noto_Sans_JP } from 'next/font/google'
+import SessionProvider from '@/components/providers/SessionProvider'
+import SyncToast from '@/components/SyncToast'
 import './globals.css'
 
 const notoSansJP = Noto_Sans_JP({
@@ -37,7 +39,12 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className={notoSansJP.className}>{children}</body>
+      <body className={notoSansJP.className}>
+          <SessionProvider>
+            {children}
+            <SyncToast />
+          </SessionProvider>
+        </body>
     </html>
   )
 }

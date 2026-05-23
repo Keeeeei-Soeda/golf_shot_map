@@ -2,27 +2,18 @@
 
 import Link from 'next/link'
 import { useState, useEffect, useRef, useCallback } from 'react'
+import type { CaddyContext, ClubData } from '@/lib/ai/types'
 
 const CHATS_KEY = 'golfAiChats'
 const MAX_HISTORY = 40
 
-const SYSTEM_PROMPT = `あなたは「Golf System Architect & Debugger」です。ユーザーの「100切り」を最短で達成させるための戦略的キャディかつデータサイエンティストとして振る舞ってください。
+type AiMode = 'caddy' | 'club' | 'chat'
 
-■ 性格・スタンス
-- 冷静沈着（Stoic）: ミスショットをしても動揺せず、淡々と次の「リカバリー最適解」を提示する。感情的な励ましよりも論理的なデータを示す。
-- リスク回避型（Risk-Averse）: OB・池・バンカー・3パットを徹底的に避けることを優先する。
-- 期待値重視: 「成功率20%の180ydショット」よりも「成功率80%の100ydショット」を推奨する。
-
-■ 思考アルゴリズム（行動指針）
-- 「ボギーはパー」理論: 100切りには「オールボギー（90）」で十分。常に「ボギーオン」を正解とし、無理なパーオン狙いを制止する。
-- ハザードのデバッグ: 常に「最もやってはいけないミス（右OBなど）」を特定し、物理的に回避するアドレスと番手を提案する。
-- クラブ特性の把握: ユーザーの個別の癖（フック傾向など）とクラブ仕様を計算に入れたマネジメントを行う。
-
-■ 制約（必ず守ること）
-- 「一か八か」「気合で」というアドバイスは絶対禁止。
-- 常に「全ホールボギーで90」であることをリマインドして100切りを目指させる。
-- ゴルフ以外の話題には「申し訳ありませんが、私はゴルフ専用AIです。」とだけ答える。
-- 回答は日本語で行う。`
+const MODE_CONFIG: Record<AiMode, { label: string; icon: string; model: string; placeholder: string }> = {
+  caddy: { label: 'コース戦略', icon: '📊', model: 'Claude Sonnet 4.6', placeholder: 'ラウンド振り返り・100切り戦略など…' },
+  club:  { label: 'クラブ相談', icon: '📏', model: 'Gemini 2.5 Flash', placeholder: '番手選択・飛距離の使い方など…' },
+  chat:  { label: '雑談',       icon: '💬', model: 'Gemini Flash-Lite', placeholder: 'ゴルフ初心者の質問など…' },
+}
 
 interface Message {
   role: 'user' | 'assistant'
@@ -52,43 +43,64 @@ interface StoredShot {
   result?: string
 }
 
-function buildContext(): string {
-  let ctx = '\n\n━━━━━━━━━━ ユーザーデータ ━━━━━━━━━━'
+function buildCaddyContext(): CaddyContext {
+  const ctx: CaddyContext = { rounds: [], clubs: [] }
   try {
     const clubs = JSON.parse(localStorage.getItem('golfClubSet') || '[]') as string[]
-    const valid = clubs.filter(c => c && c.trim())
-    if (valid.length) ctx += `\n\n▼ クラブセット構成\n${valid.join('、')}`
+    ctx.clubs = clubs.filter(c => c && c.trim()).map(name => ({ name }))
   } catch {}
   try {
     const rounds = JSON.parse(localStorage.getItem('golfRounds') || '[]') as StoredRound[]
-    if (rounds.length) {
-      ctx += '\n\n▼ 直近のラウンドデータ（最新3件）'
-      rounds.slice(0, 3).forEach(r => {
-        ctx += `\n\n[${r.date}] ${r.gcName} ${r.courseName}`
-        const results: string[] = []
-        Object.entries(r.shots).forEach(([key, val]) => {
-          if (key.includes('_meta') || !Array.isArray(val)) return
-          const parts = key.split('_')
-          if (parts.length < 3) return
-          const hIdx = parseInt(parts[2])
-          const meta = (r.shots[key + '_meta'] as Record<string, unknown> | undefined) || {}
-          if (!meta.cupIn) return
-          const score = (meta.totalShots as number | undefined) || val.length
-          const par = meta.par ?? '?'
-          const diff = (meta.scoreDiff as number | undefined) || 0
-          const diffS = diff === 0 ? 'E' : diff > 0 ? `+${diff}` : String(diff)
-          const shotsArr = val as StoredShot[]
-          const details = shotsArr.slice(0, 5).filter(s => !s.isPenalty && s.club)
-            .map(s => `${s.no}打:${s.club} ${s.carry}yd`).join(' / ')
-          const evals = shotsArr.filter(s => s.result).map(s => `${s.no}打=${s.result}`).join(',')
-          results.push(`H${hIdx + 1} PAR${par} ${score}打${diffS}${evals ? ` (${evals})` : ''}${details ? ` [${details}]` : ''}`)
-        })
-        if (results.length) ctx += '\n' + results.join('\n')
+    ctx.rounds = rounds.slice(0, 3).map(r => {
+      const holeList: Array<{ holeNo: number; par: number; score: number; diff?: string }> = []
+      Object.entries(r.shots).forEach(([key, val]) => {
+        if (key.includes('_meta') || !Array.isArray(val)) return
+        const parts = key.split('_')
+        if (parts.length < 3) return
+        const hIdx = parseInt(parts[2])
+        const meta = (r.shots[key + '_meta'] as Record<string, unknown> | undefined) || {}
+        if (!meta.cupIn) return
+        const score = (meta.totalShots as number | undefined) || val.length
+        const par = typeof meta.par === 'number' ? meta.par : 0
+        const diff = (meta.scoreDiff as number | undefined) ?? 0
+        const diffS = diff === 0 ? 'E' : diff > 0 ? `+${diff}` : String(diff)
+        holeList.push({ holeNo: hIdx + 1, par, score, diff: diffS })
       })
-    }
+      return {
+        date: r.date ?? '',
+        gcName: r.gcName ?? '',
+        courseName: r.courseName ?? '',
+        holes: holeList,
+      }
+    })
   } catch {}
-  ctx += '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
   return ctx
+}
+
+function buildClubStats(): ClubData[] {
+  const stats: Record<string, { carries: number[] }> = {}
+  try {
+    const clubs = JSON.parse(localStorage.getItem('golfClubSet') || '[]') as string[]
+    clubs.filter(c => c && c.trim()).forEach(c => { stats[c] = { carries: [] } })
+  } catch {}
+  try {
+    const rounds = JSON.parse(localStorage.getItem('golfRounds') || '[]') as StoredRound[]
+    rounds.forEach(r => {
+      Object.values(r.shots).forEach(val => {
+        if (!Array.isArray(val)) return
+        ;(val as StoredShot[]).forEach(s => {
+          if (s.isPenalty || !s.club || typeof s.carry !== 'number') return
+          if (!stats[s.club]) stats[s.club] = { carries: [] }
+          stats[s.club].carries.push(s.carry)
+        })
+      })
+    })
+  } catch {}
+  return Object.entries(stats).map(([name, { carries }]) => ({
+    name,
+    avgDist: carries.length ? Math.round(carries.reduce((a, b) => a + b, 0) / carries.length) : undefined,
+    maxDist: carries.length ? Math.max(...carries) : undefined,
+  }))
 }
 
 function renderMd(text: string): string {
@@ -109,13 +121,23 @@ function renderMd(text: string): string {
   return s
 }
 
-const QUICK_QUESTIONS = [
-  { label: '📊 ラウンド振り返り', q: '今週のラウンドを振り返って課題を教えて' },
-  { label: '🏌️ ドライバー相談', q: 'ドライバーの意識、今はどんな感じがいい？' },
-  { label: '📐 番手選択相談', q: '残り150yd、何番アイアンが安全？' },
-  { label: '🎯 練習メニュー', q: '今日の練習メニューを組んでください' },
-  { label: '🏆 100切り戦略', q: '100切りのための優先課題を教えて' },
-]
+const QUICK_BY_MODE: Record<AiMode, { label: string; q: string }[]> = {
+  caddy: [
+    { label: '📊 ラウンド振り返り', q: '今週のラウンドを振り返って課題を教えて' },
+    { label: '🎯 練習メニュー', q: '今日の練習メニューを組んでください' },
+    { label: '🏆 100切り戦略', q: '100切りのための優先課題を教えて' },
+  ],
+  club: [
+    { label: '📐 番手選択', q: '残り150yd、何番アイアンが安全？' },
+    { label: '🏌️ ドライバー', q: 'ドライバーと3Wの使い分けを教えて' },
+    { label: '📏 距離のバランス', q: '番手間の距離差は均等？改善点は？' },
+  ],
+  chat: [
+    { label: '⛳ はじめ方', q: 'ゴルフ初心者です、何から始めればいい？' },
+    { label: '🏌️ 練習場', q: '練習場では何を練習すればいい？' },
+    { label: '📋 マナー', q: 'コースで気をつけるマナーを教えて' },
+  ],
+}
 
 export default function AiPage() {
   const [chats, setChats] = useState<Chat[]>([])
@@ -124,6 +146,7 @@ export default function AiPage() {
   const [loading, setLoading] = useState(false)
   const [streamText, setStreamText] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [mode, setMode] = useState<AiMode>('caddy')
   const messagesRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -180,14 +203,44 @@ export default function AiPage() {
     setStreamText('')
     scrollBottom()
     try {
-      const messages = [
-        { role: 'system', content: SYSTEM_PROMPT + buildContext() },
-        ...chat.messages.slice(-MAX_HISTORY),
-      ]
-      const res = await fetch('/api/ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages }) })
-      const data = await res.json()
-      if (!data.ok) throw new Error(data.error || 'APIエラー')
-      const content: string = data.content
+      let content: string
+      let modelLabel = MODE_CONFIG[mode].model
+
+      if (mode === 'caddy') {
+        const res = await fetch('/api/ai/caddy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: text, context: buildCaddyContext() }),
+        })
+        const data = await res.json()
+        if (!res.ok || data.error) throw new Error(data.error || 'APIエラー')
+        content = data.text
+        if (data.model) modelLabel = data.model
+      } else if (mode === 'club') {
+        const res = await fetch('/api/ai/club', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: text, clubs: buildClubStats() }),
+        })
+        const data = await res.json()
+        if (!res.ok || data.error) throw new Error(data.error || 'APIエラー')
+        content = data.text
+        if (data.model) modelLabel = data.model
+      } else {
+        const history = chat.messages.slice(-MAX_HISTORY).map(m => ({
+          role: (m.role === 'assistant' ? 'model' : 'user') as 'user' | 'model',
+          text: m.content,
+        }))
+        const res = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: text, history }),
+        })
+        const data = await res.json()
+        if (!res.ok || data.error) throw new Error(data.error || 'APIエラー')
+        content = data.text
+        if (data.model) modelLabel = data.model
+      }
       // タイプライター効果
       const charsPerFrame = content.length < 200 ? 2 : content.length < 600 ? 5 : 10
       let pos = 0
@@ -202,7 +255,7 @@ export default function AiPage() {
         requestAnimationFrame(tick)
       })
       setStreamText('')
-      const aiMsg: Message = { role: 'assistant', content }
+      const aiMsg: Message = { role: 'assistant', content: content + `\n\n— _${modelLabel}_` }
       const finalChat = { ...chat, messages: [...chat.messages, aiMsg], updatedAt: Date.now() }
       const finalChats = newChats.map(c => c.id === finalChat.id ? finalChat : c)
       saveChats(finalChats)
@@ -213,7 +266,7 @@ export default function AiPage() {
       setLoading(false)
       scrollBottom()
     }
-  }, [chats, currentChat, loading, saveChats])
+  }, [chats, currentChat, loading, saveChats, mode])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) }
@@ -257,6 +310,11 @@ export default function AiPage() {
         /* デスクトップではハンバーガーボタン非表示 */
         @media(min-width:641px){.hbg-btn{display:none;}}
         .ai-header-title{font-size:14px;font-weight:700;color:var(--acc);letter-spacing:2px;}
+        .mode-tabs{display:flex;gap:6px;padding:8px 12px;background:var(--g1);border-bottom:1px solid var(--g3);flex-shrink:0;}
+        .mode-tab{flex:1;padding:8px 6px;border-radius:8px;border:1px solid var(--g3);background:var(--g2);color:var(--gr);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;}
+        .mode-tab.active{border-color:var(--gv);background:rgba(76,175,80,.15);color:var(--gv);}
+        .mode-tab:hover:not(.active){border-color:var(--g4);color:var(--w);}
+        .mode-hint{font-size:10px;color:var(--gr);text-align:center;padding:0 12px 6px;background:var(--g1);flex-shrink:0;}
         #messages{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:14px;}
         .welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 20px;text-align:center;gap:12px;}
         .wl-icon{font-size:52px;}
@@ -325,6 +383,19 @@ export default function AiPage() {
             <button className="hbg-btn" onClick={() => setSidebarOpen(v => !v)}>☰</button>
             <div className="ai-header-title">Golf AI Architect</div>
           </div>
+          <div className="mode-tabs">
+            {(['caddy', 'club', 'chat'] as AiMode[]).map(m => (
+              <button
+                key={m}
+                type="button"
+                className={`mode-tab${mode === m ? ' active' : ''}`}
+                onClick={() => setMode(m)}
+              >
+                {MODE_CONFIG[m].icon} {MODE_CONFIG[m].label}
+              </button>
+            ))}
+          </div>
+          <div className="mode-hint">{MODE_CONFIG[mode].model}</div>
 
           <div id="messages" ref={messagesRef}>
             {messages.length === 0 && !streamText ? (
@@ -332,12 +403,12 @@ export default function AiPage() {
                 <div className="wl-icon">⛳</div>
                 <div className="wl-title">Golf System Architect</div>
                 <div className="wl-sub">
-                  あなた専属のゴルフ戦略AIです。<br/>
-                  過去のラウンドデータとクラブセットを参照し、<br/>
-                  最適な100切り戦略をアドバイスします。
+                  {mode === 'caddy' && <>ラウンドデータを参照し、100切り戦略をアドバイスします。<br/>（Claude Sonnet）</>}
+                  {mode === 'club' && <>クラブ飛距離データに基づき番手選択をアドバイスします。<br/>（Gemini Flash）</>}
+                  {mode === 'chat' && <>ゴルフの疑問に気軽に答えます。<br/>（Gemini Flash-Lite）</>}
                 </div>
                 <div className="wl-chips">
-                  {QUICK_QUESTIONS.map(q => (
+                  {QUICK_BY_MODE[mode].map(q => (
                     <button key={q.label} className="wl-chip" onClick={() => sendMessage(q.q)}>{q.label}</button>
                   ))}
                 </div>
@@ -364,7 +435,7 @@ export default function AiPage() {
             <textarea
               ref={inputRef}
               className="ai-input"
-              placeholder="ゴルフについて何でも聞いてください..."
+              placeholder={MODE_CONFIG[mode].placeholder}
               value={input}
               onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 140) + 'px' }}
               onKeyDown={handleKeyDown}

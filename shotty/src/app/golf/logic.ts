@@ -178,7 +178,7 @@ export function saveRound() {
   const all:any[]=JSON.parse(localStorage.getItem('golfRounds')||'[]')
   const idx=all.findIndex((r:any)=>r.id===gs.roundId)
   const c2name=isPairRound()&&gc()!.courses[st.cIdx2!]?'＋'+gc()!.courses[st.cIdx2!].name:''
-  const data={id:gs.roundId,date:new Date().toLocaleDateString('ja-JP'),gcName:gc()!.name,courseName:course()!.name+c2name,shots:gs.roundShots,updatedAt:Date.now()}
+  const data={id:gs.roundId,date:new Date().toLocaleDateString('ja-JP'),gcName:gc()!.name,courseName:course()!.name+c2name,firstCIdx:st.cIdx??undefined,secondCIdx:st.cIdx2??undefined,shots:gs.roundShots,updatedAt:Date.now()}
   if (idx>=0) all[idx]=data; else all.unshift(data)
   localStorage.setItem('golfRounds',JSON.stringify(all.slice(0,30)))
   updateBadge()
@@ -422,7 +422,7 @@ export function selectShotObType(btn:any,type:string){
   else{gs.shotObType=type;document.querySelectorAll('.sp-ob-btn').forEach(b=>{(b as HTMLElement).classList.toggle('sel',(b as HTMLElement).dataset.type===type)})}
 }
 export function switchSpTab(tab:string){
-  ['record','dist','penalty'].forEach(t=>{
+  ['record','tag','dist','penalty'].forEach(t=>{
     const tabEl=document.getElementById('spTab'+t.charAt(0).toUpperCase()+t.slice(1))
     const bodyEl=document.getElementById('spBody'+t.charAt(0).toUpperCase()+t.slice(1))
     if(tabEl)tabEl.classList.toggle('active',t===tab)
@@ -533,7 +533,8 @@ export function confirmShot(){
     const carryYd=Math.round(haversine(prevPos.lat,prevPos.lng,gs.pendingPos.lat(),gs.pendingPos.lng())*1.09361)
     const remYd=Math.round(haversine(gs.pendingPos.lat(),gs.pendingPos.lng(),h.center.lat,h.center.lng)*1.09361)
     const fromLabel=prevIsTee?'ティー':`${shots[shots.length-1].no}打目地点`
-    shots.push({no,lat:gs.pendingPos.lat(),lng:gs.pendingPos.lng(),club:gs.selectedClub,carry:carryYd,remaining:remYd,fromLabel,result:gs.selectedResult||null})
+    const tags=(window as any).__shotTags||{}
+    shots.push({no,lat:gs.pendingPos.lat(),lng:gs.pendingPos.lng(),club:gs.selectedClub,carry:carryYd,remaining:remYd,fromLabel,result:gs.selectedResult||null,isOB:tags.isOB||false,shotType:tags.shotType||null,shotFeel:tags.shotFeel||null})
     saveRound();saveActiveRound();cancelShot();renderShotLayer();renderStrip();updateInfo();updateRecBanner();updateYardagePanel();placePins(hole())
     console.log('[confirmShot] success, shots:', gs.roundShots[key]?.length)
   } catch(e) {
@@ -543,6 +544,7 @@ export function confirmShot(){
 }
 export function cancelShot(){
   gs.pendingPos=null;gs.selectedClub=null;gs.selectedResult=null; clearPending()
+  ;(window as any).__shotTags=null
   const sp=document.getElementById('shotPanel');if(sp)sp.classList.remove('open')
   updateRecBanner()
 }

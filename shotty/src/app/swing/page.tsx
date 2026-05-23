@@ -125,7 +125,7 @@ export default function SwingPage() {
         reader.readAsDataURL(videoFile)
       })
 
-      const res = await fetch('/api/swing', {
+      const res = await fetch('/api/ai/swing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

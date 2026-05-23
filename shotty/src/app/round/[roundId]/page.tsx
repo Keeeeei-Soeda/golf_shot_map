@@ -74,10 +74,17 @@ export default async function RoundReviewPage({
       <div className="max-w-2xl mx-auto px-4 py-5">
         <div className="flex items-center gap-3 mb-4">
           <Link
+            href="/mypage"
+            className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
+          >
+            ← マイページに戻る
+          </Link>
+          <span className="text-zinc-200">|</span>
+          <Link
             href="/"
             className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
           >
-            ← マップに戻る
+            マップに戻る
           </Link>
         </div>
 

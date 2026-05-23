@@ -36,8 +36,8 @@ export default async function MyPage() {
   })
 
   return (
-    <div className="min-h-screen p-6" style={{ background: '#fafaf8', color: '#0d1f0d' }}>
-      <div style={{ maxWidth: 672, margin: '0 auto' }}>
+    <div style={{ position: 'fixed', inset: 0, overflowY: 'auto', background: '#fafaf8', color: '#0d1f0d' }}>
+      <div style={{ maxWidth: 672, margin: '0 auto', padding: 24 }}>
         <div className="flex items-center gap-3 mb-6">
           <Link href="/" style={{ color: '#9ca3af', textDecoration: 'none', fontSize: 14 }}>
             ← トップに戻る

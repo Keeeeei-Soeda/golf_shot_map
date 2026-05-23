@@ -69,6 +69,13 @@ export default function Header() {
                   >
                     マイページ
                   </Link>
+                  <Link
+                    href="/mypage"
+                    style={{display:'block',padding:'8px 16px',fontSize:14,color:'#86efac',textDecoration:'none'}}
+                    onClick={() => setAuthMenuOpen(false)}
+                  >
+                    📖 ラウンド振り返り
+                  </Link>
                   <button
                     onClick={() => { setAuthMenuOpen(false); signOut({ callbackUrl: '/' }) }}
                     style={{display:'block',width:'100%',textAlign:'left',padding:'8px 16px',fontSize:14,color:'#f87171',background:'none',border:'none',cursor:'pointer'}}

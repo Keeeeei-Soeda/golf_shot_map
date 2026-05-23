@@ -25,6 +25,6 @@ jobs:
             npx prisma generate
             npx prisma migrate deploy
             npm run build
-            pm2 restart shotty || pm2 start ecosystem.config.js
+            pm2 reload shotty || pm2 start ecosystem.config.js
             pm2 save
             echo "Deployed at $(date)"

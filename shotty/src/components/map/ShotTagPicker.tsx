@@ -3,8 +3,6 @@
 import {
   SHOT_TYPES,
   SHOT_FEELS,
-  FEEL_BADGE_CLASSES,
-  TYPE_BADGE_CLASS,
   type ShotType,
   type ShotFeel,
 } from '@/constants/shotTags'
@@ -20,29 +18,49 @@ interface Props {
   onChange: (next: ShotTagState) => void
 }
 
+const BASE_BTN: React.CSSProperties = {
+  padding: '5px 10px',
+  borderRadius: 16,
+  border: '1px solid var(--g4)',
+  background: 'var(--g2)',
+  color: 'var(--gr)',
+  fontSize: 11,
+  fontWeight: 700,
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  transition: 'all .15s',
+  whiteSpace: 'nowrap',
+}
+
+const FEEL_SELECTED_STYLES: Record<string, React.CSSProperties> = {
+  good: { background: 'rgba(76,175,80,.25)',  border: '2px solid var(--gv)',  color: 'var(--gv)' },
+  mid:  { background: 'rgba(245,158,11,.2)',  border: '2px solid var(--org)', color: 'var(--org)' },
+  bad:  { background: 'rgba(224,82,82,.2)',   border: '2px solid var(--red)', color: 'var(--red)' },
+}
+
+const TYPE_SELECTED: React.CSSProperties = {
+  background: 'rgba(74,159,212,.2)',
+  border: '2px solid var(--blue)',
+  color: 'var(--blue)',
+}
+
 export function ShotTagPicker({ value, onChange }: Props) {
   const { isOB, shotType, shotFeel } = value
 
   return (
-    <div className="flex flex-col gap-2.5 px-3 pb-3 pt-1">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '4px 12px 10px' }}>
       {/* ショット特性 */}
       <div>
-        <div className="text-[10px] text-zinc-500 mb-1">特性（状況）</div>
-        <div className="flex flex-wrap gap-1.5">
+        <div style={{ fontSize: 9, color: 'var(--gr)', letterSpacing: 1, marginBottom: 5 }}>特性（状況）</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
           {(Object.keys(SHOT_TYPES) as ShotType[]).map(key => {
             const selected = shotType === key
             return (
               <button
                 key={key}
                 type="button"
-                onClick={() =>
-                  onChange({ isOB, shotType: selected ? null : key, shotFeel })
-                }
-                className={`px-2.5 py-1 rounded-full text-xs transition-colors ${
-                  selected
-                    ? TYPE_BADGE_CLASS
-                    : 'bg-white border border-zinc-300 text-zinc-500'
-                }`}
+                onClick={() => onChange({ isOB, shotType: selected ? null : key, shotFeel })}
+                style={selected ? { ...BASE_BTN, ...TYPE_SELECTED } : BASE_BTN}
               >
                 {SHOT_TYPES[key].label}
               </button>
@@ -53,8 +71,8 @@ export function ShotTagPicker({ value, onChange }: Props) {
 
       {/* ショット打感 */}
       <div>
-        <div className="text-[10px] text-zinc-500 mb-1">打感（結果）</div>
-        <div className="flex flex-wrap gap-1.5">
+        <div style={{ fontSize: 9, color: 'var(--gr)', letterSpacing: 1, marginBottom: 5 }}>打感（結果）</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
           {(Object.keys(SHOT_FEELS) as ShotFeel[]).map(key => {
             const info = SHOT_FEELS[key]
             const selected = shotFeel === key
@@ -62,14 +80,8 @@ export function ShotTagPicker({ value, onChange }: Props) {
               <button
                 key={key}
                 type="button"
-                onClick={() =>
-                  onChange({ isOB, shotType, shotFeel: selected ? null : key })
-                }
-                className={`px-2.5 py-1 rounded-full text-xs transition-colors ${
-                  selected
-                    ? FEEL_BADGE_CLASSES[info.kind]
-                    : 'bg-white border border-zinc-300 text-zinc-500'
-                }`}
+                onClick={() => onChange({ isOB, shotType, shotFeel: selected ? null : key })}
+                style={selected ? { ...BASE_BTN, ...FEEL_SELECTED_STYLES[info.kind] } : BASE_BTN}
               >
                 {info.label}
               </button>

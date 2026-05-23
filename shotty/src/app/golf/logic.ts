@@ -620,6 +620,15 @@ export function closeCupPanel(){
 // ============================================================
 function _resultCls(r:string|null){return r==='ナイスショット'?'nice':r==='ミスショット'?'miss':r==='ダフり'?'duff':r==='スライス'?'slice':r==='フック'?'hook':''}
 function _resultIcon(r:string|null){return r==='ナイスショット'?'👍':r==='ミスショット'?'😤':r==='ダフり'?'⛏':r==='スライス'?'↗':r==='フック'?'↙':''}
+const _TYPE_LABELS:Record<string,string>={bunker:'バンカー',recovery:'リカバリー',punch:'ライン出し'}
+const _FEEL_LABELS:Record<string,string>={nice:'ナイスショット',slice:'スライス',hook:'フック',over:'オーバー',fat:'ダフり',miss:'ミス'}
+const _FEEL_KIND:Record<string,string>={nice:'good',slice:'mid',hook:'mid',over:'mid',fat:'bad',miss:'bad'}
+function _shotTagsHtml(s:any,pfx='rv'){
+  const tags:string[]=[]
+  if(s.shotType&&_TYPE_LABELS[s.shotType])tags.push(`<span class="${pfx}-tag ${pfx}-tag-type">${_TYPE_LABELS[s.shotType]}</span>`)
+  if(s.shotFeel&&_FEEL_LABELS[s.shotFeel])tags.push(`<span class="${pfx}-tag ${pfx}-tag-${_FEEL_KIND[s.shotFeel]}">${_FEEL_LABELS[s.shotFeel]}</span>`)
+  return tags.length?`<div class="${pfx}-tags">${tags.join('')}</div>`:''
+}
 export function openHoleSummary(){
   const h=hole();if(!h)return
   const key=holeKey(),shots=curShots(),meta=gs.roundShots[key+'_meta']||{}
@@ -634,7 +643,7 @@ export function openHoleSummary(){
     const hn=document.getElementById('hsHoleInfo');if(hn)hn.textContent=`H${(h as any).no} PAR${h.par}`
   }
   const sl=document.getElementById('hsShotList')
-  if(sl){if(shots.length===0){sl.innerHTML='<div class="hs-no-shots">ショットが記録されていません</div>'}else{sl.innerHTML=shots.map((s:any,i:number)=>{const isPen=s.isPenalty;const nextShot=shots[i+1];const carry=nextShot?Math.round(haversine(s.lat,s.lng,nextShot.lat,nextShot.lng)*1.09361):null;return `<div class="hs-shot-row${isPen?' penalty':''}"><div class="hs-shot-no">${s.no}</div><div class="hs-shot-info"><div class="hs-club">${s.club||'—'} ${s.result?`<span class="hs-result ${_resultCls(s.result)}">${_resultIcon(s.result)} ${s.result}</span>`:''}</div><div class="hs-dists">carry ${s.carry}yd → 残${s.remaining}yd${carry!==null?` → 次まで${carry}yd`:''}</div>${isPen?`<div class="hs-pen-note">⚠️ ペナルティ（→${s.penaltyTarget}打目）${s.obType?' '+s.obType:''}</div>`:''}</div></div>`}).join('')}}
+  if(sl){if(shots.length===0){sl.innerHTML='<div class="hs-no-shots">ショットが記録されていません</div>'}else{sl.innerHTML=shots.map((s:any,i:number)=>{const isPen=s.isPenalty;const nextShot=shots[i+1];const carry=nextShot?Math.round(haversine(s.lat,s.lng,nextShot.lat,nextShot.lng)*1.09361):null;return `<div class="hs-shot-row${isPen?' penalty':''}"><div class="hs-shot-no">${s.no}</div><div class="hs-shot-info"><div class="hs-club">${s.club||'—'} ${s.result?`<span class="hs-result ${_resultCls(s.result)}">${_resultIcon(s.result)} ${s.result}</span>`:''}</div><div class="hs-dists">carry ${s.carry}yd → 残${s.remaining}yd${carry!==null?` → 次まで${carry}yd`:''}</div>${isPen?`<div class="hs-pen-note">⚠️ ペナルティ（→${s.penaltyTarget}打目）${s.obType?' '+s.obType:''}</div>`:''}${_shotTagsHtml(s,'hs')}</div></div>`}).join('')}}
   const scoreKey=key+'_meta',cardData=buildScoreCard(scoreKey)
   const hsCard=document.getElementById('hsScoreCard');if(hsCard)hsCard.innerHTML=cardData
   const p=document.getElementById('holeSummaryPanel');if(p)p.classList.add('open')
@@ -698,7 +707,7 @@ export function openReview(){
   if(meta.cupIn){const sd=scoreDef(meta.scoreDiff);titleHtml+=` <span class="rv-score-badge ${sd.cls}">${sd.name}</span>`}
   const t=document.getElementById('rvTitle');if(t)t.innerHTML=titleHtml
   const rl=document.getElementById('rvList')
-  if(rl){if(shots.length===0){rl.innerHTML='<div class="rv-empty">まだショットが記録されていません</div>'}else{rl.innerHTML=shots.map((s:any,i:number)=>`<div class="rv-row"><div class="rv-no">${s.no}</div><div class="rv-info"><div class="rv-club">${s.club||'—'}${s.result?' '+_resultIcon(s.result)+' '+s.result:''}</div><div class="rv-dist">carry ${s.carry}yd 残${s.remaining}yd</div></div><button class="rv-del" onclick="deleteShot(${i})">✕</button></div>`).join('')}}
+  if(rl){if(shots.length===0){rl.innerHTML='<div class="rv-empty">まだショットが記録されていません</div>'}else{rl.innerHTML=shots.map((s:any,i:number)=>`<div class="rv-row"><div class="rv-no">${s.no}</div><div class="rv-info"><div class="rv-club">${s.club||'—'}${s.result?' '+_resultIcon(s.result)+' '+s.result:''}</div><div class="rv-dist">carry ${s.carry}yd 残${s.remaining}yd</div>${_shotTagsHtml(s,'rv')}</div><button class="rv-del" onclick="deleteShot(${i})">✕</button></div>`).join('')}}
   const p=document.getElementById('reviewPanel'),o=document.getElementById('reviewOverlay')
   if(p)p.classList.add('open');if(o)o.classList.add('show')
 }

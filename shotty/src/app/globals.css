@@ -531,6 +531,15 @@ header{
 .rv-dist,.rv-line{font-size:11px;color:var(--gr);margin-top:2px;line-height:1.7;}
 .rv-empty{text-align:center;color:var(--gr);padding:20px;font-size:13px;}
 .rv-del{background:none;border:none;color:var(--red);font-size:14px;cursor:pointer;padding:2px 6px;flex-shrink:0;}
+.rv-tags,.hs-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+.rv-tag,.hs-tag{
+  display:inline-block;padding:1px 7px;border-radius:10px;
+  font-size:10px;font-weight:700;
+}
+.rv-tag-type,.hs-tag-type{background:rgba(74,159,212,.2);color:var(--blue);}
+.rv-tag-good,.hs-tag-good{background:rgba(76,175,80,.25);color:var(--gv);}
+.rv-tag-mid,.hs-tag-mid{background:rgba(245,158,11,.2);color:var(--org);}
+.rv-tag-bad,.hs-tag-bad{background:rgba(224,82,82,.2);color:var(--red);}
 
 /* ===== ホールサマリー ===== */
 #holeSummaryPanel{

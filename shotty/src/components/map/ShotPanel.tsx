@@ -48,7 +48,6 @@ export default function ShotPanel() {
       </div>
       <div className="sp-tabs">
         <button id="spTabRecord"  className="sp-tab active" onClick={()=>switchSpTab('record')}>🏌️ 記録</button>
-        <button id="spTabTag"     className="sp-tab"        onClick={()=>switchSpTab('tag')}>🏷️ タグ</button>
         <button id="spTabPenalty" className="sp-tab"        onClick={()=>switchSpTab('penalty')}>⚠️ ペナルティ</button>
         <button id="spTabDist"    className="sp-tab"        onClick={()=>switchSpTab('dist')}>📏 飛距離</button>
       </div>
@@ -56,36 +55,10 @@ export default function ShotPanel() {
       {/* 記録タブ */}
       <div id="spBodyRecord">
         <div id="clubGrid" className="club-grid" suppressHydrationWarning></div>
+        <ShotTagPicker value={tags} onChange={setTags} />
         <div className="sp-btns">
           <button id="spOkBtn" className="sp-ok" onClick={confirmShot}>登録する</button>
           <button className="sp-cancel" onClick={cancelShot}>キャンセル</button>
-        </div>
-      </div>
-
-      {/* タグタブ */}
-      <div id="spBodyTag" style={{display:'none'}}>
-        <ShotTagPicker value={tags} onChange={setTags} />
-        {/* 選択状況のサマリー表示 */}
-        {(tags.isOB || tags.shotType || tags.shotFeel) && (
-          <div className="flex flex-wrap gap-1 px-3 pb-2">
-            {tags.isOB && (
-              <span className="text-[10px] bg-[#C53D3D] text-white px-2 py-0.5 rounded-full">OB</span>
-            )}
-            {tags.shotType && (
-              <span className="text-[10px] bg-zinc-100 text-zinc-700 border border-zinc-300 px-2 py-0.5 rounded-full">
-                {tags.shotType}
-              </span>
-            )}
-            {tags.shotFeel && (
-              <span className="text-[10px] bg-zinc-200 text-zinc-700 px-2 py-0.5 rounded-full">
-                {tags.shotFeel}
-              </span>
-            )}
-          </div>
-        )}
-        <div className="sp-btns">
-          <button className="sp-ok" onClick={() => switchSpTab('record')}>← 記録タブへ</button>
-          <button className="sp-cancel" onClick={() => setTags(DEFAULT_TAGS)}>クリア</button>
         </div>
       </div>
 

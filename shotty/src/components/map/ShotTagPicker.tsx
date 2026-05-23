@@ -5,7 +5,6 @@ import {
   SHOT_FEELS,
   FEEL_BADGE_CLASSES,
   TYPE_BADGE_CLASS,
-  OB_BADGE_CLASS,
   type ShotType,
   type ShotFeel,
 } from '@/constants/shotTags'
@@ -26,22 +25,6 @@ export function ShotTagPicker({ value, onChange }: Props) {
 
   return (
     <div className="flex flex-col gap-2.5 px-3 pb-3 pt-1">
-      {/* OB */}
-      <div>
-        <div className="text-[10px] text-zinc-500 mb-1">OB / ペナルティ</div>
-        <button
-          type="button"
-          onClick={() => onChange({ isOB: !isOB, shotType, shotFeel })}
-          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-            isOB
-              ? `${OB_BADGE_CLASS}`
-              : 'bg-white border border-zinc-300 text-zinc-600'
-          }`}
-        >
-          OB
-        </button>
-      </div>
-
       {/* ショット特性 */}
       <div>
         <div className="text-[10px] text-zinc-500 mb-1">特性（状況）</div>

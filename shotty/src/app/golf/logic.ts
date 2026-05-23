@@ -422,7 +422,7 @@ export function selectShotObType(btn:any,type:string){
   else{gs.shotObType=type;document.querySelectorAll('.sp-ob-btn').forEach(b=>{(b as HTMLElement).classList.toggle('sel',(b as HTMLElement).dataset.type===type)})}
 }
 export function switchSpTab(tab:string){
-  ['record','tag','dist','penalty'].forEach(t=>{
+  ['record','dist','penalty'].forEach(t=>{
     const tabEl=document.getElementById('spTab'+t.charAt(0).toUpperCase()+t.slice(1))
     const bodyEl=document.getElementById('spBody'+t.charAt(0).toUpperCase()+t.slice(1))
     if(tabEl)tabEl.classList.toggle('active',t===tab)

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import type { Club } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
@@ -14,7 +15,7 @@ export async function GET() {
     orderBy: { order: 'asc' },
   })
 
-  return NextResponse.json({ clubs: clubs.map((c) => c.name) })
+  return NextResponse.json({ clubs: clubs.map((c: Club) => c.name) })
 }
 
 // PUT: クラブセット一括上書き

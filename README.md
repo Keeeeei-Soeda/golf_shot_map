@@ -150,7 +150,7 @@ golf_shot_map/
 
 | 項目 | 内容 |
 |---|---|
-| APIキー | `AIzaSyBryPip32SP4e5y2RBSDyKLbxoz313JAgU` |
+| APIキー | `AIzaSyCi5yIPIh0XNGOu6V8uCn-MqUX3560y8jg` |
 | リファラー制限 | `https://keeeeei-soeda.github.io/*` |
 | Map ID | `c041c97b58243474e5cf18cb` |
 | マップ名 | Golf_shot_navi |

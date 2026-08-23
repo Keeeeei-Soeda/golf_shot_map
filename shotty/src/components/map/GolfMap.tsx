@@ -6,6 +6,7 @@ import {
 } from '@/app/golf/logic'
 import DistanceCard from './DistanceCard'
 import HoleBar from './HoleBar'
+import SideActions from './SideActions'
 import YardageBar from './YardageBar'
 
 export default function GolfMap() {
@@ -20,6 +21,7 @@ export default function GolfMap() {
           <div className="leg-r"><div className="leg-dot" style={{background:'#e8c84a'}}></div>B = バック</div>
         </div>
         <DistanceCard />
+        <SideActions />
         <YardageBar />
         <div id="strategyBanner" className="strategy-banner" style={{display:'none'}}></div>
         <div id="recBanner" style={{display:'none'}}></div>

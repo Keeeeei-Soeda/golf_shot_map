@@ -59,6 +59,7 @@ export const gs = {
   pinLine:             null as any,
   measureFromLabel:    null as any,
   measureToLabel:      null as any,
+  measureBubble:       null as any,
   measureSelectedPin:  null as string|null,
 
   // ショットレイヤー

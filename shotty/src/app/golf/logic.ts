@@ -319,11 +319,13 @@ export function rotateToHole(){
 // ============================================================
 // 地図タップ
 // ============================================================
+/**
+ * 地図タップは常に測距。記録はGPSまたは長押しから入るため、
+ * ここに記録機能は持たせない。
+ */
 export function onMapClick(e:any){
   hideLegend()
-  if(gs.appMode==='measure'){handleMeasure(e.latLng);return}
-  updatePendingPos(e.latLng)
-  const sp=document.getElementById('shotPanel');if(sp&&!sp.classList.contains('open'))openShotPanelUI()
+  handleMeasure(e.latLng)
 }
 
 // ============================================================
@@ -353,10 +355,8 @@ export function showDists(pos:any){
   gs.teeLine=new G.Polyline({path:[origin,pos],map:gs.map,strokeColor:'#4a9fd4',strokeOpacity:.7,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
   if(gs.pinLine)gs.pinLine.setMap(null)
   gs.pinLine=new G.Polyline({path:[pos,{lat:targetPos.lat,lng:targetPos.lng}],map:gs.map,strokeColor:'#e8c84a',strokeOpacity:.85,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
-  if(gs.measureFromLabel)gs.measureFromLabel.setMap(null)
-  gs.measureFromLabel=makeLabel({lat:(origin.lat+pos.lat())/2,lng:(origin.lng+pos.lng())/2},`${originYd}yd`,'#000','#4a9fd4')
-  if(gs.measureToLabel)gs.measureToLabel.setMap(null)
-  gs.measureToLabel=makeLabel({lat:(pos.lat()+targetPos.lat)/2,lng:(pos.lng()+targetPos.lng)/2},`残${pinYd}yd`,'#000','#e8c84a')
+  if(gs.measureBubble)gs.measureBubble.setMap(null)
+  gs.measureBubble=makeBubble(pos,`${originLabel} ${originYd}yd`,`${targetName}まで残り ${pinYd}yd`)
 }
 /**
  * ティー→センターの距離を地図上に示す。
@@ -376,6 +376,7 @@ export function clearMeasure(){
   if(gs.teeLine){gs.teeLine.setMap(null);gs.teeLine=null};if(gs.pinLine){gs.pinLine.setMap(null);gs.pinLine=null}
   if(gs.measureFromLabel){gs.measureFromLabel.setMap(null);gs.measureFromLabel=null}
   if(gs.measureToLabel){gs.measureToLabel.setMap(null);gs.measureToLabel=null}
+  if(gs.measureBubble){gs.measureBubble.setMap(null);gs.measureBubble=null}
   gs.measureSelectedPin=null
   const mEl=document.getElementById('yiMeasure');if(mEl)mEl.innerHTML=''
 }
@@ -388,6 +389,21 @@ export function makeLabel(pos:any,text:string,tc:string,bg:string){
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="20"><rect width="${w}" height="20" rx="4" fill="${bg}" opacity=".85"/><text x="${w/2}" y="14" font-size="11" fill="${tc}" text-anchor="middle" font-family="sans-serif">${text}</text></svg>`
   const G=(window as any).google.maps
   return new G.Marker({position:pos,map:gs.map,icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new G.Size(w,20),anchor:new G.Point(w/2,10)},zIndex:55,clickable:false})
+}
+/**
+ * タップ地点の上に2行の吹き出しを立てる。
+ * 1行目＝打点からの距離（青）／2行目＝ピンまでの残り（黄）。
+ */
+export function makeBubble(pos:any,line1:string,line2:string){
+  const w=Math.max(line1.length,line2.length)*8+24,h=42,tail=8
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h+tail}">`
+    +`<rect width="${w}" height="${h}" rx="7" fill="#0a160a" fill-opacity=".95" stroke="#4a9fd4" stroke-width="1.5"/>`
+    +`<polygon points="${w/2-6},${h-1} ${w/2+6},${h-1} ${w/2},${h+tail}" fill="#0a160a" fill-opacity=".95"/>`
+    +`<text x="11" y="17" font-size="11.5" fill="#7ec8f0" font-family="sans-serif">${line1}</text>`
+    +`<text x="11" y="33" font-size="11.5" fill="#e8c84a" font-family="sans-serif">${line2}</text>`
+    +`</svg>`
+  const G=(window as any).google.maps
+  return new G.Marker({position:pos,map:gs.map,icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new G.Size(w,h+tail),anchor:new G.Point(w/2,h+tail+6)},zIndex:60,clickable:false})
 }
 export function updatePendingPos(pos:any){
   const h=hole();if(!h||!hasData(h))return

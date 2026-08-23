@@ -53,28 +53,6 @@ export default function SideActions() {
 
       <div className="side-action">
         <button
-          className="side-action-btn is-measure"
-          onClick={showTeeToCenter}
-          aria-label="ティーからセンターまでの距離を表示"
-        >
-          📏
-        </button>
-        <span className="side-action-label">測定ON</span>
-      </div>
-
-      <div className="side-action">
-        <button
-          className="side-action-btn is-putt"
-          onClick={openCupPanel}
-          aria-label="パット・スコアを登録"
-        >
-          ⛳
-        </button>
-        <span className="side-action-label">パット</span>
-      </div>
-
-      <div className="side-action">
-        <button
           className="side-action-btn is-record"
           onClick={() => recordCurrentGps(handleGpsStatus)}
           disabled={isPending}
@@ -85,6 +63,28 @@ export default function SideActions() {
         <span className="side-action-label">
           {isPending ? '取得中…' : '現在地で記録'}
         </span>
+      </div>
+
+      <div className="side-action">
+        <button
+          className="side-action-btn is-putt"
+          onClick={openCupPanel}
+          aria-label="パット数とスコアを登録してホールを確定"
+        >
+          ⛳
+        </button>
+        <span className="side-action-label">パット数記録</span>
+      </div>
+
+      <div className="side-action">
+        <button
+          className="side-action-btn is-measure"
+          onClick={showTeeToCenter}
+          aria-label="ティーからセンターまでの距離を表示"
+        >
+          📏
+        </button>
+        <span className="side-action-label">T→C距離</span>
       </div>
     </div>
   )

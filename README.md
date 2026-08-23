@@ -150,14 +150,13 @@ golf_shot_map/
 
 | 項目 | 内容 |
 |---|---|
-| APIキー | `AIzaSyCi5yIPIh0XNGOu6V8uCn-MqUX3560y8jg` |
-| リファラー制限 | `https://keeeeei-soeda.github.io/*` |
-| Map ID | `c041c97b58243474e5cf18cb` |
+| APIキー | Shottygolf プロジェクトの Maps Platform API Key（`index.html` / `picker.html` / VPS `.env.local`） |
+| リファラー制限 | `https://shotty.net/*` / `https://www.shotty.net/*` / `https://keeeeei-soeda.github.io/*` / `http://localhost:3000/*` || Map ID | `c041c97b58243474e5cf18cb` |
 | マップ名 | Golf_shot_navi |
 | レンダリング | **ベクター**（ローテーション有効） |
 | mapTypeId | hybrid |
 
-> ⚠️ APIキーはリファラー制限設定済み。`keeeeei-soeda.github.io` 以外からは動作しない。
+> ⚠️ APIキーは上記リファラーに制限済み。許可外のオリジンでは地図が動作しない。
 > 他の人に使わせる場合は、自分のGCPで別のAPIキーを発行してリファラーを設定すること。
 
 ### 地図回転のしくみ

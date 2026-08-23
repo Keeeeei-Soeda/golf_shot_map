@@ -8,7 +8,7 @@ import { haversineYards } from '@/lib/geo'
 type GeoPoint = { lat: number; lng: number }
 type PinKey = 'front' | 'center' | 'back'
 
-const PIN_LABEL: Record<PinKey, string> = { front: 'F', center: 'C', back: 'B' }
+const PIN_LABEL: Record<PinKey, string> = { front: 'F', center: '⛳', back: 'B' }
 
 function toGeoPoint(value: unknown): GeoPoint | null {
   if (!value || typeof value !== 'object') return null

@@ -127,7 +127,7 @@ export default function Sidebar({ roundInProgress, completedHoles, onEndRound }:
           <div className="menu-legend">
             <div className="leg-r"><div className="leg-dot" style={{ background: '#4a9fd4' }}></div>T = ティー</div>
             <div className="leg-r"><div className="leg-dot" style={{ background: '#e05252' }}></div>F = フロント</div>
-            <div className="leg-r"><div className="leg-dot" style={{ background: '#a78bfa' }}></div>C = センター</div>
+            <div className="leg-r"><div className="leg-dot" style={{ background: '#a78bfa' }}></div>⛳ = センター</div>
             <div className="leg-r"><div className="leg-dot" style={{ background: '#e8c84a' }}></div>B = バック</div>
           </div>
 

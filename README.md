@@ -151,7 +151,8 @@ golf_shot_map/
 | 項目 | 内容 |
 |---|---|
 | APIキー | Shottygolf プロジェクトの Maps Platform API Key（`index.html` / `picker.html` / VPS `.env.local`） |
-| リファラー制限 | `https://shotty.net/*` / `https://www.shotty.net/*` / `https://keeeeei-soeda.github.io/*` / `http://localhost:3000/*` || Map ID | `c041c97b58243474e5cf18cb` |
+| リファラー制限 | `https://shotty.net/*` / `https://www.shotty.net/*` / `https://keeeeei-soeda.github.io/*` / `http://localhost:3000/*` |
+| Map ID | `c041c97b58243474e5cf18cb` |
 | マップ名 | Golf_shot_navi |
 | レンダリング | **ベクター**（ローテーション有効） |
 | mapTypeId | hybrid |

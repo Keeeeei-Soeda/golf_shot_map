@@ -149,11 +149,10 @@ header{
 }
 #emptyMap .ico{font-size:46px;}
 
-/* 左上は残り距離カードが占めるため、凡例は左下に置く */
-#legend{
-  position:absolute;bottom:8px;left:8px;z-index:5;
-  background:rgba(10,22,10,.88);border:1px solid var(--g4);
-  border-radius:8px;padding:6px 10px;pointer-events:none;
+/* 基準ピンの凡例（サイドパネル内。マップ上には置かない） */
+.menu-legend{
+  background:rgba(10,22,10,.6);border:1px solid var(--g3);
+  border-radius:8px;padding:8px 10px;
 }
 
 /* ===== 残り距離カード（左上・常時表示） ===== */
@@ -309,6 +308,9 @@ header{
 .resume-banner button{
   background:#fff;color:#065f46;border:none;border-radius:8px;
   padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
+}
+.resume-banner button.resume-abort{
+  background:transparent;color:#fff;border:1px solid rgba(255,255,255,.7);
 }
 
 /* ===== BOTTOM BAR ===== */

@@ -14,12 +14,7 @@ export default function GolfMap() {
     <>
       {/* ===== マップエリア ===== */}
       <div id="mapWrap">
-        <div id="legend">
-          <div className="leg-r"><div className="leg-dot" style={{background:'#4a9fd4'}}></div>T = ティー</div>
-          <div className="leg-r"><div className="leg-dot" style={{background:'#e05252'}}></div>F = フロント</div>
-          <div className="leg-r"><div className="leg-dot" style={{background:'#a78bfa'}}></div>C = センター</div>
-          <div className="leg-r"><div className="leg-dot" style={{background:'#e8c84a'}}></div>B = バック</div>
-        </div>
+        {/* T/F/C/B の凡例はマップを覆わないようサイドパネルへ移設済み */}
         <DistanceCard />
         <SideActions />
         <YardageBar />

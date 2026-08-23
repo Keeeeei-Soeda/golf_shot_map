@@ -38,6 +38,12 @@ export function clearActiveRound() {
   updateResumeBanner()
 }
 
+/** 再開バナーから記録中ラウンドを破棄する。履歴に保存済みのデータは残る。 */
+export function discardActiveRound() {
+  if (!confirm('記録中のラウンドを中止しますか？\n（スコアカードに保存済みのデータは残ります）')) return
+  clearActiveRound()
+}
+
 export function updateResumeBanner() {
   const b = document.getElementById('resumeBanner')
   if (!b) return
@@ -48,7 +54,7 @@ export function updateResumeBanner() {
     const gcName = d.gcIdx != null ? COURSES[d.gcIdx]?.name || '' : ''
     const cName  = (d.gcIdx != null && d.cIdx != null) ? COURSES[d.gcIdx]?.courses[d.cIdx]?.name || '' : ''
     const hNo    = (d.hIdx ?? 0) + 1
-    b.innerHTML = `<span>🔄 記録中のラウンドがあります — ${gcName} ${cName} H${hNo}</span><button onclick="resumeActiveRound()">▶ 再開する</button>`
+    b.innerHTML = `<span>🔄 記録中のラウンドがあります — ${gcName} ${cName} H${hNo}</span><button onclick="resumeActiveRound()">▶ 再開する</button><button class="resume-abort" onclick="discardActiveRound()">中止する</button>`
     b.style.display = 'flex'
   } catch { b.style.display = 'none' }
 }
@@ -276,7 +282,7 @@ export function loadHole() {
   const zoom=holeDistM>400?16:holeDistM>250?17:18
   const G=(window as any).google.maps
   if(!gs.map){
-    gs.map=new G.Map(document.getElementById('map'),{center:{lat:midLat,lng:midLng},zoom,mapTypeId:'hybrid',mapId:'c041c97b58243474e5cf18cb',disableDefaultUI:true,zoomControl:true,gestureHandling:'greedy',rotateControl:false,zoomControlOptions:{position:G.ControlPosition.RIGHT_CENTER}})
+    gs.map=new G.Map(document.getElementById('map'),{center:{lat:midLat,lng:midLng},zoom,mapTypeId:'hybrid',mapId:'c041c97b58243474e5cf18cb',disableDefaultUI:true,zoomControl:false,gestureHandling:'greedy',rotateControl:false})
     gs.map.addListener('click',onMapClick)
   } else { gs.map.setZoom(zoom); gs.map.panTo({lat:midLat,lng:midLng}) }
   window._currentBearing=bearing

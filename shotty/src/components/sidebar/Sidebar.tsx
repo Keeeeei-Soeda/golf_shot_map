@@ -121,6 +121,17 @@ export default function Sidebar({ roundInProgress, completedHoles, onEndRound }:
           <HoleStrip />
 
           <div className="menu-divider"></div>
+
+          {/* ===== 基準ピンの凡例 ===== */}
+          <div className="menu-label">マップの基準ピン</div>
+          <div className="menu-legend">
+            <div className="leg-r"><div className="leg-dot" style={{ background: '#4a9fd4' }}></div>T = ティー</div>
+            <div className="leg-r"><div className="leg-dot" style={{ background: '#e05252' }}></div>F = フロント</div>
+            <div className="leg-r"><div className="leg-dot" style={{ background: '#a78bfa' }}></div>C = センター</div>
+            <div className="leg-r"><div className="leg-dot" style={{ background: '#e8c84a' }}></div>B = バック</div>
+          </div>
+
+          <div className="menu-divider"></div>
           <button className="menu-club-btn" onClick={openStrategySelector}>📍 マップで過去記録を見る</button>
           <button className="menu-club-btn" style={{ marginTop: '6px' }} onClick={openScorecard}>📊 スコアカード</button>
           <Link className="menu-club-btn" style={{ display: 'block', marginTop: '6px', textDecoration: 'none' }} href="/mypage" onClick={closeMenu}>📖 ラウンド振り返り</Link>

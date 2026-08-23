@@ -24,7 +24,7 @@ import {
   emSelectPref, emBackToPref, emSelectGc, emBackToGc, emSelectCourse, emBackToCourse, emSelectTee,
   openStrategySelector, closeStrategySelector, setStrategySourceTab,
   activateStrategyLocal, deactivateStrategy,
-  resumeActiveRound, updateResumeBanner, saveRound,
+  resumeActiveRound, updateResumeBanner, discardActiveRound, saveRound,
 } from './golf/logic'
 import Header from '@/components/layout/Header'
 import Sidebar from '@/components/sidebar/Sidebar'
@@ -66,6 +66,7 @@ declare global {
     openStrategySelector: () => void; closeStrategySelector: () => void; setStrategySourceTab: (src: string) => void
     activateStrategyLocal: (id: string) => void; deactivateStrategy: () => void
     resumeActiveRound: () => boolean; updateResumeBanner: () => void
+    discardActiveRound: () => void
   }
 }
 
@@ -152,7 +153,7 @@ export default function Page() {
       emSelectPref, emBackToPref, emSelectGc, emBackToGc, emSelectCourse, emBackToCourse, emSelectTee,
       openStrategySelector, closeStrategySelector, setStrategySourceTab,
       activateStrategyLocal, deactivateStrategy,
-      resumeActiveRound, updateResumeBanner,
+      resumeActiveRound, updateResumeBanner, discardActiveRound,
     })
     initApp()
   }, [])

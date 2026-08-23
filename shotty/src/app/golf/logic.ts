@@ -302,16 +302,16 @@ export function placePins(h:any){
     m.addListener('click',()=>{if(gs.appMode==='measure'&&pinKey){gs.measureSelectedPin=pinKey;if(gs.measureClick)showDists(gs.measureClick.getPosition())}})
     return m
   }
-  // 組み合わせA: T=tee.png / C=pin.png（F・Bは従来の文字マーカー）
-  const mkImage=(pos:any,url:string,title:string,pinKey:string|null,size=40)=>{
+  // 組み合わせA: T=tee.png / C=pin.png。サイズは旧T/C文字マーカー（直径約22px）に揃える
+  const mkImage=(pos:any,url:string,title:string,pinKey:string|null,size=24)=>{
     const m=new G.Marker({position:pos,map:gs.map,title,icon:{url,scaledSize:new G.Size(size,size),anchor:new G.Point(size/2,size/2)},zIndex:40})
     m.addListener('click',()=>{if(gs.appMode==='measure'&&pinKey){gs.measureSelectedPin=pinKey;if(gs.measureClick)showDists(gs.measureClick.getPosition())}})
     return m
   }
   window._pins=[
-    mkImage(activeTee(h),'/icons/tee.png','ティー',null,42),
+    mkImage(activeTee(h),'/icons/tee.png','ティー',null,24),
     mkCircle(h.front,'#e05252','F','フロント','front',true),
-    mkImage(h.center,'/icons/pin.png','センター','center',42),
+    mkImage(h.center,'/icons/pin.png','センター','center',24),
     mkCircle(h.back,'#e8c84a','B','バック','back',true),
   ].filter(Boolean)
 }
@@ -358,7 +358,6 @@ export function showDists(pos:any){
   const h=hole();if(!h||!hasData(h))return
   const shots=curShots(),prevIsTee=shots.length===0
   const origin=prevIsTee?activeTee(h):{lat:shots[shots.length-1].lat,lng:shots[shots.length-1].lng}
-  const originLabel=prevIsTee?'Tから':`第${shots.length+1}打から`
   const originYd=Math.round(haversine(origin.lat,origin.lng,pos.lat(),pos.lng())*1.09361)
   const pinMap:Record<string,any>={front:h.front,center:h.center,back:h.back}
   // ピンまでの残りは C ではなく ⛳。F/B 切替時は文字で示す
@@ -366,6 +365,7 @@ export function showDists(pos:any){
   const targetKey=gs.measureSelectedPin&&pinMap[gs.measureSelectedPin]?gs.measureSelectedPin:'center'
   const targetPos=pinMap[targetKey],targetName=pinNameMap[targetKey]
   const pinYd=Math.round(haversine(pos.lat(),pos.lng(),targetPos.lat,targetPos.lng)*1.09361)
+  const originLabel=prevIsTee?'ティーから':`第${shots.length+1}打から`
   updateYardageMeasure(originLabel,originYd,targetName,pinYd)
   const G=(window as any).google.maps
   if(gs.teeLine)gs.teeLine.setMap(null)
@@ -373,7 +373,12 @@ export function showDists(pos:any){
   if(gs.pinLine)gs.pinLine.setMap(null)
   gs.pinLine=new G.Polyline({path:[pos,{lat:targetPos.lat,lng:targetPos.lng}],map:gs.map,strokeColor:'#e8c84a',strokeOpacity:.85,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
   if(gs.measureBubble)gs.measureBubble.setMap(null)
-  gs.measureBubble=makeBubble(pos,`${originLabel} ${originYd}yd`,`${targetName}まで残り ${pinYd}yd`)
+  // 吹き出し: ティー起点は小さなティーアイコン＋「から」。ピン行は「⛳まで」に簡略化
+  gs.measureBubble=makeBubble(pos,{
+    fromTee: prevIsTee,
+    line1Text: prevIsTee ? `から ${originYd}yd` : `第${shots.length+1}打から ${originYd}yd`,
+    line2Text: `${targetName}まで ${pinYd}yd`,
+  })
 }
 /**
  * ティー→センターの距離を地図上に示す。
@@ -409,17 +414,30 @@ export function makeLabel(pos:any,text:string,tc:string,bg:string){
 }
 /**
  * タップ地点の上に2行の吹き出しを立てる。
- * 1行目＝打点からの距離（青）／2行目＝ピンまでの残り（黄）。
+ * 1行目＝打点からの距離（青）／2行目＝ピンまで（黄）。
+ * 文字マーカー時代と同程度の小さいインラインアイコンにする。
  */
-export function makeBubble(pos:any,line1:string,line2:string){
-  // 絵文字（⛳ 等）は見た目が広いので幅に余裕を持たせる
-  const chars=Math.max(Array.from(line1).length,Array.from(line2).length)
-  const w=Math.max(chars*9+28,120),h=42,tail=8
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h+tail}">`
+const TEE_INLINE_ICON =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAFYUlEQVR42s2WT4jdVxXHP+fe+36/93tvMtOZZIxFSY2Gok6pG1HULGakFSniQsgr7koXLgQXgm5cJDO4dKFbt6JFnmKVogELnZBSFSPURSZVS0BKmrTOZP68f78/989x8RIdk8x00pVn9YN77/mc8/3dc+6BI5iqWlWVQ9ZFVe1RfLn3AAmAiESA3VLPtF14Iqp+yESST+lmZrkmIm8Ccd9+5WHtwgU1d78r7782qMIr2+OmUVWt9b9W1t7XPrwWQnh2X6DmfcF+9fK143+/Nfp1raq7jerNnUq3R3XY2qv8zqj2m3tVmNRe6zSFN034zc2bg8XDoHKQjC/++Y2FU4snXzlzauHJclSHlFQyJ6ZqVIrM0G4ZyibSzY3GRLIWLbKWCyFubFXlFz84M7M5VVfSfv/moCBm884LxxcWnmwmTRMTbtKoRURaTrAGfFQyZ4iKVD5ZVdzuqGqcs0tzWf6zg9T7H+D6+roTkfTqxtvPnTz56JeGgz3fRM2cEWYLiwAxKSJC5RPjJiECzgrWCMc6WVb74Ius9dSwqp4XkbS+vu4OkFRFFS5efDNrPZpfPXli/mMnjmUKYoZVoJsZrBHKOjLXcVgjGAEjEJIy18kAiCmlqEjThOszRbYE+P039z8Z9vsYEdG5x2Y+u/DI3JnhaKy1x4hAyxqMMThr6OYWa4VBGZg0iZCg9kpICVAQzKQKmrezM6X3n7kDMvdJurg4zXZc12ejWAVJURUQMic4KwwmnlEdiVFxVpA7+lgj1E1ka9AwKgN1SMkKSuLsvUru0/fSdEXMR60RSUZotyxlEynrwEzRInOWpEoCjAi5M4zqSFLFGItXxajQyQ0CMq7T6ffsNE7UGRF2xhVzZcOxIkN1mkVMiTy7G0QkFY6iZYiqWCvYKDhjGFaBrA3OMgNw6dKlBwGXASiDvjsHmmcGNBGSYo0QkjKcBDq50m07VMFZQ+UTxkDVJCZ1BAQrYEFT0i2A5eVlDpR0rtN6XVCJIclgXBExCDBbtOi2HZmbQlRBgcpPS+NY4SgyyJzgo8ikQf75zujKNMMHSLq8vBwBTO7Wt3d2Ryq2O6lqLdqZzM92iTGR0vQS1Y0nJshblnZmMQZCVKomYYzRQaVm89ZmqVTrU+Bqug8oIqqqVkTefXXjxgvd2YVvlMOdsLkzdKAU7TZ1k7A20W1nJE0kVUZlIM8MLWNQhLLxMUruYvQ/P/vJU2/3VW3vzmtzX6dZXV1VVZWyimtbt7duR2m5GFO8tTVgOJpg7bQmKx9pwjRb64SYpsU/Lqu4NWzcjXf+tet9Oq+qsjFV/uDm3e/3ba/Xi7+9cv3pDxyf/13jo/NNFYwRW9ZRukUGGERgtpMTYyREZW9ShqTGzc0UaTDa+8pTnzp9UVXNvc37ga94v6+215P4h6tvfbmS7CdFUSyGasy4akLbWYdASkrLGfYmPnTbLTc/P09Zltsaquc+/4kPv3SvlIcCAe4eePGPb3zkxCML3zdGztmsnacYGZc1KSmdIqdb5NTlpKl8+GVZDs8/8+nHrx8EOxS4P1OAl/9643ElfDUfvHUe154BiE1Z2sXTq84WL33h44t/u/fMQwOnr/8Fs7S0JL1eLwJc/sHXf190Ok9rgqau/3T2Oz/93N1/v7GxoWtra+kwf3LUseNqv59tLp5Lravf/F6nxZq1FmkVP7r92DPfXdzcNE/0es1R/Bx52LnGL+LKioQU42u192R5TqfTvryyshKWIB7Vz5GB5871E4Drdl9vfNot61CnGXMFYHVj4+HHwqNNcxcMwOUfPv+Pv/z4W9t3Bi55GB/u/YCtdd9WoZi2Q0SE/1/7N3GSDwnyWaimAAAAAElFTkSuQmCC'
+
+export function makeBubble(pos:any,opts:{fromTee:boolean,line1Text:string,line2Text:string}){
+  const {fromTee,line1Text,line2Text}=opts
+  const iconSize=14
+  const pad=10
+  const line1W=(fromTee?iconSize+4:0)+Array.from(line1Text).length*7.5
+  const line2W=Array.from(line2Text).length*7.5+8
+  const w=Math.max(line1W,line2W)+pad*2
+  const h=42,tail=8
+  const textX=fromTee?pad+iconSize+4:pad
+  const teeImg=fromTee
+    ?`<image href="${TEE_INLINE_ICON}" x="${pad}" y="4" width="${iconSize}" height="${iconSize}" preserveAspectRatio="xMidYMid meet"/>`
+    :''
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h+tail}">`
     +`<rect width="${w}" height="${h}" rx="7" fill="#0a160a" fill-opacity=".95" stroke="#4a9fd4" stroke-width="1.5"/>`
     +`<polygon points="${w/2-6},${h-1} ${w/2+6},${h-1} ${w/2},${h+tail}" fill="#0a160a" fill-opacity=".95"/>`
-    +`<text x="11" y="17" font-size="11.5" fill="#7ec8f0" font-family="sans-serif,Apple Color Emoji,Segoe UI Emoji">${line1}</text>`
-    +`<text x="11" y="33" font-size="11.5" fill="#e8c84a" font-family="sans-serif,Apple Color Emoji,Segoe UI Emoji">${line2}</text>`
+    +teeImg
+    +`<text x="${textX}" y="17" font-size="11.5" fill="#7ec8f0" font-family="sans-serif,Apple Color Emoji,Segoe UI Emoji">${line1Text}</text>`
+    +`<text x="${pad}" y="33" font-size="11.5" fill="#e8c84a" font-family="sans-serif,Apple Color Emoji,Segoe UI Emoji">${line2Text}</text>`
     +`</svg>`
   const G=(window as any).google.maps
   return new G.Marker({position:pos,map:gs.map,icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new G.Size(w,h+tail),anchor:new G.Point(w/2,h+tail+6)},zIndex:60,clickable:false})

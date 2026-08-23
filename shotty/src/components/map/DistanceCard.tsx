@@ -33,7 +33,7 @@ function PinRefLabel({ pinKey }: { pinKey: PinKey }) {
   if (pinKey === 'center') {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src="/icons/pin.png" alt="ピン" className="dist-card-pin" width={16} height={16} />
+      <img src="/icons/pin.png" alt="ピン" className="dist-card-pin" width={14} height={14} />
     )
   }
   return <>{pinKey === 'front' ? 'F' : 'B'}</>

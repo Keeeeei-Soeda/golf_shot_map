@@ -178,7 +178,7 @@ header{
 .dist-card-unit{font-family:'Noto Sans JP',sans-serif;font-size:12px;color:var(--gr);}
 .dist-card-hint{font-size:9px;color:var(--gv);}
 .dist-card-pin{
-  display:inline-block;width:16px;height:16px;vertical-align:-3px;
+  display:inline-block;width:14px;height:14px;vertical-align:-2px;
   object-fit:contain;
 }
 

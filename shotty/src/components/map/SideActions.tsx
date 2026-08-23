@@ -13,8 +13,7 @@ const GPS_GIVE_UP_MS = 13000
 /**
  * 右サイドの操作ボタン。3つとも同径の正円で、優先度は形ではなく色で表す。
  *
- * 並び順は上から 測定ON → パット → 現在地で記録 とし、
- * メインの「現在地で記録」を最下段に置いて親指が届きやすい位置にする。
+ * 並び順（使う順）：現在地で記録 → パット数記録 → ヤード測定
  */
 export default function SideActions() {
   useTick(1000)
@@ -71,7 +70,8 @@ export default function SideActions() {
           onClick={openCupPanel}
           aria-label="パット数とスコアを登録してホールを確定"
         >
-          ⛳
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icons/putter.png" alt="" className="side-action-icon" width={32} height={32} />
         </button>
         <span className="side-action-label">パット数記録</span>
       </div>
@@ -84,7 +84,7 @@ export default function SideActions() {
         >
           📏
         </button>
-        <span className="side-action-label">T→C距離</span>
+        <span className="side-action-label">ヤード測定</span>
       </div>
     </div>
   )

@@ -332,8 +332,13 @@ export function onMapClick(e:any){
 // 測定モード
 // ============================================================
 export function handleMeasure(pos:any){
-  if(gs.measureClick)gs.measureClick.setMap(null)
-  if(gs.teeLine){gs.teeLine.setMap(null);gs.teeLine=null};if(gs.pinLine){gs.pinLine.setMap(null);gs.pinLine=null}
+  // T→C の線・ラベルも含め、直前の測距表示をすべて消してから描き直す
+  if(gs.measureClick){gs.measureClick.setMap(null);gs.measureClick=null}
+  if(gs.teeLine){gs.teeLine.setMap(null);gs.teeLine=null}
+  if(gs.pinLine){gs.pinLine.setMap(null);gs.pinLine=null}
+  if(gs.measureFromLabel){gs.measureFromLabel.setMap(null);gs.measureFromLabel=null}
+  if(gs.measureToLabel){gs.measureToLabel.setMap(null);gs.measureToLabel=null}
+  if(gs.measureBubble){gs.measureBubble.setMap(null);gs.measureBubble=null}
   const G=(window as any).google.maps
   gs.measureClick=new G.Marker({position:pos,map:gs.map,icon:{path:G.SymbolPath.CIRCLE,scale:8,fillColor:'#fff',fillOpacity:.9,strokeColor:'#4a9fd4',strokeWeight:2.5},zIndex:99})
   showDists(pos)
@@ -342,10 +347,11 @@ export function showDists(pos:any){
   const h=hole();if(!h||!hasData(h))return
   const shots=curShots(),prevIsTee=shots.length===0
   const origin=prevIsTee?activeTee(h):{lat:shots[shots.length-1].lat,lng:shots[shots.length-1].lng}
-  const originLabel=prevIsTee?'ティーから':`第${shots.length+1}打から`
+  const originLabel=prevIsTee?'Tから':`第${shots.length+1}打から`
   const originYd=Math.round(haversine(origin.lat,origin.lng,pos.lat(),pos.lng())*1.09361)
   const pinMap:Record<string,any>={front:h.front,center:h.center,back:h.back}
-  const pinNameMap:Record<string,string>={front:'フロント',center:'センター',back:'バック'}
+  // ピンまでの残りは C ではなく ⛳。F/B 切替時は文字で示す
+  const pinNameMap:Record<string,string>={front:'F',center:'⛳',back:'B'}
   const targetKey=gs.measureSelectedPin&&pinMap[gs.measureSelectedPin]?gs.measureSelectedPin:'center'
   const targetPos=pinMap[targetKey],targetName=pinNameMap[targetKey]
   const pinYd=Math.round(haversine(pos.lat(),pos.lng(),targetPos.lat,targetPos.lng)*1.09361)
@@ -395,12 +401,14 @@ export function makeLabel(pos:any,text:string,tc:string,bg:string){
  * 1行目＝打点からの距離（青）／2行目＝ピンまでの残り（黄）。
  */
 export function makeBubble(pos:any,line1:string,line2:string){
-  const w=Math.max(line1.length,line2.length)*8+24,h=42,tail=8
+  // 絵文字（⛳ 等）は見た目が広いので幅に余裕を持たせる
+  const chars=Math.max(Array.from(line1).length,Array.from(line2).length)
+  const w=Math.max(chars*9+28,120),h=42,tail=8
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h+tail}">`
     +`<rect width="${w}" height="${h}" rx="7" fill="#0a160a" fill-opacity=".95" stroke="#4a9fd4" stroke-width="1.5"/>`
     +`<polygon points="${w/2-6},${h-1} ${w/2+6},${h-1} ${w/2},${h+tail}" fill="#0a160a" fill-opacity=".95"/>`
-    +`<text x="11" y="17" font-size="11.5" fill="#7ec8f0" font-family="sans-serif">${line1}</text>`
-    +`<text x="11" y="33" font-size="11.5" fill="#e8c84a" font-family="sans-serif">${line2}</text>`
+    +`<text x="11" y="17" font-size="11.5" fill="#7ec8f0" font-family="sans-serif,Apple Color Emoji,Segoe UI Emoji">${line1}</text>`
+    +`<text x="11" y="33" font-size="11.5" fill="#e8c84a" font-family="sans-serif,Apple Color Emoji,Segoe UI Emoji">${line2}</text>`
     +`</svg>`
   const G=(window as any).google.maps
   return new G.Marker({position:pos,map:gs.map,icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new G.Size(w,h+tail),anchor:new G.Point(w/2,h+tail+6)},zIndex:60,clickable:false})

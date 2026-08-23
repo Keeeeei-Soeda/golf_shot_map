@@ -71,7 +71,7 @@ GitHub Actionsの設定（Step9）
 ```
 golf_shot_map/          ← GitHubリポジトリのルート
 ├── index.html          ← バニラJS版（静的ページ）
-├── app.js
+├── app/                ← バニラJS版ロジック（分割済み）
 ├── swing.html
 ├── shotty/             ← ★ Next.js プロジェクト（Shotty本体）
 │   ├── package.json

@@ -1,6 +1,6 @@
 # ⛳ Golf Tracker — 開発ドキュメント
 
-**最終更新：2026年3月25日**
+**最終更新：2026年8月24日**
 **URL：** https://keeeeei-soeda.github.io/golf_shot_map/
 **リポジトリ：** git@github.com:Keeeeei-Soeda/golf_shot_map.git
 
@@ -17,10 +17,10 @@ Google Maps（衛星写真）上でショットを記録し、クラブ・飛距
 
 | 項目 | 内容 |
 |---|---|
-| ホスティング | GitHub Pages（無料・公開URL） |
+| ホスティング | GitHub Pages（無料・公開URL） / 本番は ConoHa VPS（`https://shotty.net`） |
 | 地図 | Google Maps JavaScript API（hybridモード・ベクターレンダリング） |
-| データ保存 | localStorage（最大30ラウンド・端末内のみ） |
-| フレームワーク | なし（Vanilla HTML/CSS/JS） |
+| データ保存 | localStorage（最大30ラウンド・端末内のみ）／Shotty は DB |
+| フレームワーク | バニラ HTML/CSS/JS（Pages）／Next.js（`shotty/`） |
 | フォント | Noto Sans JP / Bebas Neue（Google Fonts） |
 
 ---
@@ -29,23 +29,33 @@ Google Maps（衛星写真）上でショットを記録し、クラブ・飛距
 
 ```
 golf_shot_map/
-├── README.md         ← このファイル
-├── index.html        ← HTML骨格のみ
-├── style.css         ← スタイル全て
-├── courses.js        ← 自動生成（`npm run build:courses`）
-├── courses/regions/  ← ★コースデータの編集先（関東・関西・東海・九州沖縄の4ファイル）
+├── README.md           ← このファイル
+├── index.html          ← HTML骨格のみ
+├── style.css           ← スタイル全て
+├── courses.js          ← 自動生成（`npm run build:courses`）
+├── courses/regions/    ← ★コースデータの編集先（関東・関西・東海・九州沖縄）
 ├── scripts/
-│   └── build-courses.js  ← 上記から courses.js / shotty の courses を生成
-├── package.json      ← `build:courses` スクリプト
-├── picker.html       ← 座標登録ツール（別ページ）
-└── app/              ← アプリロジック（機能別に分割）
-    ├── core.js       状態・定数・ヘルパー・ラウンド保存
-    ├── sidebar.js    メニュー・コース選択・ホールストリップ・モード切替
-    ├── map.js        地図・ホール読み込み・ピン配置・回転・ヤードパネル
-    ├── measure.js    測定モード
-    ├── shot.js       ショット記録・カップイン・サマリー・スコアカード
-    ├── clubs.js      クラブセット編集パネル
-    └── history.js    ラウンド履歴・GPS・ShotNaviリンク
+│   ├── build-courses.js
+│   └── update-vps-maps-key.sh
+├── package.json        ← `build:courses` スクリプト
+├── picker.html         ← 座標登録ツール（別ページ）
+├── ai.html / caddy.html / swing.html / stats.html  ← 補助ページ
+├── gas/                ← AI相談用 Google Apps Script
+├── data/               ← キャディノート等の静的データ
+├── docs/
+│   ├── ops/            ← デプロイ・DNS・課金など運用メモ
+│   ├── prompts/        ← Cursor 向け指示・プロンプト
+│   └── specs/          ← 機能仕様書
+├── shotty/             ← Next.js 本番アプリ（shotty.net）
+└── app/                ← バニラ版アプリロジック（機能別に分割）
+    ├── core.js         状態・定数・ヘルパー・ラウンド保存
+    ├── sidebar.js      メニュー・コース選択・ホールストリップ・モード切替
+    ├── map.js          地図・ホール読み込み・ピン配置・回転・ヤードパネル
+    ├── measure.js      測定モード
+    ├── shot.js         ショット記録・カップイン・サマリー・スコアカード
+    ├── clubs.js        クラブセット編集パネル
+    ├── history.js      ラウンド履歴・GPS・ShotNaviリンク
+    └── strategy.js     過去ラウンド記録オーバーレイ
 ```
 
 ### 読み込み順（index.html）
@@ -59,6 +69,7 @@ golf_shot_map/
 <script src="app/shot.js"></script>
 <script src="app/clubs.js"></script>
 <script src="app/history.js"></script>
+<script src="app/strategy.js"></script>
 ```
 
 > ⚠️ `core.js` は全ファイルが依存するため必ず最初に読み込むこと。
@@ -197,7 +208,7 @@ T → F → C → B の順で地図をクリック（自動で次の地点へ）
 
 ## 7. デプロイ手順
 
-> ⚠️ 詳細は `docs/deploy.md` を参照すること（Cursor AIエージェントはそちらを正とする）
+> ⚠️ 詳細は `docs/ops/deploy.md` を参照すること（Cursor AIエージェントはそちらを正とする）
 
 ```bash
 cd ~/golf_shot_map

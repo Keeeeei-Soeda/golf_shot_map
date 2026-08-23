@@ -153,9 +153,9 @@ const POINT_DEFS = [
 ];
 
 // ホールデータ：9H×3コース = 27H
-// no は各コース内の 1〜9 で管理（出力時にリセット）
+// no は通し番号（アウト1–9 / イン10–18 / コース3は19–27）。courses.js 出力も同じ番号
 const holeData = Array.from({ length: 27 }, (_, i) => ({
-  no: (i % 9) + 1, par: 4,
+  no: i + 1, par: 4,
   teeRegular: null, teeLadies: null, front: null, center: null, back: null,
 }));
 

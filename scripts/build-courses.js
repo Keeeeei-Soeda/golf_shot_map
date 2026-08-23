@@ -29,6 +29,7 @@ function loadOrderedCourses() {
     kansai[8],
     kansai[9],
     kanto[1],
+    kansai[10],
   ];
 }
 

@@ -352,6 +352,19 @@ export function showDists(pos:any){
   if(gs.measureToLabel)gs.measureToLabel.setMap(null)
   gs.measureToLabel=makeLabel({lat:(pos.lat()+targetPos.lat)/2,lng:(pos.lng()+targetPos.lng)/2},`残${pinYd}yd`,'#000','#e8c84a')
 }
+/**
+ * ティー→センターの距離を地図上に示す。
+ * 測定機能の説明を兼ねた初期表示で、地図をタップすれば通常の測距に置き換わる。
+ */
+export function showTeeToCenter(){
+  const h=hole();if(!h||!hasData(h))return
+  clearMeasure()
+  const origin=activeTee(h),target=h.center
+  const yd=Math.round(haversine(origin.lat,origin.lng,target.lat,target.lng)*1.09361)
+  const G=(window as any).google.maps
+  gs.teeLine=new G.Polyline({path:[origin,target],map:gs.map,strokeColor:'#4a9fd4',strokeOpacity:.7,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
+  gs.measureFromLabel=makeLabel({lat:(origin.lat+target.lat)/2,lng:(origin.lng+target.lng)/2},`T→C ${yd}yd`,'#000','#4a9fd4')
+}
 export function clearMeasure(){
   if(gs.measureClick){gs.measureClick.setMap(null);gs.measureClick=null}
   if(gs.teeLine){gs.teeLine.setMap(null);gs.teeLine=null};if(gs.pinLine){gs.pinLine.setMap(null);gs.pinLine=null}
@@ -736,19 +749,22 @@ export function clearHoleShots(){
 export function onGpsBtn(){
   if(gs.gpsActive) stopGPS(); else startGPS()
 }
-export function recordCurrentGps(){
-  if(!navigator.geolocation){alert('GPS非対応');return}
-  const btn=document.getElementById('gpsRecBtn');if(btn)btn.textContent='⌛'
+export type GpsRecordStatus = 'pending'|'done'|'error'
+/** 現在地でショットを記録する。onStatus で取得中・成功・失敗を呼び出し側へ通知する。 */
+export function recordCurrentGps(onStatus?:(status:GpsRecordStatus,message?:string)=>void){
+  if(!navigator.geolocation){onStatus?.('error','この端末は位置情報に対応していません');return}
+  onStatus?.('pending')
   navigator.geolocation.getCurrentPosition(pos=>{
-    if(btn)btn.textContent='✏️'
-    const ll={lat:pos.coords.latitude,lng:pos.coords.longitude};if(!gs.map)return
+    const ll={lat:pos.coords.latitude,lng:pos.coords.longitude}
+    if(!gs.map){onStatus?.('error','地図がまだ読み込まれていません');return}
     const G=(window as any).google.maps
     if(!gs.gpsMarker)gs.gpsMarker=new G.Marker({position:ll,map:gs.map,title:'現在地',icon:{path:G.SymbolPath.CIRCLE,scale:9,fillColor:'#4a9fd4',fillOpacity:.9,strokeColor:'#fff',strokeWeight:2.5}})
     else gs.gpsMarker.setPosition(ll)
     if(!gs.gpsActive)startGPS()
     updatePendingPos(gs.gpsMarker.getPosition())
     const sp=document.getElementById('shotPanel');if(sp&&!sp.classList.contains('open'))openShotPanelUI()
-  },err=>{const b=document.getElementById('gpsRecBtn');if(b)b.textContent='✏️';alert('GPS取得失敗: '+err.message)},{enableHighAccuracy:true,timeout:10000})
+    onStatus?.('done')
+  },err=>{onStatus?.('error',err.message)},{enableHighAccuracy:true,timeout:10000})
 }
 export function updateGpsRecordBtn(){
   const btn=document.getElementById('gpsRecBtn');if(!btn)return

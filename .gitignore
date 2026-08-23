@@ -5,3 +5,7 @@
 update/api.memo
 .tools/
 17023.png
+/[1-5].png
+
+# ローカル撮影・一時ファイル
+shotty/tmp/

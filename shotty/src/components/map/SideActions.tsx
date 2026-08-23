@@ -71,7 +71,7 @@ export default function SideActions() {
           aria-label="パット数とスコアを登録してホールを確定"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/putter.png" alt="" className="side-action-icon" width={32} height={32} />
+          <img src="/icons/putter.png" alt="" className="side-action-icon" width={34} height={34} />
         </button>
         <span className="side-action-label">パット数記録</span>
       </div>

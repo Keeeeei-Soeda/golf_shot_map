@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>アイコン組み合わせ比較（4通り）</title>
+  <style>
+    :root {
+      --gd: #0f1f0f;
+      --g1: #162816;
+      --g3: #2d4f2d;
+      --gv: #4caf50;
+      --acc: #e8c84a;
+      --w: #eef4ee;
+      --gr: #7a957a;
+      --blue: #4a9fd4;
+      --pur: #a78bfa;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Noto Sans JP", system-ui, sans-serif;
+      background: #0a120a;
+      color: var(--w);
+      padding: 24px;
+    }
+    h1 { font-size: 20px; margin-bottom: 8px; }
+    .note { color: var(--gr); font-size: 13px; margin-bottom: 20px; line-height: 1.5; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 1200px;
+    }
+    .combo {
+      background: var(--g1);
+      border: 1px solid var(--g3);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .combo-head {
+      padding: 10px 14px;
+      background: #0a160a;
+      border-bottom: 1px solid var(--g3);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .combo-head strong { font-size: 15px; }
+    .combo-head span { font-size: 12px; color: var(--gr); }
+    .stage {
+      position: relative;
+      height: 320px;
+      background:
+        radial-gradient(ellipse at 30% 40%, #2a5a2a 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 60%, #1e4a1e 0%, transparent 45%),
+        linear-gradient(160deg, #1a3a1a, #0f2410 60%, #163018);
+      overflow: hidden;
+    }
+    /* マップ上の基準ピン風 */
+    .pin {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.45);
+      overflow: hidden;
+      background: #000;
+    }
+    .pin img { width: 100%; height: 100%; object-fit: cover; }
+    .pin-t { left: 18%; top: 58%; background: var(--blue); }
+    .pin-c { left: 62%; top: 28%; background: var(--pur); }
+    .pin-label {
+      position: absolute;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 1px 3px #000;
+      transform: translateY(28px);
+      white-space: nowrap;
+    }
+    /* 右サイドボタン列 */
+    .side {
+      position: absolute;
+      right: 14px;
+      bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .side-action { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .btn {
+      width: 60px; height: 60px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.4);
+      overflow: hidden;
+    }
+    .btn img { width: 36px; height: 36px; object-fit: contain; }
+    .btn-record { background: var(--gv); border: 2px solid var(--gv); font-size: 24px; }
+    .btn-putt { background: rgba(10,22,10,.92); border: 2px solid var(--acc); }
+    .btn-putt img {
+      /* 黒背景を目立たせつつアイコンを見せる */
+      background: #000;
+      border-radius: 6px;
+    }
+    .btn-measure { background: rgba(10,22,10,.92); border: 2px solid var(--gv); font-size: 24px; }
+    .lbl {
+      font-size: 10px; font-weight: 700; color: #fff;
+      text-shadow: 0 1px 3px rgba(0,0,0,.9);
+    }
+    /* 左上距離カード */
+    .dist {
+      position: absolute; top: 10px; left: 10px;
+      background: rgba(10,22,10,.92);
+      border: 1px solid var(--g3);
+      border-left: 3px solid var(--pur);
+      border-radius: 10px;
+      padding: 7px 12px;
+    }
+    .dist small { display: block; font-size: 10px; color: var(--gr); font-weight: 700; }
+    .dist strong { font-size: 28px; font-family: "Bebas Neue", Impact, sans-serif; color: var(--acc); line-height: 1; }
+    .dist strong span { font-size: 12px; color: var(--gr); font-family: inherit; }
+    .dist .pin-mini {
+      display: inline-block; width: 18px; height: 18px;
+      vertical-align: -3px; border-radius: 50%; overflow: hidden;
+      border: 1px solid #fff;
+    }
+    .dist .pin-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  </style>
+</head>
+<body>
+  <h1>アイコン組み合わせ比較（4通り）</h1>
+  <p class="note">
+    T = 1.png / 2.png　×　パット = 3.png / 4.png　／　C（ピン）= 5.png 固定<br />
+    実際のプレー画面に近い配置で並べています。気に入った組み合わせを教えてください。
+  </p>
+  <div class="grid" id="grid"></div>
+  <script>
+    const COMBOS = [
+      { id: 'A', t: 1, p: 3, label: 'T=1 / パット=3 / C=5' },
+      { id: 'B', t: 1, p: 4, label: 'T=1 / パット=4 / C=5' },
+      { id: 'C', t: 2, p: 3, label: 'T=2 / パット=3 / C=5' },
+      { id: 'D', t: 2, p: 4, label: 'T=2 / パット=4 / C=5' },
+    ]
+    const base = '/icons/candidates'
+    const grid = document.getElementById('grid')
+    for (const c of COMBOS) {
+      const el = document.createElement('article')
+      el.className = 'combo'
+      el.dataset.combo = c.id
+      el.innerHTML = `
+        <div class="combo-head">
+          <strong>組み合わせ ${c.id}</strong>
+          <span>${c.label}</span>
+        </div>
+        <div class="stage" data-combo-stage="${c.id}">
+          <div class="dist">
+            <small>現在地 → <span class="pin-mini"><img src="${base}/5.png" alt="C" /></span></small>
+            <strong>152<span>yd</span></strong>
+          </div>
+          <div class="pin pin-t" title="ティー">
+            <img src="${base}/${c.t}.png" alt="T${c.t}" />
+          </div>
+          <div class="pin pin-c" title="センター">
+            <img src="${base}/5.png" alt="C5" />
+          </div>
+          <div class="side">
+            <div class="side-action">
+              <div class="btn btn-record">✏️</div>
+              <div class="lbl">現在地で記録</div>
+            </div>
+            <div class="side-action">
+              <div class="btn btn-putt"><img src="${base}/${c.p}.png" alt="P${c.p}" /></div>
+              <div class="lbl">パット数記録</div>
+            </div>
+            <div class="side-action">
+              <div class="btn btn-measure">📏</div>
+              <div class="lbl">ヤード測定</div>
+            </div>
+          </div>
+        </div>
+      `
+      grid.appendChild(el)
+    }
+  </script>
+</body>
+</html>

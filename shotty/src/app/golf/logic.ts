@@ -296,14 +296,24 @@ export function placePins(h:any){
   if(window._pins) window._pins.forEach((m:any)=>m.setMap(null)); window._pins=[]
   const showFB=curShots().length>=1
   const G=(window as any).google.maps
-  const mk=(pos:any,color:string,lbl:string,title:string,pinKey:string|null,fbPin:boolean)=>{
+  const mkCircle=(pos:any,color:string,lbl:string,title:string,pinKey:string|null,fbPin:boolean)=>{
     if(fbPin&&!showFB) return null
-    const emoji=lbl.length>1||lbl==='⛳'
-    const m=new G.Marker({position:pos,map:gs.map,title,icon:{path:G.SymbolPath.CIRCLE,scale:11,fillColor:color,fillOpacity:1,strokeColor:'#fff',strokeWeight:2},label:{text:lbl,color:'#fff',fontSize:emoji?'14px':'11px',fontWeight:'bold'}})
+    const m=new G.Marker({position:pos,map:gs.map,title,icon:{path:G.SymbolPath.CIRCLE,scale:11,fillColor:color,fillOpacity:1,strokeColor:'#fff',strokeWeight:2},label:{text:lbl,color:'#fff',fontSize:'11px',fontWeight:'bold'}})
     m.addListener('click',()=>{if(gs.appMode==='measure'&&pinKey){gs.measureSelectedPin=pinKey;if(gs.measureClick)showDists(gs.measureClick.getPosition())}})
     return m
   }
-  window._pins=[mk(activeTee(h),'#4a9fd4','T','ティー',null,false),mk(h.front,'#e05252','F','フロント','front',true),mk(h.center,'#a78bfa','⛳','センター','center',false),mk(h.back,'#e8c84a','B','バック','back',true)].filter(Boolean)
+  // 組み合わせA: T=tee.png / C=pin.png（F・Bは従来の文字マーカー）
+  const mkImage=(pos:any,url:string,title:string,pinKey:string|null,size=40)=>{
+    const m=new G.Marker({position:pos,map:gs.map,title,icon:{url,scaledSize:new G.Size(size,size),anchor:new G.Point(size/2,size/2)},zIndex:40})
+    m.addListener('click',()=>{if(gs.appMode==='measure'&&pinKey){gs.measureSelectedPin=pinKey;if(gs.measureClick)showDists(gs.measureClick.getPosition())}})
+    return m
+  }
+  window._pins=[
+    mkImage(activeTee(h),'/icons/tee.png','ティー',null,42),
+    mkCircle(h.front,'#e05252','F','フロント','front',true),
+    mkImage(h.center,'/icons/pin.png','センター','center',42),
+    mkCircle(h.back,'#e8c84a','B','バック','back',true),
+  ].filter(Boolean)
 }
 
 // ============================================================

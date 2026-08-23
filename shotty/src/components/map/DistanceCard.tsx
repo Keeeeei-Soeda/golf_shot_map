@@ -8,8 +8,6 @@ import { haversineYards } from '@/lib/geo'
 type GeoPoint = { lat: number; lng: number }
 type PinKey = 'front' | 'center' | 'back'
 
-const PIN_LABEL: Record<PinKey, string> = { front: 'F', center: '⛳', back: 'B' }
-
 function toGeoPoint(value: unknown): GeoPoint | null {
   if (!value || typeof value !== 'object') return null
   const { lat, lng } = value as { lat?: unknown; lng?: unknown }
@@ -31,6 +29,16 @@ function selectedPinKey(): PinKey {
   return selected === 'front' || selected === 'back' ? selected : 'center'
 }
 
+function PinRefLabel({ pinKey }: { pinKey: PinKey }) {
+  if (pinKey === 'center') {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src="/icons/pin.png" alt="ピン" className="dist-card-pin" width={16} height={16} />
+    )
+  }
+  return <>{pinKey === 'front' ? 'F' : 'B'}</>
+}
+
 /**
  * 左上に常時表示する残り距離カード。
  * 向きは「現在地 → 選択リファレンス」であり、飛距離ではない。
@@ -47,13 +55,17 @@ export default function DistanceCard() {
   const yards =
     here && target ? haversineYards(here.lat, here.lng, target.lat, target.lng) : null
 
+  const ariaTarget = pinKey === 'center' ? 'ピン' : pinKey === 'front' ? 'F' : 'B'
+
   return (
     <button
       className="dist-card"
       onClick={() => { if (!gs.gpsActive) startGPS() }}
-      aria-label={`現在地から${PIN_LABEL[pinKey]}までの残り距離`}
+      aria-label={`現在地から${ariaTarget}までの残り距離`}
     >
-      <span className="dist-card-label">現在地 → {PIN_LABEL[pinKey]}</span>
+      <span className="dist-card-label">
+        現在地 → <PinRefLabel pinKey={pinKey} />
+      </span>
       <span className="dist-card-value">
         {yards === null ? <span className="dist-card-empty">--</span> : yards}
         <span className="dist-card-unit">yd</span>

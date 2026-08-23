@@ -125,9 +125,17 @@ export default function Sidebar({ roundInProgress, completedHoles, onEndRound }:
           {/* ===== 基準ピンの凡例 ===== */}
           <div className="menu-label">マップの基準ピン</div>
           <div className="menu-legend">
-            <div className="leg-r"><div className="leg-dot" style={{ background: '#4a9fd4' }}></div>T = ティー</div>
+            <div className="leg-r">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icons/tee.png" alt="" className="leg-icon" width={18} height={18} />
+              ティー
+            </div>
             <div className="leg-r"><div className="leg-dot" style={{ background: '#e05252' }}></div>F = フロント</div>
-            <div className="leg-r"><div className="leg-dot" style={{ background: '#a78bfa' }}></div>⛳ = センター</div>
+            <div className="leg-r">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icons/pin.png" alt="" className="leg-icon" width={18} height={18} />
+              センター（ピン）
+            </div>
             <div className="leg-r"><div className="leg-dot" style={{ background: '#e8c84a' }}></div>B = バック</div>
           </div>
 

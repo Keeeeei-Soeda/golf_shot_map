@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { COURSES } from '@/data/courses'
+import { PIN_ICON_DATA_URL, TEE_ICON_DATA_URL } from '@/lib/map-pin-icons'
 import {
   gs, st,
   DEFAULT_CLUBS, SCORE_DEFS, CLUB_PRESETS, CLUB_ORDER, TEE_TYPES,
@@ -302,16 +303,24 @@ export function placePins(h:any){
     m.addListener('click',()=>{if(gs.appMode==='measure'&&pinKey){gs.measureSelectedPin=pinKey;if(gs.measureClick)showDists(gs.measureClick.getPosition())}})
     return m
   }
-  // 組み合わせA: T=tee.png / C=pin.png。サイズは旧T/C文字マーカー（直径約22px）に揃える
-  const mkImage=(pos:any,url:string,title:string,pinKey:string|null,size=24)=>{
+  /**
+   * 旧T/C文字マーカーと同型：白縁の色丸の中に15pxのアイコンを置く。
+   */
+  const mkIconCircle=(pos:any,imgDataUrl:string,fill:string,title:string,pinKey:string|null)=>{
+    const size=26, icon=15, pad=(size-icon)/2
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${size}" height="${size}">`
+      +`<circle cx="${size/2}" cy="${size/2}" r="${size/2-1.5}" fill="${fill}" stroke="#fff" stroke-width="2"/>`
+      +`<image href="${imgDataUrl}" x="${pad}" y="${pad}" width="${icon}" height="${icon}" preserveAspectRatio="xMidYMid meet"/>`
+      +`</svg>`
+    const url='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg)
     const m=new G.Marker({position:pos,map:gs.map,title,icon:{url,scaledSize:new G.Size(size,size),anchor:new G.Point(size/2,size/2)},zIndex:40})
     m.addListener('click',()=>{if(gs.appMode==='measure'&&pinKey){gs.measureSelectedPin=pinKey;if(gs.measureClick)showDists(gs.measureClick.getPosition())}})
     return m
   }
   window._pins=[
-    mkImage(activeTee(h),'/icons/tee.png','ティー',null,24),
+    mkIconCircle(activeTee(h),TEE_ICON_DATA_URL,'#4a9fd4','ティー',null),
     mkCircle(h.front,'#e05252','F','フロント','front',true),
-    mkImage(h.center,'/icons/pin.png','センター','center',24),
+    mkIconCircle(h.center,PIN_ICON_DATA_URL,'#a78bfa','センター','center'),
     mkCircle(h.back,'#e8c84a','B','バック','back',true),
   ].filter(Boolean)
 }
@@ -417,9 +426,6 @@ export function makeLabel(pos:any,text:string,tc:string,bg:string){
  * 1行目＝打点からの距離（青）／2行目＝ピンまで（黄）。
  * 文字マーカー時代と同程度の小さいインラインアイコンにする。
  */
-const TEE_INLINE_ICON =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAFYUlEQVR42s2WT4jdVxXHP+fe+36/93tvMtOZZIxFSY2Gok6pG1HULGakFSniQsgr7koXLgQXgm5cJDO4dKFbt6JFnmKVogELnZBSFSPURSZVS0BKmrTOZP68f78/989x8RIdk8x00pVn9YN77/mc8/3dc+6BI5iqWlWVQ9ZFVe1RfLn3AAmAiESA3VLPtF14Iqp+yESST+lmZrkmIm8Ccd9+5WHtwgU1d78r7782qMIr2+OmUVWt9b9W1t7XPrwWQnh2X6DmfcF+9fK143+/Nfp1raq7jerNnUq3R3XY2qv8zqj2m3tVmNRe6zSFN034zc2bg8XDoHKQjC/++Y2FU4snXzlzauHJclSHlFQyJ6ZqVIrM0G4ZyibSzY3GRLIWLbKWCyFubFXlFz84M7M5VVfSfv/moCBm884LxxcWnmwmTRMTbtKoRURaTrAGfFQyZ4iKVD5ZVdzuqGqcs0tzWf6zg9T7H+D6+roTkfTqxtvPnTz56JeGgz3fRM2cEWYLiwAxKSJC5RPjJiECzgrWCMc6WVb74Ius9dSwqp4XkbS+vu4OkFRFFS5efDNrPZpfPXli/mMnjmUKYoZVoJsZrBHKOjLXcVgjGAEjEJIy18kAiCmlqEjThOszRbYE+P039z8Z9vsYEdG5x2Y+u/DI3JnhaKy1x4hAyxqMMThr6OYWa4VBGZg0iZCg9kpICVAQzKQKmrezM6X3n7kDMvdJurg4zXZc12ejWAVJURUQMic4KwwmnlEdiVFxVpA7+lgj1E1ka9AwKgN1SMkKSuLsvUru0/fSdEXMR60RSUZotyxlEynrwEzRInOWpEoCjAi5M4zqSFLFGItXxajQyQ0CMq7T6ffsNE7UGRF2xhVzZcOxIkN1mkVMiTy7G0QkFY6iZYiqWCvYKDhjGFaBrA3OMgNw6dKlBwGXASiDvjsHmmcGNBGSYo0QkjKcBDq50m07VMFZQ+UTxkDVJCZ1BAQrYEFT0i2A5eVlDpR0rtN6XVCJIclgXBExCDBbtOi2HZmbQlRBgcpPS+NY4SgyyJzgo8ikQf75zujKNMMHSLq8vBwBTO7Wt3d2Ryq2O6lqLdqZzM92iTGR0vQS1Y0nJshblnZmMQZCVKomYYzRQaVm89ZmqVTrU+Bqug8oIqqqVkTefXXjxgvd2YVvlMOdsLkzdKAU7TZ1k7A20W1nJE0kVUZlIM8MLWNQhLLxMUruYvQ/P/vJU2/3VW3vzmtzX6dZXV1VVZWyimtbt7duR2m5GFO8tTVgOJpg7bQmKx9pwjRb64SYpsU/Lqu4NWzcjXf+tet9Oq+qsjFV/uDm3e/3ba/Xi7+9cv3pDxyf/13jo/NNFYwRW9ZRukUGGERgtpMTYyREZW9ShqTGzc0UaTDa+8pTnzp9UVXNvc37ga94v6+215P4h6tvfbmS7CdFUSyGasy4akLbWYdASkrLGfYmPnTbLTc/P09Zltsaquc+/4kPv3SvlIcCAe4eePGPb3zkxCML3zdGztmsnacYGZc1KSmdIqdb5NTlpKl8+GVZDs8/8+nHrx8EOxS4P1OAl/9643ElfDUfvHUe154BiE1Z2sXTq84WL33h44t/u/fMQwOnr/8Fs7S0JL1eLwJc/sHXf190Ok9rgqau/3T2Oz/93N1/v7GxoWtra+kwf3LUseNqv59tLp5Lravf/F6nxZq1FmkVP7r92DPfXdzcNE/0es1R/Bx52LnGL+LKioQU42u192R5TqfTvryyshKWIB7Vz5GB5871E4Drdl9vfNot61CnGXMFYHVj4+HHwqNNcxcMwOUfPv+Pv/z4W9t3Bi55GB/u/YCtdd9WoZi2Q0SE/1/7N3GSDwnyWaimAAAAAElFTkSuQmCC'
-
 export function makeBubble(pos:any,opts:{fromTee:boolean,line1Text:string,line2Text:string}){
   const {fromTee,line1Text,line2Text}=opts
   const iconSize=14
@@ -430,7 +436,7 @@ export function makeBubble(pos:any,opts:{fromTee:boolean,line1Text:string,line2T
   const h=42,tail=8
   const textX=fromTee?pad+iconSize+4:pad
   const teeImg=fromTee
-    ?`<image href="${TEE_INLINE_ICON}" x="${pad}" y="4" width="${iconSize}" height="${iconSize}" preserveAspectRatio="xMidYMid meet"/>`
+    ?`<image href="${TEE_ICON_DATA_URL}" x="${pad}" y="4" width="${iconSize}" height="${iconSize}" preserveAspectRatio="xMidYMid meet"/>`
     :''
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h+tail}">`
     +`<rect width="${w}" height="${h}" rx="7" fill="#0a160a" fill-opacity=".95" stroke="#4a9fd4" stroke-width="1.5"/>`

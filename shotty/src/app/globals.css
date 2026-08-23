@@ -149,11 +149,34 @@ header{
 }
 #emptyMap .ico{font-size:46px;}
 
+/* 左上は残り距離カードが占めるため、凡例は左下に置く */
 #legend{
-  position:absolute;top:8px;left:8px;z-index:5;
+  position:absolute;bottom:8px;left:8px;z-index:5;
   background:rgba(10,22,10,.88);border:1px solid var(--g4);
   border-radius:8px;padding:6px 10px;pointer-events:none;
 }
+
+/* ===== 残り距離カード（左上・常時表示） ===== */
+.dist-card{
+  position:absolute;top:8px;
+  left:calc(8px + env(safe-area-inset-left, 0px));
+  z-index:6;
+  display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+  background:rgba(10,22,10,.92);border:1px solid var(--g4);
+  border-left:3px solid var(--pur);
+  border-radius:10px;padding:7px 13px 8px;
+  font-family:inherit;color:var(--w);text-align:left;
+  cursor:pointer;transition:border-color .15s;
+}
+.dist-card:hover{border-color:var(--gv);}
+.dist-card-label{font-size:10px;font-weight:700;color:var(--gr);letter-spacing:.5px;}
+.dist-card-value{
+  font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:1;
+  color:var(--acc);display:flex;align-items:baseline;gap:3px;
+}
+.dist-card-empty{color:var(--gr);}
+.dist-card-unit{font-family:'Noto Sans JP',sans-serif;font-size:12px;color:var(--gr);}
+.dist-card-hint{font-size:9px;color:var(--gv);}
 .leg-r{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--w);margin-bottom:3px;}
 .leg-r:last-child{margin-bottom:0;}
 .leg-dot{width:9px;height:9px;border-radius:50%;border:2px solid rgba(255,255,255,.6);flex-shrink:0;}
@@ -241,7 +264,8 @@ header{
 /* ===== BOTTOM BAR ===== */
 #bottomBar{
   height:50px;flex-shrink:0;background:var(--g1);border-top:1px solid var(--g3);
-  display:flex;align-items:center;gap:6px;padding:0 10px;
+  display:flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;
+  padding-bottom:env(safe-area-inset-bottom, 0px);
 }
 .mode-tabs{display:flex;gap:4px;flex-shrink:0;}
 .mtab{
@@ -711,14 +735,26 @@ header{
 }
 .menu-club-btn:hover{background:rgba(232,200,74,.15);}
 
-.hole-nav{display:flex;gap:4px;flex-shrink:0;}
+.hole-nav{display:flex;gap:10px;flex-shrink:0;align-items:center;}
 .hole-nav-btn{
-  padding:5px 9px;border-radius:6px;border:1px solid var(--g4);
-  background:var(--g2);color:var(--w);font-size:11px;font-weight:700;
+  width:42px;height:38px;border-radius:8px;border:1px solid var(--g4);
+  background:var(--g2);color:var(--w);font-size:14px;font-weight:700;
   cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;
+  display:flex;align-items:center;justify-content:center;
 }
 .hole-nav-btn:hover{background:var(--g4);}
 .hole-nav-btn:disabled{opacity:.35;cursor:default;}
+
+/* ホール番号（下部中央） */
+.hole-label{
+  display:flex;align-items:baseline;gap:8px;
+  min-width:112px;justify-content:center;
+}
+.hole-label-no{
+  font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1;
+  letter-spacing:1px;color:var(--w);
+}
+.hole-label-par{font-size:12px;font-weight:700;color:var(--gr);white-space:nowrap;}
 
 /* ===== スコアカードパネル（全画面） ===== */
 #scorecardPanel{

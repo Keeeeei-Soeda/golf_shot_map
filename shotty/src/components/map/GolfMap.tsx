@@ -2,8 +2,10 @@
 
 import {
   emBackToPref, emBackToGc, emBackToCourse, emSelectTee,
-  prevHole, nextHole, setMode, openCupPanel, toggleReview, clearHoleShots,
+  openCupPanel, toggleReview, clearHoleShots,
 } from '@/app/golf/logic'
+import DistanceCard from './DistanceCard'
+import HoleBar from './HoleBar'
 import YardageBar from './YardageBar'
 
 export default function GolfMap() {
@@ -17,6 +19,7 @@ export default function GolfMap() {
           <div className="leg-r"><div className="leg-dot" style={{background:'#a78bfa'}}></div>C = センター</div>
           <div className="leg-r"><div className="leg-dot" style={{background:'#e8c84a'}}></div>B = バック</div>
         </div>
+        <DistanceCard />
         <YardageBar />
         <div id="strategyBanner" className="strategy-banner" style={{display:'none'}}></div>
         <div id="recBanner" style={{display:'none'}}></div>
@@ -49,20 +52,17 @@ export default function GolfMap() {
         </div>
       </div>
 
-      {/* ===== ボトムバー ===== */}
-      <div id="bottomBar">
-        <div className="mode-tabs">
-          <button id="tabMeasure" className="mtab active" onClick={()=>setMode('measure')}>📏 測定</button>
-          <button id="tabRecord" className="mtab rec" onClick={()=>setMode('record')}>🏌️ 記録</button>
-        </div>
-        <div id="modeInfo" className="mode-info">コースを選択</div>
-        <div id="holeNavBtns" className="hole-nav" style={{display:'none'}}>
-          <button id="prevHoleBtn" className="hole-nav-btn" onClick={prevHole}>◀ 前H</button>
-          <button id="nextHoleBtn" className="hole-nav-btn" onClick={nextHole}>次H ▶</button>
-        </div>
-        <button id="cupBtn" onClick={openCupPanel} style={{display:'none'}}>⛳ IN</button>
-        <button className="bb-btn" id="reviewBtn" onClick={toggleReview} style={{display:'none'}}>📋</button>
-        <button className="bb-btn danger" onClick={clearHoleShots} style={{display:'none'}} id="clearBtn">↺</button>
+      {/* ===== ボトムバー（ホール送り＋番号のみ） ===== */}
+      <HoleBar />
+
+      {/*
+        旧ボトムバーの操作。ステップ4・5で各パネル内へ移設するまでの一時退避。
+        logic.ts が id を参照するため DOM から取り除かない。
+      */}
+      <div id="legacyControls" style={{display:'none'}}>
+        <button id="cupBtn" onClick={openCupPanel}>⛳ IN</button>
+        <button className="bb-btn" id="reviewBtn" onClick={toggleReview}>📋</button>
+        <button className="bb-btn danger" id="clearBtn" onClick={clearHoleShots}>↺</button>
       </div>
     </>
   )

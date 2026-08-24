@@ -58,6 +58,54 @@ header{
   font-size:9px;font-weight:700;border-radius:8px;padding:1px 4px;display:none;
 }
 
+/* ===== 機能ランチャー（9ドット） ===== */
+.feature-launcher{position:relative;flex-shrink:0;}
+.launcher-gps-proxy{
+  position:absolute;width:0;height:0;opacity:0;pointer-events:none;overflow:hidden;border:0;padding:0;
+}
+.launcher-hist-badge{
+  top:-2px;right:-2px;z-index:2;pointer-events:none;
+}
+.launcher-trigger{width:36px;height:36px;padding:0;justify-content:center;}
+.launcher-trigger.open{background:rgba(255,255,255,.12);color:var(--w);}
+.launcher-dots{
+  display:grid;grid-template-columns:repeat(3,5px);grid-template-rows:repeat(3,5px);
+  gap:3px;width:21px;height:21px;
+}
+.launcher-dots i{
+  display:block;width:5px;height:5px;border-radius:50%;background:currentColor;
+}
+.launcher-backdrop{
+  position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.35);
+}
+.launcher-panel{
+  position:absolute;top:calc(100% + 8px);right:0;z-index:91;
+  width:min(280px, calc(100vw - 24px));
+  padding:12px;border-radius:14px;
+  background:var(--g1);border:1px solid var(--g4);
+  box-shadow:0 8px 28px rgba(0,0,0,.55);
+}
+.launcher-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+}
+.launcher-tile{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:10px 4px 8px;border-radius:12px;border:none;
+  background:transparent;color:var(--w);cursor:pointer;font-family:inherit;
+}
+.launcher-tile:hover{background:rgba(255,255,255,.08);}
+.launcher-tile.is-danger .launcher-tile-label{color:#fca5a5;}
+.launcher-tile-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.08);font-size:22px;line-height:1;
+}
+.launcher-tile-icon img{width:28px;height:28px;object-fit:contain;}
+.launcher-tile-label{
+  font-size:10px;font-weight:700;line-height:1.2;text-align:center;
+  color:var(--gr);
+}
+
 /* ===== ハンバーガーメニュー ===== */
 #menuOverlay{
   position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.5);
@@ -230,6 +278,11 @@ header{
 .side-action-btn.is-measure{
   background:#414C58;border:2px solid #5a6878;color:#CDD6E0;
   box-shadow:0 3px 10px rgba(0,0,0,.45);
+}
+/* 地図回転＝測定の下・一段落とした枠線スタイル */
+.side-action-btn.is-rotate{
+  background:rgba(10,22,10,.88);border:2px solid #6b7c8f;color:#c5d0dc;
+  box-shadow:0 2px 8px rgba(0,0,0,.4);font-size:22px;
 }
 .leg-r{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--w);margin-bottom:3px;}
 .leg-r:last-child{margin-bottom:0;}

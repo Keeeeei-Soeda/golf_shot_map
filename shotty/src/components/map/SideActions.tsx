@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import {
-  hasData, hole, openCupPanel, recordCurrentGps, showTeeToCenter,
+  hasData, hole, openCupPanel, recordCurrentGps, rotateToHole, showTeeToCenter,
   type GpsRecordStatus,
 } from '@/app/golf/logic'
 import { useTick } from '@/hooks/useTick'
@@ -91,6 +91,19 @@ export default function SideActions() {
           <img src="/icons/icon-ruler.png" alt="ヤード測定" className="side-action-icon" width={30} height={30} />
         </button>
         <span className="side-action-label">ヤード測定</span>
+      </div>
+
+      <div className="side-action">
+        <button
+          type="button"
+          className="side-action-btn is-rotate"
+          onClick={rotateToHole}
+          aria-label="地図をホール方向に回転"
+          title="ホール方向に回転"
+        >
+          🧭
+        </button>
+        <span className="side-action-label">地図回転</span>
       </div>
     </div>
   )

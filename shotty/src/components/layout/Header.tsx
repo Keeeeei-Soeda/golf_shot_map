@@ -3,7 +3,8 @@
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { useState } from 'react'
-import { toggleMenu, onGpsBtn, openScorecard, openHistory } from '@/app/golf/logic'
+import { toggleMenu } from '@/app/golf/logic'
+import FeatureLauncher from './FeatureLauncher'
 
 export default function Header() {
   const { data: session, status } = useSession()
@@ -16,14 +17,8 @@ export default function Header() {
       </button>
       <div className="logo">SHOTTY <small>caddy</small></div>
       <div className="hdr-right">
-        <button id="gpsBtn" className="hdr-btn" onClick={onGpsBtn} title="GPS">📍</button>
-        <button className="hdr-btn" onClick={openScorecard} title="スコアカード">📊</button>
-        <div id="histBtn" style={{position:'relative'}}>
-          <button className="hdr-btn" onClick={openHistory}>📋</button>
-          <span id="histBadge" className="hist-badge" style={{display:'none'}}></span>
-        </div>
+        <FeatureLauncher />
 
-        {/* 認証エリア */}
         <div className="auth-area" style={{position:'relative'}}>
           {status === 'loading' ? (
             <div style={{width:32,height:32,borderRadius:'50%',background:'#374151'}} />

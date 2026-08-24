@@ -304,10 +304,10 @@ export function placePins(h:any){
     return m
   }
   /**
-   * 旧T/C文字マーカーと同型：白縁の色丸の中に15pxのアイコンを置く。
+   * 旧T/C文字マーカーと同型：白縁の色丸の中に小さなアイコンを置く。
    */
   const mkIconCircle=(pos:any,imgDataUrl:string,fill:string,title:string,pinKey:string|null)=>{
-    const size=26, icon=15, pad=(size-icon)/2
+    const size=22, icon=12, pad=(size-icon)/2
     const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${size}" height="${size}">`
       +`<circle cx="${size/2}" cy="${size/2}" r="${size/2-1.5}" fill="${fill}" stroke="#fff" stroke-width="2"/>`
       +`<image href="${imgDataUrl}" x="${pad}" y="${pad}" width="${icon}" height="${icon}" preserveAspectRatio="xMidYMid meet"/>`

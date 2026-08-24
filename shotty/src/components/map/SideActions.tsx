@@ -55,7 +55,7 @@ export default function SideActions() {
             className="side-action-btn is-record"
             onClick={() => recordCurrentGps(handleGpsStatus)}
             disabled={isPending}
-            aria-label="現在地で記録"
+            aria-label="ショット記録"
           >
             {isPending ? (
               '⌛'
@@ -65,7 +65,7 @@ export default function SideActions() {
             )}
           </button>
           <span className="side-action-label">
-            {isPending ? '取得中…' : '現在地で記録'}
+            {isPending ? '取得中…' : 'ショット記録'}
           </span>
         </div>
 
@@ -73,12 +73,12 @@ export default function SideActions() {
           <button
             className="side-action-btn is-putt"
             onClick={openCupPanel}
-            aria-label="パット数記録"
+            aria-label="パット記録"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/icons/icon-putter.png" alt="" className="side-action-icon" width={30} height={30} />
           </button>
-          <span className="side-action-label">パット数記録</span>
+          <span className="side-action-label">パット記録</span>
         </div>
 
         <div className="side-action">

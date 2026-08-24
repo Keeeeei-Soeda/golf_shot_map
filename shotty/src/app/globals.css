@@ -422,17 +422,11 @@ header{
 }
 .sp-tabs{display:none;} /* タブ廃止 */
 
-.sp-penalty-fold{
-  border:1px solid var(--g3);border-radius:10px;overflow:hidden;margin-top:4px;
+.sp-penalty-body{
+  border:1px solid var(--g3);border-radius:10px;padding:10px 12px 12px;
+  background:rgba(0,0,0,.15);
 }
-.sp-penalty-toggle{
-  width:100%;display:flex;align-items:center;justify-content:space-between;
-  padding:10px 12px;background:var(--g2);border:none;color:var(--w);
-  font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
-}
-.sp-penalty-chevron{color:var(--gr);font-size:10px;}
-.sp-penalty-fold.open .sp-penalty-toggle{border-bottom:1px solid var(--g3);}
-#spBodyPenalty{padding:10px 12px 12px;}
+.sp-penalty-fold{display:none;} /* 折りたたみUIは廃止 */
 
 .sp-result-section{margin-bottom:8px;}
 .sp-result-label{font-size:9px;color:var(--gr);letter-spacing:1px;margin-bottom:5px;}

@@ -55,9 +55,14 @@ export default function SideActions() {
           className="side-action-btn is-record"
           onClick={() => recordCurrentGps(handleGpsStatus)}
           disabled={isPending}
-          aria-label="現在地でショットを記録"
+          aria-label="現在地で記録"
         >
-          {isPending ? '⌛' : '✏️'}
+          {isPending ? (
+            '⌛'
+          ) : (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src="/icons/icon-pin.png" alt="現在地で記録" className="side-action-icon" width={30} height={30} />
+          )}
         </button>
         <span className="side-action-label">
           {isPending ? '取得中…' : '現在地で記録'}
@@ -68,10 +73,10 @@ export default function SideActions() {
         <button
           className="side-action-btn is-putt"
           onClick={openCupPanel}
-          aria-label="パット数とスコアを登録してホールを確定"
+          aria-label="パット数記録"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/putter.png" alt="" className="side-action-icon" width={34} height={34} />
+          <img src="/icons/icon-putter.png" alt="パット数記録" className="side-action-icon" width={30} height={30} />
         </button>
         <span className="side-action-label">パット数記録</span>
       </div>
@@ -80,9 +85,10 @@ export default function SideActions() {
         <button
           className="side-action-btn is-measure"
           onClick={showTeeToCenter}
-          aria-label="ティーからセンターまでの距離を表示"
+          aria-label="ヤード測定"
         >
-          📏
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icons/icon-ruler.png" alt="ヤード測定" className="side-action-icon" width={30} height={30} />
         </button>
         <span className="side-action-label">ヤード測定</span>
       </div>

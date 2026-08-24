@@ -39,7 +39,7 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
       </head>
-      <body className={notoSansJP.className}>
+      <body className={`${notoSansJP.className} map-bottom-bleed`}>
           <SessionProvider>
             {children}
             <SyncToast />

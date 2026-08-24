@@ -12,11 +12,32 @@
   --acc:#e8c84a; --red:#e05252; --blue:#4a9fd4; --pur:#a78bfa; --org:#f59e0b;
   --eagle:#f472b6; --birdie:#60a5fa; --par:#4caf50;
   --bogey:#fb923c; --dbl:#ef4444; --tpl:#991b1b;
+  /* 下部バー本体の目安高さ（safe-area は別加算） */
+  --bottom-bar-content-h: 50px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --bottom-bar-offset: calc(var(--bottom-bar-content-h) + var(--safe-bottom));
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;}
-body{font-family:'Noto Sans JP',sans-serif;background:var(--gd);color:var(--w);
-  display:flex;flex-direction:column;}
+/*
+ * ステップ1: ルート高さを実画面下端まで届かせる
+ * - 100vh は使わない（指示書どおり 100dvh）
+ * - 外枠全体に safe-area 余白は付けない（黒帯の原因になる）
+ */
+html{
+  height:100%;
+  height:100dvh;
+  width:100%;
+  overflow:hidden;
+  background:var(--gd);
+}
+html,body{overflow:hidden;}
+body{
+  height:100%;
+  height:100dvh;
+  width:100%;
+  font-family:'Noto Sans JP',sans-serif;background:var(--gd);color:var(--w);
+  display:flex;flex-direction:column;
+}
 
 /* ===== HEADER ===== */
 header{
@@ -209,8 +230,11 @@ header{
 .sbadge.cupin {background:var(--gv);    color:#fff;}
 
 /* ===== MAP ===== */
-#mapWrap{flex:1;position:relative;overflow:hidden;}
-#map{width:100%;height:100%;display:none;}
+#mapWrap{flex:1;min-height:0;position:relative;overflow:hidden;}
+#map{
+  position:absolute;inset:0;width:100%;height:100%;
+  display:none;
+}
 #emptyMap{
   width:100%;height:100%;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:10px;color:var(--gr);
@@ -398,12 +422,55 @@ header{
   background:transparent;color:#fff;border:1px solid rgba(255,255,255,.7);
 }
 
-/* ===== BOTTOM BAR ===== */
+/* ===== BOTTOM BAR（デフォルト＝フロー内。bleed 時は下の上書きブロック参照） ===== */
 #bottomBar{
-  height:50px;flex-shrink:0;background:var(--g1);border-top:1px solid var(--g3);
-  display:flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;
-  padding-bottom:env(safe-area-inset-bottom, 0px);
+  flex-shrink:0;background:var(--g1);border-top:1px solid var(--g3);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  min-height:var(--bottom-bar-content-h);
+  padding:0 10px;
+  padding-bottom:calc(6px + constant(safe-area-inset-bottom));
+  padding-bottom:calc(6px + env(safe-area-inset-bottom, 0px));
 }
+
+/*
+ * ============================================================
+ * PWA_MAP_BOTTOM_BLEED（マップ最下端フルブリード）
+ * ------------------------------------------------------------
+ * 有効: body に class "map-bottom-bleed"（layout.tsx）
+ * 無効に戻す方法（どれか1つ）:
+ *   1) layout.tsx の body から "map-bottom-bleed" を外す
+ *   2) このブロック全体をコメントアウト
+ *   3) git revert <この変更のコミット>
+ * 方針: マップ背景は端まで / safe-area は操作要素のみ
+ * ============================================================
+ */
+body.map-bottom-bleed #mapWrap{
+  /* 下部バーをフローから外すので、マップが画面下端まで伸びる */
+  flex:1;
+  min-height:0;
+}
+body.map-bottom-bleed #map,
+body.map-bottom-bleed #emptyMap{
+  /* 背景レイヤーは inset:0（safe-area を背景に載せない） */
+  inset:0;
+}
+body.map-bottom-bleed #bottomBar{
+  /* 操作バーはマップの上に被せ、ホームバー分だけ中身を退避 */
+  position:fixed;
+  left:0;right:0;bottom:0;
+  z-index:20;
+  flex-shrink:0;
+}
+body.map-bottom-bleed .side-actions{
+  /* 右レール: 下部バー＋ホームバーの上に置く */
+  bottom:calc(16px + var(--bottom-bar-offset));
+  right:calc(10px + env(safe-area-inset-right, 0px));
+}
+body.map-bottom-bleed #recBanner{
+  bottom:calc(8px + var(--bottom-bar-offset));
+}
+/* ===== PWA_MAP_BOTTOM_BLEED end ===== */
+
 .mode-tabs{display:flex;gap:4px;flex-shrink:0;}
 .mtab{
   padding:5px 10px;border-radius:6px;border:1px solid var(--g3);
@@ -862,7 +929,6 @@ header{
 
 /* ===== iPhone safe area ===== */
 @supports (padding:env(safe-area-inset-bottom)){
-  #bottomBar{padding-bottom:calc(6px + env(safe-area-inset-bottom));height:auto;min-height:50px;}
   #shotPanel,#cupPanel,#reviewPanel{
     padding-bottom:calc(16px + env(safe-area-inset-bottom));
   }
@@ -886,7 +952,15 @@ header{
   .yi-val{font-size:20px;}
   .yi-horiz{gap:10px;}
   .yi-label{font-size:9px;}
-  #bottomBar{padding:6px 8px;gap:4px;}
+  #bottomBar{
+    padding:6px 8px;
+    padding-bottom:calc(6px + constant(safe-area-inset-bottom));
+    padding-bottom:calc(6px + env(safe-area-inset-bottom, 0px));
+    gap:4px;
+  }
+  body.map-bottom-bleed .side-actions{
+    bottom:calc(12px + var(--bottom-bar-offset));
+  }
   .mtab{padding:7px 8px;font-size:11px;}
   .mode-info{font-size:10px;}
   #cupBtn{padding:7px 8px;font-size:12px;}

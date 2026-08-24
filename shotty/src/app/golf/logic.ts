@@ -172,6 +172,10 @@ export const holeKey = () => {
   return `${st.gcIdx}_${eCIdx}_${eHIdx}`
 }
 export const curShots = () => gs.roundShots[holeKey()]||[]
+/** プレ3/4/5 などで飛ばした打数分。次打番号 = 記録数 + 1 + offset */
+export const holeOffset = () => Number(gs.roundShots[holeKey()+'_offset'])||0
+/** これから打つ／測る打数（プレN反映済み） */
+export const nextShotNo = () => curShots().length+1+holeOffset()
 export function haversine(la1:number,lo1:number,la2:number,lo2:number) {
   const R=6371000,r=Math.PI/180,dL=(la2-la1)*r,dN=(lo2-lo1)*r
   const a=Math.sin(dL/2)**2+Math.cos(la1*r)*Math.cos(la2*r)*Math.sin(dN/2)**2
@@ -300,6 +304,13 @@ export function loadHole() {
     gs.map.addListener('click',onMapClick)
     bindMapLongPress(gs.map)
   } else { gs.map.setZoom(zoom); gs.map.panTo({lat:midLat,lng:midLng}) }
+  // レイアウト変更後にタイルが空白になることがあるため、表示サイズを再通知する
+  requestAnimationFrame(()=>{
+    try{
+      G.event.trigger(gs.map,'resize')
+      gs.map!.setCenter({lat:midLat,lng:midLng})
+    }catch{ /* ignore */ }
+  })
   window._currentBearing=bearing
   placePins(h); renderShotLayer(); renderStrategyLayer(); updateInfo(); updateRecBanner(); updateGpsRecordBtn()
 }
@@ -466,7 +477,9 @@ export function showDists(pos:any){
   const targetKey=gs.measureSelectedPin&&pinMap[gs.measureSelectedPin]?gs.measureSelectedPin:'center'
   const targetPos=pinMap[targetKey],targetName=pinNameMap[targetKey]
   const pinYd=Math.round(haversine(pos.lat(),pos.lng(),targetPos.lat,targetPos.lng)*1.09361)
-  const originLabel=prevIsTee?'ティーから':`第${shots.length+1}打から`
+  // プレ3/4/5 の offset を含め、記録側と同じ次打番号にする
+  const n=nextShotNo()
+  const originLabel=prevIsTee?'ティーから':`第${n}打から`
   updateYardageMeasure(originLabel,originYd,targetName,pinYd)
   const G=(window as any).google.maps
   if(gs.teeLine)gs.teeLine.setMap(null)
@@ -477,7 +490,7 @@ export function showDists(pos:any){
   // 吹き出し: ティー起点は小さなティーアイコン＋「から」。ピン行は「⛳まで」に簡略化
   gs.measureBubble=makeBubble(pos,{
     fromTee: prevIsTee,
-    line1Text: prevIsTee ? `から ${originYd}yd` : `第${shots.length+1}打から ${originYd}yd`,
+    line1Text: prevIsTee ? `から ${originYd}yd` : `第${n}打から ${originYd}yd`,
     line2Text: `${targetName}まで ${pinYd}yd`,
   })
 }
@@ -582,12 +595,12 @@ export function updatePendingPos(pos:any){
   const plat=latOf(stable), plng=lngOf(stable)
   if(!Number.isFinite(plat)||!Number.isFinite(plng)) return
   gs.pendingPos=stable
-  const shots=curShots(),holeOff=gs.roundShots[holeKey()+'_offset']||0,prevIsTee=shots.length===0
+  const shots=curShots(),prevIsTee=shots.length===0
   const prevPos=prevIsTee?activeTee(h):{lat:shots[shots.length-1].lat,lng:shots[shots.length-1].lng}
   const carryYd=Math.round(haversine(prevPos.lat,prevPos.lng,plat,plng)*1.09361)
   const remYd=Math.round(haversine(plat,plng,h.center.lat,h.center.lng)*1.09361)
   const fromLabel=prevIsTee?'ティーから':`${shots[shots.length-1].no}打目から`
-  const nextNo=shots.length+1+holeOff
+  const nextNo=nextShotNo()
   updateSpDistTab(carryYd,remYd,fromLabel)
   const G=(window as any).google.maps
   if(gs.pendingMarker) gs.pendingMarker.setPosition(stable)
@@ -606,7 +619,7 @@ export function clearPending(){
   gs.pendingMarker=gs.pendingCarryLine=gs.pendingPinLine=gs.pendingCarryLabel=gs.pendingPinLabel=null
 }
 export function openShotPanelUI(){
-  const key=holeKey(),shots=curShots(),holeOff=gs.roundShots[key+'_offset']||0,n=shots.length+1+holeOff
+  const shots=curShots(),n=nextShotNo()
   const el=document.getElementById('spShotNo');if(el)el.textContent=n+'打目を登録'
   const cg=document.getElementById('clubGrid')
   if(cg) cg.innerHTML=gs.CLUBS.map(c=>c?`<button class="cb" onclick="selectClub('${c}')">${c}</button>`:`<span class="cb-empty"></span>`).join('')
@@ -657,8 +670,9 @@ export function selectResult(r:string){
 }
 export function selectPenalty(n:number){
   console.log('[selectPenalty]', n)
-  const key=holeKey(),shots=curShots(),holeOff=gs.roundShots[key+'_offset']||0,cur=shots.length+1+holeOff
+  const cur=nextShotNo()
   if(n<cur){ console.warn('[selectPenalty] n < cur, ignored', n, cur); return }
+  const key=holeKey()
   gs.roundShots[key+'_pendingPenalty']=n
   const el=document.getElementById('spShotNo');if(el)el.textContent='プレ'+n+' → 次は'+n+'打目から'
   const st2=document.getElementById('spPenaltyStatus');if(st2)st2.textContent='✅ プレ'+n+' 選択済 → 「ここに登録する」を押してください'
@@ -714,7 +728,7 @@ export function cancelPenalty(){
   saveRound(); gs.shotObType=null
   document.querySelectorAll('.sp-ob-btn').forEach(b=>b.classList.remove('sel'))
   document.querySelectorAll('.pb').forEach(b=>b.classList.remove('sel'))
-  const el=document.getElementById('spShotNo');if(el)el.textContent=(curShots().length+1)+'打目を登録'
+  const el=document.getElementById('spShotNo');if(el)el.textContent=nextShotNo()+'打目を登録'
   const ob=document.getElementById('spPenaltyOkBtn') as HTMLButtonElement;if(ob)ob.disabled=true
   switchSpTab('record')
 }
@@ -1226,7 +1240,7 @@ export function updateInfo(){
 export function updateRecBanner(){
   const banner=document.getElementById('recBanner');if(!banner)return
   if(gs.appMode!=='record'||!hole()||!hasData(hole())||document.getElementById('shotPanel')?.classList.contains('open')){banner.style.display='none';return}
-  const shots=curShots(),holeOff=gs.roundShots[holeKey()+'_offset']||0,n=shots.length+1+holeOff
+  const shots=curShots(),n=nextShotNo()
   const from=shots.length===0?'ティーから':shots[shots.length-1].no+'打目から'
   banner.textContent=n+'打目 — '+from+'の落下地点をタップ'; banner.style.display='block'
 }

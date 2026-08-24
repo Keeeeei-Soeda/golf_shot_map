@@ -248,8 +248,14 @@ export function updateYardagePanel(h?:any) {
   if(shots.length===0){const tee=activeTee(h);fromLat=tee.lat;fromLng=tee.lng}
   else{fromLat=shots[shots.length-1].lat;fromLng=shots[shots.length-1].lng}
   const tC=Math.round(haversine(fromLat,fromLng,h.center.lat,h.center.lng)*1.09361)
+  // 未ショット時は公式ヤード（レディース等）を優先して下部バーへ
+  let showYd=tC
+  if(shots.length===0&&h.yards){
+    const key=st.teeType==='ladies'?'ladies':st.teeType==='back'?'back':'reg'
+    if(typeof h.yards[key]==='number') showYd=h.yards[key]
+  }
   const holeYd=document.getElementById('holeYardage')
-  if(holeYd) holeYd.textContent=`${tC} yd`
+  if(holeYd) holeYd.textContent=`${showYd} yd`
   // 旧 #yardageInfo は非表示のまま互換用に最小更新
   const el=document.getElementById('yardageInfo')
   if(el) el.innerHTML=''

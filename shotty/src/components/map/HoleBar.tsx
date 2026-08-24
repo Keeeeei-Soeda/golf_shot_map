@@ -11,42 +11,62 @@ function readNumber(value: unknown): number | null {
   return typeof value === 'number' ? value : null
 }
 
-/** 打点（未記録ならティー）からセンターまでのヤード。F/B は出さない。 */
-function yardsToCenter(): number | null {
-  const h = hole()
-  if (!h || !hasData(h)) return null
-  const center = h.center as { lat?: unknown; lng?: unknown } | undefined
-  if (typeof center?.lat !== 'number' || typeof center?.lng !== 'number') return null
-
-  const shots = curShots()
-  let fromLat: number
-  let fromLng: number
-  if (shots.length === 0) {
-    const tee = activeTee(h) as { lat?: unknown; lng?: unknown } | null
-    if (typeof tee?.lat !== 'number' || typeof tee?.lng !== 'number') return null
-    fromLat = tee.lat
-    fromLng = tee.lng
-  } else {
-    const last = shots[shots.length - 1] as { lat?: unknown; lng?: unknown }
-    if (typeof last.lat !== 'number' || typeof last.lng !== 'number') return null
-    fromLat = last.lat
-    fromLng = last.lng
-  }
-  return haversineYards(fromLat, fromLng, center.lat, center.lng)
+/** st.teeType → courses の yards キー */
+function yardsKeyForTee(): 'reg' | 'ladies' | 'back' {
+  if (st.teeType === 'ladies') return 'ladies'
+  if (st.teeType === 'back') return 'back'
+  return 'reg'
 }
 
 /**
- * 下部バー。ホール送り・ホール番号・→Cヤード（PARの上）。
+ * 未ショット時はスコアカード公式ヤード（レディース選択なら yards.ladies）。
+ * ショット後は打点→センターの実測。
+ */
+function displayYardage(): number | null {
+  const h = hole()
+  if (!h || !hasData(h)) return null
+
+  const shots = curShots()
+  if (shots.length === 0) {
+    const yards = h.yards as Record<string, unknown> | undefined
+    const key = yardsKeyForTee()
+    const official = yards?.[key]
+    if (typeof official === 'number') return official
+    // 公式が無い場合のみ GPS ティー→C
+    const center = h.center as { lat?: unknown; lng?: unknown } | undefined
+    const tee = activeTee(h) as { lat?: unknown; lng?: unknown } | null
+    if (
+      typeof center?.lat === 'number' && typeof center?.lng === 'number' &&
+      typeof tee?.lat === 'number' && typeof tee?.lng === 'number'
+    ) {
+      return haversineYards(tee.lat, tee.lng, center.lat, center.lng)
+    }
+    return null
+  }
+
+  const center = h.center as { lat?: unknown; lng?: unknown } | undefined
+  const last = shots[shots.length - 1] as { lat?: unknown; lng?: unknown }
+  if (
+    typeof center?.lat !== 'number' || typeof center?.lng !== 'number' ||
+    typeof last.lat !== 'number' || typeof last.lng !== 'number'
+  ) return null
+  return haversineYards(last.lat, last.lng, center.lat, center.lng)
+}
+
+/**
+ * 下部バー。H / PAR / ヤードを同一行（同じレベル）に並べる。
  */
 export default function HoleBar() {
-  const refresh = useTick(1000)
+  const refresh = useTick(500)
 
   const hasCourse = !!course()
   const h = hole()
   const last = totalHoles() - 1
   const displayNo = isPairRound() ? st.hIdx + 1 : readNumber(h?.no)
   const par = readNumber(h?.par)
-  const toCenter = yardsToCenter()
+  // teeType を読んで、レディース切替直後も再描画の依存にする
+  const teeType = st.teeType
+  const toCenter = displayYardage()
 
   const go = (move: () => void) => {
     move()
@@ -70,13 +90,16 @@ export default function HoleBar() {
           ◀
         </button>
         <div className="hole-label">
-          <span id="holeYardage" className="hole-label-yd" aria-label="センターまでのヤード">
+          <span className="hole-label-no">H{displayNo ?? '—'}</span>
+          <span className="hole-label-par">PAR {par ?? '—'}</span>
+          <span
+            id="holeYardage"
+            className="hole-label-yd"
+            aria-label="センターまでのヤード"
+            data-tee={teeType}
+          >
             {toCenter === null ? '— yd' : `${toCenter} yd`}
           </span>
-          <div className="hole-label-row">
-            <span className="hole-label-no">H{displayNo ?? '—'}</span>
-            <span className="hole-label-par">PAR {par ?? '—'}</span>
-          </div>
         </div>
         <button
           id="nextHoleBtn"

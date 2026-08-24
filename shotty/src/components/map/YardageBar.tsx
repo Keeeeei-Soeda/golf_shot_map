@@ -1,17 +1,14 @@
 'use client'
 
-import { rotateToHole, toggleYardageInfo } from '@/app/golf/logic'
-
-/** マップ操作ボタン群 + F/C/B ヤード表示パネル */
+/**
+ * 旧マップ上の方位磁石／T／ヤードパネル用のDOMプレースホルダ。
+ * 表示はしない（下部 HoleBar に移設済み）。IDだけ残して logic 互換を保つ。
+ */
 export default function YardageBar() {
   return (
     <>
-      {/* 現在地の記録は右サイドの SideActions に移設済み */}
-      <div id="mapBtns" className="map-btns" style={{display:'none'}}>
-        <button id="rotateBtn" className="rotate-btn" onClick={rotateToHole} title="ホール方向に回転">⛳↑</button>
-        <button id="yiToggleBtn" className="yi-toggle-btn" onClick={toggleYardageInfo} title="ヤード情報">T</button>
-      </div>
-      <div id="yardageInfo" style={{display:'none'}} suppressHydrationWarning></div>
+      <div id="mapBtns" className="map-btns" style={{ display: 'none' }} aria-hidden />
+      <div id="yardageInfo" style={{ display: 'none' }} suppressHydrationWarning aria-hidden />
     </>
   )
 }

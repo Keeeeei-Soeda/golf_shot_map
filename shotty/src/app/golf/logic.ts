@@ -234,22 +234,25 @@ export function toggleYardageInfo() {
 export function showLegend(){const el=document.getElementById('legend');if(el)el.style.display='block'}
 export function hideLegend(){const el=document.getElementById('legend');if(el)el.style.display='none'}
 export function renderYardageInfo(h:any){
+  // 旧マップ上の方位磁石／Tボタン・ヤードパネルは廃止。下部 HoleBar に →C のみ表示。
   const el=document.getElementById('yardageInfo'),mapBtns=document.getElementById('mapBtns')
-  if(!h||!hasData(h)){if(el)el.style.display='none';if(mapBtns)mapBtns.style.display='none';return}
-  if(mapBtns)mapBtns.style.display='flex'; showLegend(); updateYardagePanel(h)
-  if(el) el.style.display=gs.yardageInfoOpen?'block':'none'
+  if(el) el.style.display='none'
+  if(mapBtns) mapBtns.style.display='none'
+  if(!h||!hasData(h)) return
+  updateYardagePanel(h)
 }
 export function updateYardagePanel(h?:any) {
   if(!h) h=hole(); if(!h||!hasData(h)) return
-  const shots=curShots(),nextNo=shots.length+1
+  const shots=curShots()
   let fromLat:number,fromLng:number
   if(shots.length===0){const tee=activeTee(h);fromLat=tee.lat;fromLng=tee.lng}
   else{fromLat=shots[shots.length-1].lat;fromLng=shots[shots.length-1].lng}
-  const tF=Math.round(haversine(fromLat,fromLng,h.front.lat,h.front.lng)*1.09361)
   const tC=Math.round(haversine(fromLat,fromLng,h.center.lat,h.center.lng)*1.09361)
-  const tB=Math.round(haversine(fromLat,fromLng,h.back.lat,h.back.lng)*1.09361)
+  const holeYd=document.getElementById('holeYardage')
+  if(holeYd) holeYd.textContent=`${tC} yd`
+  // 旧 #yardageInfo は非表示のまま互換用に最小更新
   const el=document.getElementById('yardageInfo')
-  if(el) el.innerHTML=`<div class="yi-horiz"><span class="yi-badge">H${h.no}</span><span class="yi-par">PAR${h.par}</span><span class="yi-sep">|</span><div class="yi-item"><div class="yi-label">第${nextNo}打→F</div><div class="yi-val blue">${tF}<span>yd</span></div></div><span class="yi-sep">|</span><div class="yi-item"><div class="yi-label">→C</div><div class="yi-val green">${tC}<span>yd</span></div></div><span class="yi-sep">|</span><div class="yi-item"><div class="yi-label">→B</div><div class="yi-val yellow">${tB}<span>yd</span></div></div></div><div id="yiMeasure" class="yi-measure-row"></div>`
+  if(el) el.innerHTML=''
 }
 export function updateYardageMeasure(fromLabel:string,fromYd:number,toName:string,toYd:number){
   const el=document.getElementById('yiMeasure')
@@ -334,8 +337,13 @@ export function rotateToHole(){
   if(!gs.map||window._currentBearing===undefined) return
   const btn=document.getElementById('rotateBtn'),cur=gs.map.getHeading()||0,tgt=window._currentBearing
   const diff=Math.min(Math.abs(cur-tgt),360-Math.abs(cur-tgt))
-  if(diff<10){gs.map.setHeading(0);if(btn){btn.textContent='⛳↑';btn.title='ホール方向に回転'}}
-  else{gs.map.setHeading(tgt);if(btn){btn.textContent='🧭N';btn.title='北向きに戻す'}}
+  if(diff<10){
+    gs.map.setHeading(0)
+    if(btn){btn.title='ホール方向に回転';btn.classList.remove('is-north')}
+  } else {
+    gs.map.setHeading(tgt)
+    if(btn){btn.title='北向きに戻す';btn.classList.add('is-north')}
+  }
 }
 
 // ============================================================

@@ -96,6 +96,7 @@ export default function SideActions() {
       <div className="side-action">
         <button
           type="button"
+          id="rotateBtn"
           className="side-action-btn is-rotate"
           onClick={rotateToHole}
           aria-label="地図をホール方向に回転"

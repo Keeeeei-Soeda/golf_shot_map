@@ -218,20 +218,18 @@ header{
   text-shadow:0 1px 3px rgba(0,0,0,.9);pointer-events:none;
 }
 
-/* メイン＝塗り（緑） */
+/* 塗り背景はアイコン焼き込み色に合わせる（ピン=白／パター=黒／定規=薄灰） */
 .side-action-btn.is-record{
-  background:var(--gv);border:2px solid var(--gv);color:#fff;
+  background:#1F9E52;border:2px solid #2bbf66;color:#fff;
   box-shadow:0 3px 10px rgba(0,0,0,.45);
 }
-/* パット＝枠線（ゴールド） */
 .side-action-btn.is-putt{
-  background:rgba(10,22,10,.92);border:2px solid var(--acc);color:var(--acc);
-  box-shadow:0 2px 8px rgba(0,0,0,.4);
+  background:#E0A51F;border:2px solid #f0c04a;color:#000;
+  box-shadow:0 3px 10px rgba(0,0,0,.45);
 }
-/* 測定ON＝枠線（緑・状態インジケータ） */
 .side-action-btn.is-measure{
-  background:rgba(10,22,10,.92);border:2px solid var(--gv);color:var(--gv);
-  box-shadow:0 2px 8px rgba(0,0,0,.4);
+  background:#414C58;border:2px solid #5a6878;color:#CDD6E0;
+  box-shadow:0 3px 10px rgba(0,0,0,.45);
 }
 .leg-r{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--w);margin-bottom:3px;}
 .leg-r:last-child{margin-bottom:0;}

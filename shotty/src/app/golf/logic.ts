@@ -306,8 +306,8 @@ export function placePins(h:any){
   /**
    * 旧T/C文字マーカーと同型：白縁の色丸の中に小さなアイコンを置く。
    */
-  const mkIconCircle=(pos:any,imgDataUrl:string,fill:string,title:string,pinKey:string|null)=>{
-    const size=22, icon=12, pad=(size-icon)/2
+  const mkIconCircle=(pos:any,imgDataUrl:string,fill:string,title:string,pinKey:string|null,size=22,icon=12)=>{
+    const pad=(size-icon)/2
     const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${size}" height="${size}">`
       +`<circle cx="${size/2}" cy="${size/2}" r="${size/2-1.5}" fill="${fill}" stroke="#fff" stroke-width="2"/>`
       +`<image href="${imgDataUrl}" x="${pad}" y="${pad}" width="${icon}" height="${icon}" preserveAspectRatio="xMidYMid meet"/>`
@@ -320,8 +320,8 @@ export function placePins(h:any){
   window._pins=[
     mkIconCircle(activeTee(h),TEE_ICON_DATA_URL,'#4a9fd4','ティー',null),
     mkCircle(h.front,'#e05252','F','フロント','front',true),
-    // ピンは緑のイラストが主役なので、薄い紫ではなく暗い緑で下地を作る
-    mkIconCircle(h.center,PIN_ICON_DATA_URL,'#1a3320','センター','center'),
+    // ピンだけ少し大きく（緑の旗が見やすいサイズ）
+    mkIconCircle(h.center,PIN_ICON_DATA_URL,'#1a3320','センター','center',28,16),
     mkCircle(h.back,'#e8c84a','B','バック','back',true),
   ].filter(Boolean)
 }

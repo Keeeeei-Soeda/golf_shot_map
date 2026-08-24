@@ -501,16 +501,19 @@ export function selectShotObType(btn:any,type:string){
   else{gs.shotObType=type;document.querySelectorAll('.sp-ob-btn').forEach(b=>{(b as HTMLElement).classList.toggle('sel',(b as HTMLElement).dataset.type===type)})}
 }
 export function switchSpTab(tab:string){
+  // タブUIは廃止。ペナルティ折りたたみとの互換のため id の有無だけ見る
   ['record','dist','penalty'].forEach(t=>{
     const tabEl=document.getElementById('spTab'+t.charAt(0).toUpperCase()+t.slice(1))
     const bodyEl=document.getElementById('spBody'+t.charAt(0).toUpperCase()+t.slice(1))
     if(tabEl)tabEl.classList.toggle('active',t===tab)
-    if(bodyEl)bodyEl.style.display=t===tab?'block':'none'
+    // ペナルティ本体は React の折りたたみで表示制御するため、ここでは触らない
+    if(bodyEl&&t!=='penalty') bodyEl.style.display=t===tab?'block':'none'
   })
 }
-export function updateSpDistTab(carryYd:number,remYd:number,fromLabel:string){
-  const el=document.getElementById('spBodyDist')
-  if(el) el.innerHTML=`<div class="sp-dists"><div class="sp-dist-card carry"><div class="sdc-label">carry</div><div class="sdc-from">${fromLabel}</div><div class="sdc-val blue">${carryYd}<span>yd</span></div></div><div class="sp-dist-card remain"><div class="sdc-label">remaining</div><div class="sdc-from">センターまで</div><div class="sdc-val yellow">${remYd}<span>yd</span></div></div></div>`
+/** ショットパネル上段に「打点からの距離」を表示する（進んだ距離）。 */
+export function updateSpDistTab(carryYd:number,_remYd:number,fromLabel:string){
+  const from=document.getElementById('spCarryFrom');if(from)from.textContent=fromLabel
+  const yd=document.getElementById('spCarryYd');if(yd)yd.innerHTML=`${carryYd}<span>yd</span>`
 }
 export function selectClub(c:string){
   console.log('[selectClub]', c)

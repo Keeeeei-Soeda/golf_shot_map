@@ -1,7 +1,7 @@
 'use client'
 
 import {
-  activeTee, course, curShots, hasData, hole, isMapPlayActive, isPairRound, nextHole, prevHole, totalHoles,
+  activeTee, course, hasData, hole, isMapPlayActive, isPairRound, nextHole, prevHole, totalHoles,
 } from '@/app/golf/logic'
 import { st } from '@/app/golf/state'
 import { useTick } from '@/hooks/useTick'
@@ -19,38 +19,28 @@ function yardsKeyForTee(): 'reg' | 'ladies' | 'back' {
 }
 
 /**
- * 未ショット時はスコアカード公式ヤード（レディース選択なら yards.ladies）。
- * ショット後は打点→センターの実測。
+ * フッター距離は常にティーショット位置→ピン（センター）で固定。
+ * 公式ヤードがあればそれを使い、無い場合のみティー座標→センターの実測。
+ * 打数が進んでも再計算しない。
  */
 function displayYardage(): number | null {
   const h = hole()
   if (!h || !hasData(h)) return null
 
-  const shots = curShots()
-  if (shots.length === 0) {
-    const yards = h.yards as Record<string, unknown> | undefined
-    const key = yardsKeyForTee()
-    const official = yards?.[key]
-    if (typeof official === 'number') return official
-    // 公式が無い場合のみ GPS ティー→C
-    const center = h.center as { lat?: unknown; lng?: unknown } | undefined
-    const tee = activeTee(h) as { lat?: unknown; lng?: unknown } | null
-    if (
-      typeof center?.lat === 'number' && typeof center?.lng === 'number' &&
-      typeof tee?.lat === 'number' && typeof tee?.lng === 'number'
-    ) {
-      return haversineYards(tee.lat, tee.lng, center.lat, center.lng)
-    }
-    return null
-  }
+  const yards = h.yards as Record<string, unknown> | undefined
+  const key = yardsKeyForTee()
+  const official = yards?.[key]
+  if (typeof official === 'number') return official
 
   const center = h.center as { lat?: unknown; lng?: unknown } | undefined
-  const last = shots[shots.length - 1] as { lat?: unknown; lng?: unknown }
+  const tee = activeTee(h) as { lat?: unknown; lng?: unknown } | null
   if (
-    typeof center?.lat !== 'number' || typeof center?.lng !== 'number' ||
-    typeof last.lat !== 'number' || typeof last.lng !== 'number'
-  ) return null
-  return haversineYards(last.lat, last.lng, center.lat, center.lng)
+    typeof center?.lat === 'number' && typeof center?.lng === 'number' &&
+    typeof tee?.lat === 'number' && typeof tee?.lng === 'number'
+  ) {
+    return haversineYards(tee.lat, tee.lng, center.lat, center.lng)
+  }
+  return null
 }
 
 /**

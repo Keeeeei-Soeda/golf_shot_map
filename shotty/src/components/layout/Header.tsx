@@ -15,7 +15,7 @@ export default function Header() {
       <button id="hbgBtn" className="hbg-btn" onClick={toggleMenu} title="メニュー">
         <span/><span/><span/>
       </button>
-      <div className="logo">SHOTTY <small>caddy</small></div>
+      <div className="logo">SHOTTY</div>
       <div className="hdr-right">
         <FeatureLauncher />
 

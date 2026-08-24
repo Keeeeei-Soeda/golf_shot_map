@@ -250,14 +250,11 @@ export function renderYardageInfo(h:any){
 }
 export function updateYardagePanel(h?:any) {
   if(!h) h=hole(); if(!h||!hasData(h)) return
-  const shots=curShots()
-  let fromLat:number,fromLng:number
-  if(shots.length===0){const tee=activeTee(h);fromLat=tee.lat;fromLng=tee.lng}
-  else{fromLat=shots[shots.length-1].lat;fromLng=shots[shots.length-1].lng}
-  const tC=Math.round(haversine(fromLat,fromLng,h.center.lat,h.center.lng)*1.09361)
-  // 未ショット時は公式ヤード（レディース等）を優先して下部バーへ
-  let showYd=tC
-  if(shots.length===0&&h.yards){
+  // フッター距離は常にティー→センター固定（打点連動にしない）
+  // React の HoleBar が本体。ここは互換の DOM 同期のみ。
+  const tee=activeTee(h)
+  let showYd=Math.round(haversine(tee.lat,tee.lng,h.center.lat,h.center.lng)*1.09361)
+  if(h.yards){
     const key=st.teeType==='ladies'?'ladies':st.teeType==='back'?'back':'reg'
     if(typeof h.yards[key]==='number') showYd=h.yards[key]
   }
@@ -312,16 +309,10 @@ export function loadHole() {
 // ============================================================
 export function placePins(h:any){
   if(window._pins) window._pins.forEach((m:any)=>m.setMap(null)); window._pins=[]
-  const showFB=curShots().length>=1
   const G=(window as any).google.maps
-  const mkCircle=(pos:any,color:string,lbl:string,title:string,pinKey:string|null,fbPin:boolean)=>{
-    if(fbPin&&!showFB) return null
-    const m=new G.Marker({position:pos,map:gs.map,title,icon:{path:G.SymbolPath.CIRCLE,scale:11,fillColor:color,fillOpacity:1,strokeColor:'#fff',strokeWeight:2},label:{text:lbl,color:'#fff',fontSize:'11px',fontWeight:'bold'}})
-    m.addListener('click',()=>{if(gs.appMode==='measure'&&pinKey){gs.measureSelectedPin=pinKey;if(gs.measureClick)showDists(gs.measureClick.getPosition())}})
-    return m
-  }
   /**
    * 旧T/C文字マーカーと同型：白縁の色丸の中に小さなアイコンを置く。
+   * F/B はマップに出さない（ティーとセンターのみ）。
    */
   const mkIconCircle=(pos:any,imgDataUrl:string,fill:string,title:string,pinKey:string|null,size=22,icon=12)=>{
     const pad=(size-icon)/2
@@ -336,10 +327,8 @@ export function placePins(h:any){
   }
   window._pins=[
     mkIconCircle(activeTee(h),TEE_ICON_DATA_URL,'#4a9fd4','ティー',null),
-    mkCircle(h.front,'#e05252','F','フロント','front',true),
     // ピンだけ少し大きく（緑の旗が見やすいサイズ）
     mkIconCircle(h.center,PIN_ICON_DATA_URL,'#1a3320','センター','center',28,16),
-    mkCircle(h.back,'#e8c84a','B','バック','back',true),
   ].filter(Boolean)
 }
 
@@ -903,8 +892,17 @@ function buildScoreCard(metaKey:string){
   const g=COURSES[st.gcIdx],pairs=isPairRound()
   const coursesToShow=pairs?[{c:g.courses[st.cIdx!],ci:st.cIdx!},{c:g.courses[st.cIdx2!],ci:st.cIdx2!}]:g.courses.map((c,ci)=>({c,ci}))
   const cols=coursesToShow.map(({c,ci})=>{
-    const rows=c.holes.map((h,hi)=>{const mk=st.gcIdx+'_'+ci+'_'+hi+'_meta',meta=gs.roundShots[mk]||{};if(meta.cupIn){const sd=scoreDef(meta.scoreDiff);const lbl=meta.scoreDiff===0?'E':meta.scoreDiff>0?`+${meta.scoreDiff}`:String(meta.scoreDiff);return `<tr${mk===metaKey?' class="hs-current-hole"':''}><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell ${sd.cls}">${meta.totalShots} <small>${lbl}</small></td></tr>`}return `<tr${mk===metaKey?' class="hs-current-hole"':''}><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell empty">—</td></tr>`}).join('')
-    return `<div class="scp-course-col"><div class="scp-course-name">${c.name}</div><table class="scp-table"><thead><tr><th>H</th><th>PAR</th><th>Score</th></tr></thead><tbody>${rows}</tbody></table></div>`
+    const rows=c.holes.map((h,hi)=>{
+      const mk=st.gcIdx+'_'+ci+'_'+hi+'_meta',meta=gs.roundShots[mk]||{}
+      if(meta.cupIn){
+        const sd=scoreDef(meta.scoreDiff)
+        const lbl=meta.scoreDiff===0?'E':meta.scoreDiff>0?`+${meta.scoreDiff}`:String(meta.scoreDiff)
+        const puttsCell=meta.putts!=null?String(meta.putts):'—'
+        return `<tr${mk===metaKey?' class="hs-current-hole"':''}><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell ${sd.cls}">${meta.totalShots} <small>${lbl}</small></td><td class="scp-putts-cell">${puttsCell}</td></tr>`
+      }
+      return `<tr${mk===metaKey?' class="hs-current-hole"':''}><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell empty">—</td><td class="scp-putts-cell empty">—</td></tr>`
+    }).join('')
+    return `<div class="scp-course-col"><div class="scp-course-name">${c.name}</div><table class="scp-table"><thead><tr><th>H</th><th>PAR</th><th>Score</th><th>Putts</th></tr></thead><tbody>${rows}</tbody></table></div>`
   }).join('')
   return `<div class="scp-courses-wrap">${cols}</div>`
 }
@@ -1247,23 +1245,38 @@ export function closeScorecard(){const p=document.getElementById('scorecardPanel
 export function buildFullScorecard():string{
   const g=gc()!
   const coursesToShow=isPairRound()?[{c:g.courses[st.cIdx!],ci:st.cIdx!},{c:g.courses[st.cIdx2!],ci:st.cIdx2!}]:g.courses.map((c,ci)=>({c,ci}))
-  let grandTotalPar=0,grandTotalScore=0,grandTotalDiff=0,grandAny=false
+  let grandTotalPar=0,grandTotalScore=0,grandTotalDiff=0,grandTotalPutts=0,grandAny=false,grandAnyPutts=false
   const cols=coursesToShow.map(({c,ci})=>{
-    const holes=c.holes; let totalPar=0,totalScore=0,totalDiff=0,anyScore=false
+    const holes=c.holes; let totalPar=0,totalScore=0,totalDiff=0,totalPutts=0,anyScore=false,anyPutts=false
     const rows=holes.map((h,hi)=>{
       const metaKey=st.gcIdx+'_'+ci+'_'+hi+'_meta',meta=gs.roundShots[metaKey]||{}
       totalPar+=h.par
-      if(meta.cupIn){anyScore=true;const s=meta.totalShots||(meta.par+(meta.scoreDiff||0)),diff=s-meta.par,sd=scoreDef(diff),lbl=diff===0?'E':diff>0?`+${diff}`:String(diff);totalScore+=s;totalDiff+=diff;return `<tr><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell ${sd.cls}">${s} <small>${lbl}</small></td></tr>`}
-      return `<tr><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell empty">—</td></tr>`
+      if(meta.cupIn){
+        anyScore=true
+        const s=meta.totalShots||(meta.par+(meta.scoreDiff||0))
+        const diff=s-meta.par
+        const sd=scoreDef(diff)
+        const lbl=diff===0?'E':diff>0?`+${diff}`:String(diff)
+        totalScore+=s
+        totalDiff+=diff
+        const puttsCell=meta.putts!=null?String(meta.putts):'—'
+        if(meta.putts!=null){anyPutts=true;totalPutts+=meta.putts}
+        return `<tr><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell ${sd.cls}">${s} <small>${lbl}</small></td><td class="scp-putts-cell">${puttsCell}</td></tr>`
+      }
+      return `<tr><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell empty">—</td><td class="scp-putts-cell empty">—</td></tr>`
     }).join('')
-    grandTotalPar+=totalPar; if(anyScore){grandAny=true;grandTotalScore+=totalScore;grandTotalDiff+=totalDiff}
+    grandTotalPar+=totalPar
+    if(anyScore){grandAny=true;grandTotalScore+=totalScore;grandTotalDiff+=totalDiff}
+    if(anyPutts){grandAnyPutts=true;grandTotalPutts+=totalPutts}
     const totLbl=totalDiff===0?'E':totalDiff>0?`+${totalDiff}`:String(totalDiff)
     const totCell=anyScore?`${totalScore} <small>${totLbl}</small>`:'—'
-    return `<div class="scp-course-col"><div class="scp-course-name">${c.name}</div><table class="scp-table"><thead><tr><th>H</th><th>PAR</th><th>Score</th></tr></thead><tbody>${rows}</tbody><tfoot><tr class="scp-total-row"><td>合計</td><td>${totalPar}</td><td>${totCell}</td></tr></tfoot></table></div>`
+    const totPutts=anyPutts?String(totalPutts):'—'
+    return `<div class="scp-course-col"><div class="scp-course-name">${c.name}</div><table class="scp-table"><thead><tr><th>H</th><th>PAR</th><th>Score</th><th>Putts</th></tr></thead><tbody>${rows}</tbody><tfoot><tr class="scp-total-row"><td>合計</td><td>${totalPar}</td><td>${totCell}</td><td>${totPutts}</td></tr></tfoot></table></div>`
   }).join('')
   const grandLbl=grandTotalDiff===0?'E':grandTotalDiff>0?`+${grandTotalDiff}`:String(grandTotalDiff)
   const diffCls=grandTotalDiff===0?'even':grandTotalDiff>0?'plus':'minus'
-  const grandHtml=coursesToShow.length>=2?`<div class="scp-grand"><div class="scp-grand-label">🏆 トータル<br>PAR ${grandTotalPar}</div><div><span class="scp-grand-val">${grandAny?grandTotalScore:'—'}</span>${grandAny?`<span class="scp-grand-diff ${diffCls}">${grandLbl}</span>`:''}</div></div>`:''
+  const grandPuttsHtml=grandAnyPutts?`<span class="scp-grand-putts">パット ${grandTotalPutts}</span>`:''
+  const grandHtml=coursesToShow.length>=2?`<div class="scp-grand"><div class="scp-grand-label">🏆 トータル<br>PAR ${grandTotalPar}</div><div><span class="scp-grand-val">${grandAny?grandTotalScore:'—'}</span>${grandAny?`<span class="scp-grand-diff ${diffCls}">${grandLbl}</span>`:''}${grandPuttsHtml}</div></div>`:''
   return `<div class="scp-gc-name">⛳ ${g.name}</div><div class="scp-courses-wrap">${cols}</div>${grandHtml}`
 }
 

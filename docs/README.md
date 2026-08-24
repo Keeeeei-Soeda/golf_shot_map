@@ -10,6 +10,7 @@
 
 | ドキュメント | 内容 |
 |--------------|------|
+| [specs/2026-08-24_launcher-panel-and-rail.md](specs/2026-08-24_launcher-panel-and-rail.md) | ランチャー確定・右レール整理・関連修正（2026-08-24） |
 | [specs/play-screen-ux-renewal-implementation.md](specs/play-screen-ux-renewal-implementation.md) | プレー画面 UXリニューアルの実装まとめ（2026-08-24） |
 | [nav-inventory.md](nav-inventory.md) | 機能ランチャー Phase 0 ナビ棚卸し |
 | [ops/beta-shotty-net.md](ops/beta-shotty-net.md) | beta.shotty.net 並行稼働手順 |

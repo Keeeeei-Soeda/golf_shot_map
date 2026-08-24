@@ -158,6 +158,13 @@ export function activeTee(h: any) {
   return h.tee
 }
 export const hasData = (h: any) => h&&activeTee(h)&&h.front
+
+/** マップが実際に表示されている＝プレー中。ティー種別選択中など emptyMap 表示時は false */
+export function isMapPlayActive() {
+  if (typeof document === 'undefined') return false
+  const mapEl = document.getElementById('map')
+  return !!mapEl && mapEl.style.display !== 'none'
+}
 export const holeKey = () => {
   const pair=isPairRound()
   const eCIdx=pair&&st.hIdx>=9?st.cIdx2:st.cIdx
@@ -360,10 +367,28 @@ const LONG_PRESS_MS = 550
 /** 長押し中にこの距離(m)以上動いたらキャンセル（ドラッグと区別）。 */
 const LONG_PRESS_MOVE_M = 8
 
-type MapLatLng = { lat(): number; lng(): number }
+type MapLatLng = { lat(): number; lng(): number } | { lat: number; lng: number }
+
+function latOf(p: any): number {
+  return typeof p?.lat === 'function' ? p.lat() : Number(p?.lat)
+}
+function lngOf(p: any): number {
+  return typeof p?.lng === 'function' ? p.lng() : Number(p?.lng)
+}
+
+/** MapMouseEvent の latLng を安定した LatLng にコピー（イベントオブジェクト再利用対策） */
+function toStableLatLng(latLng: any): any {
+  if (!latLng) return null
+  const lat = latOf(latLng)
+  const lng = lngOf(latLng)
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+  const G = (window as any).google?.maps
+  if (!G?.LatLng) return null
+  return new G.LatLng(lat, lng)
+}
 
 let longPressTimer: ReturnType<typeof setTimeout> | null = null
-let longPressStart: MapLatLng | null = null
+let longPressStart: { lat: number; lng: number } | null = null
 /** 長押し成功直後の click を無視する期限（ms epoch）。未設定は 0。 */
 let suppressMapClickUntil = 0
 
@@ -380,19 +405,20 @@ function bindMapLongPress(map: { addListener: (eventName: string, handler: (e: {
   map.addListener('mousedown',e=>{
     clearLongPressTimer()
     if(!e.latLng) return
-    longPressStart=e.latLng
-    const start=e.latLng
+    const lat=latOf(e.latLng), lng=lngOf(e.latLng)
+    if(!Number.isFinite(lat)||!Number.isFinite(lng)) return
+    longPressStart={lat,lng}
     longPressTimer=setTimeout(()=>{
       longPressTimer=null
       longPressStart=null
       // click が続く場合のみ抑止。来なくても約0.5秒で自然解除。
       suppressMapClickUntil=Date.now()+500
-      recordAtMapPosition(start)
+      recordAtMapPosition({lat,lng})
     },LONG_PRESS_MS)
   })
   map.addListener('mousemove',e=>{
     if(!longPressTimer||!longPressStart||!e.latLng) return
-    const moved=haversine(longPressStart.lat(),longPressStart.lng(),e.latLng.lat(),e.latLng.lng())
+    const moved=haversine(longPressStart.lat,longPressStart.lng,latOf(e.latLng),lngOf(e.latLng))
     if(moved>LONG_PRESS_MOVE_M) clearLongPressTimer()
   })
   map.addListener('mouseup',()=>{clearLongPressTimer()})
@@ -406,9 +432,11 @@ function bindMapLongPress(map: { addListener: (eventName: string, handler: (e: {
  */
 export function recordAtMapPosition(latLng: MapLatLng){
   const h=hole();if(!h||!hasData(h))return
+  const pos=toStableLatLng(latLng)
+  if(!pos) return
   hideLegend()
   clearMeasure()
-  updatePendingPos(latLng)
+  updatePendingPos(pos)
   const sp=document.getElementById('shotPanel')
   if(sp&&!sp.classList.contains('open')) openShotPanelUI()
 }
@@ -561,25 +589,28 @@ export function makeBubble(pos:any,opts:{fromTee:boolean,line1Text:string,line2T
 }
 export function updatePendingPos(pos:any){
   const h=hole();if(!h||!hasData(h))return
-  gs.pendingPos=pos
+  const stable=toStableLatLng(pos)||pos
+  const plat=latOf(stable), plng=lngOf(stable)
+  if(!Number.isFinite(plat)||!Number.isFinite(plng)) return
+  gs.pendingPos=stable
   const shots=curShots(),holeOff=gs.roundShots[holeKey()+'_offset']||0,prevIsTee=shots.length===0
   const prevPos=prevIsTee?activeTee(h):{lat:shots[shots.length-1].lat,lng:shots[shots.length-1].lng}
-  const carryYd=Math.round(haversine(prevPos.lat,prevPos.lng,pos.lat(),pos.lng())*1.09361)
-  const remYd=Math.round(haversine(pos.lat(),pos.lng(),h.center.lat,h.center.lng)*1.09361)
+  const carryYd=Math.round(haversine(prevPos.lat,prevPos.lng,plat,plng)*1.09361)
+  const remYd=Math.round(haversine(plat,plng,h.center.lat,h.center.lng)*1.09361)
   const fromLabel=prevIsTee?'ティーから':`${shots[shots.length-1].no}打目から`
   const nextNo=shots.length+1+holeOff
   updateSpDistTab(carryYd,remYd,fromLabel)
   const G=(window as any).google.maps
-  if(gs.pendingMarker) gs.pendingMarker.setPosition(pos)
-  else gs.pendingMarker=new G.Marker({position:pos,map:gs.map,icon:{path:G.SymbolPath.CIRCLE,scale:13,fillColor:'#f59e0b',fillOpacity:.85,strokeColor:'#fff',strokeWeight:2},label:{text:String(nextNo),color:'#000',fontSize:'11px',fontWeight:'bold'},zIndex:100})
+  if(gs.pendingMarker) gs.pendingMarker.setPosition(stable)
+  else gs.pendingMarker=new G.Marker({position:stable,map:gs.map,icon:{path:G.SymbolPath.CIRCLE,scale:13,fillColor:'#f59e0b',fillOpacity:.85,strokeColor:'#fff',strokeWeight:2},label:{text:String(nextNo),color:'#000',fontSize:'11px',fontWeight:'bold'},zIndex:100})
   if(gs.pendingCarryLine)gs.pendingCarryLine.setMap(null)
-  gs.pendingCarryLine=new G.Polyline({path:[prevPos,{lat:pos.lat(),lng:pos.lng()}],map:gs.map,strokeColor:'#4a9fd4',strokeOpacity:.75,strokeWeight:2.5,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:3},offset:'100%'}]})
+  gs.pendingCarryLine=new G.Polyline({path:[prevPos,{lat:plat,lng:plng}],map:gs.map,strokeColor:'#4a9fd4',strokeOpacity:.75,strokeWeight:2.5,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:3},offset:'100%'}]})
   if(gs.pendingPinLine)gs.pendingPinLine.setMap(null)
-  gs.pendingPinLine=new G.Polyline({path:[{lat:pos.lat(),lng:pos.lng()},{lat:h.center.lat,lng:h.center.lng}],map:gs.map,strokeColor:'#e8c84a',strokeOpacity:.8,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
+  gs.pendingPinLine=new G.Polyline({path:[{lat:plat,lng:plng},{lat:h.center.lat,lng:h.center.lng}],map:gs.map,strokeColor:'#e8c84a',strokeOpacity:.8,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
   if(gs.pendingCarryLabel)gs.pendingCarryLabel.setMap(null)
-  gs.pendingCarryLabel=makeLabel({lat:(prevPos.lat+pos.lat())/2,lng:(prevPos.lng+pos.lng())/2},`${carryYd}yd`,'#000','#4a9fd4')
+  gs.pendingCarryLabel=makeLabel({lat:(prevPos.lat+plat)/2,lng:(prevPos.lng+plng)/2},`${carryYd}yd`,'#000','#4a9fd4')
   if(gs.pendingPinLabel)gs.pendingPinLabel.setMap(null)
-  gs.pendingPinLabel=makeLabel({lat:(pos.lat()+h.center.lat)/2,lng:(pos.lng()+h.center.lng)/2},`残${remYd}yd`,'#000','#e8c84a')
+  gs.pendingPinLabel=makeLabel({lat:(plat+h.center.lat)/2,lng:(plng+h.center.lng)/2},`残${remYd}yd`,'#000','#e8c84a')
 }
 export function clearPending(){
   [gs.pendingMarker,gs.pendingCarryLine,gs.pendingPinLine,gs.pendingCarryLabel,gs.pendingPinLabel].forEach(x=>{if(x)x.setMap(null)})
@@ -722,11 +753,12 @@ export function confirmShot(){
     const holeOff=gs.roundShots[key+'_offset']||0,prevIsTee=shots.length===0
     const prevPos=prevIsTee?activeTee(h):{lat:shots[shots.length-1].lat,lng:shots[shots.length-1].lng}
     const no=shots.length+1+holeOff
-    const carryYd=Math.round(haversine(prevPos.lat,prevPos.lng,gs.pendingPos.lat(),gs.pendingPos.lng())*1.09361)
-    const remYd=Math.round(haversine(gs.pendingPos.lat(),gs.pendingPos.lng(),h.center.lat,h.center.lng)*1.09361)
+    const plat=latOf(gs.pendingPos), plng=lngOf(gs.pendingPos)
+    const carryYd=Math.round(haversine(prevPos.lat,prevPos.lng,plat,plng)*1.09361)
+    const remYd=Math.round(haversine(plat,plng,h.center.lat,h.center.lng)*1.09361)
     const fromLabel=prevIsTee?'ティー':`${shots[shots.length-1].no}打目地点`
     const tags=(window as any).__shotTags||{}
-    shots.push({no,lat:gs.pendingPos.lat(),lng:gs.pendingPos.lng(),club:gs.selectedClub,carry:carryYd,remaining:remYd,fromLabel,result:gs.selectedResult||null,isOB:tags.isOB||false,shotType:tags.shotType||null,shotFeel:tags.shotFeel||null})
+    shots.push({no,lat:plat,lng:plng,club:gs.selectedClub,carry:carryYd,remaining:remYd,fromLabel,result:gs.selectedResult||null,isOB:tags.isOB||false,shotType:tags.shotType||null,shotFeel:tags.shotFeel||null})
     saveRound();saveActiveRound();cancelShot();renderShotLayer();renderStrip();updateInfo();updateRecBanner();updateYardagePanel();placePins(hole())
     console.log('[confirmShot] success, shots:', gs.roundShots[key]?.length)
   } catch(e) {

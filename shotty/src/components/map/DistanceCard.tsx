@@ -1,6 +1,6 @@
 'use client'
 
-import { hasData, hole, startGPS } from '@/app/golf/logic'
+import { hasData, hole, isMapPlayActive, startGPS } from '@/app/golf/logic'
 import { gs } from '@/app/golf/state'
 import { useTick } from '@/hooks/useTick'
 import { haversineYards } from '@/lib/geo'
@@ -47,7 +47,7 @@ export default function DistanceCard() {
   useTick(1000)
 
   const h = hole()
-  if (!h || !hasData(h)) return null
+  if (!h || !hasData(h) || !isMapPlayActive()) return null
 
   const pinKey = selectedPinKey()
   const target = toGeoPoint(h[pinKey])

@@ -84,6 +84,15 @@ header{
   padding:12px;border-radius:14px;
   background:var(--g1);border:1px solid var(--g4);
   box-shadow:0 8px 28px rgba(0,0,0,.55);
+  display:flex;flex-direction:column;gap:10px;
+}
+.launcher-group{display:flex;flex-direction:column;gap:6px;}
+.launcher-group-label{
+  font-size:10px;font-weight:700;letter-spacing:.04em;
+  color:var(--gr);padding:0 2px;
+}
+.launcher-separator{
+  margin:2px 0 0;border:none;border-top:1px solid rgba(224,138,138,.35);
 }
 .launcher-grid{
   display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
@@ -94,7 +103,14 @@ header{
   background:transparent;color:var(--w);cursor:pointer;font-family:inherit;
 }
 .launcher-tile:hover{background:rgba(255,255,255,.08);}
-.launcher-tile.is-danger .launcher-tile-label{color:#fca5a5;}
+.launcher-tile.is-danger{
+  background:#3A1F1F;
+}
+.launcher-tile.is-danger:hover{background:#4a2828;}
+.launcher-tile.is-danger .launcher-tile-icon{
+  background:rgba(224,138,138,.12);
+}
+.launcher-tile.is-danger .launcher-tile-label{color:#E08A8A;}
 .launcher-tile-icon{
   width:44px;height:44px;border-radius:12px;
   display:flex;align-items:center;justify-content:center;
@@ -230,15 +246,23 @@ header{
   object-fit:contain;
 }
 
-/* ===== 右サイド操作ボタン（正円3つ・色で優先度を表す） =====
+/* ===== 右サイド操作ボタン（アクション群 / マップ操作） =====
    コンテナ全体でタップを受け止め、ボタン周辺で測距ピンが
    誤って立たないようにする（左側に余白を取って判定を手前で切る）。 */
 .side-actions{
   position:absolute;z-index:7;
   right:calc(10px + env(safe-area-inset-right, 0px));
   bottom:16px;
-  display:flex;flex-direction:column;align-items:center;gap:14px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
   padding-left:16px;
+}
+.side-actions-group{
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+}
+.side-actions-divider{
+  width:28px;height:0;
+  border:none;border-top:1.5px dashed rgba(255,255,255,.35);
+  margin:2px 0;
 }
 .side-action{display:flex;flex-direction:column;align-items:center;gap:3px;}
 .side-action-btn:disabled{opacity:.6;cursor:default;}
@@ -266,23 +290,22 @@ header{
   text-shadow:0 1px 3px rgba(0,0,0,.9);pointer-events:none;
 }
 
-/* 塗り背景はアイコン焼き込み色に合わせる（ピン=白／パター=黒／定規=薄灰） */
+/* 仕様色：記録 / パット / 測定 / 地図回転（ティールでマップ操作と区別） */
 .side-action-btn.is-record{
-  background:#1F9E52;border:2px solid #2bbf66;color:#fff;
+  background:#1F9E52;border:2px solid #6FE0A0;color:#FFFFFF;
   box-shadow:0 3px 10px rgba(0,0,0,.45);
 }
 .side-action-btn.is-putt{
-  background:#E0A51F;border:2px solid #f0c04a;color:#000;
+  background:#E0A51F;border:2px solid #F5CF6A;color:#3A2A02;
   box-shadow:0 3px 10px rgba(0,0,0,.45);
 }
 .side-action-btn.is-measure{
-  background:#414C58;border:2px solid #5a6878;color:#CDD6E0;
+  background:#414C58;border:2px solid #6A7784;color:#CDD6E0;
   box-shadow:0 3px 10px rgba(0,0,0,.45);
 }
-/* 地図回転＝測定の下・一段落とした枠線スタイル */
 .side-action-btn.is-rotate{
-  background:rgba(10,22,10,.88);border:2px solid #6b7c8f;color:#c5d0dc;
-  box-shadow:0 2px 8px rgba(0,0,0,.4);font-size:22px;
+  background:#274A52;border:2px solid #5AA6B0;color:#BFE6EC;
+  box-shadow:0 3px 10px rgba(0,0,0,.45);font-size:22px;
 }
 .leg-r{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--w);margin-bottom:3px;}
 .leg-r:last-child{margin-bottom:0;}

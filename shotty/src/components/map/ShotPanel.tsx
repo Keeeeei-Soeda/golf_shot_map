@@ -24,6 +24,8 @@ const DEFAULT_TAGS: ShotTagState = { isOB: false, shotType: null, shotFeel: null
  */
 export default function ShotPanel() {
   const [tags, setTags] = useState<ShotTagState>(DEFAULT_TAGS)
+  /** selectClub は DOM 操作のため、再レンダーで disabled が戻らないよう React 側で同期する */
+  const [canSubmit, setCanSubmit] = useState(false)
 
   useEffect(() => {
     const panel = document.getElementById('shotPanel')
@@ -32,9 +34,20 @@ export default function ShotPanel() {
     const observer = new MutationObserver(() => {
       if (panel.classList.contains('open')) {
         setTags(DEFAULT_TAGS)
+        setCanSubmit(false)
       }
     })
     observer.observe(panel, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
+
+  // clubGrid の .cb.sel を監視（logic.selectClub が付与）
+  useEffect(() => {
+    const grid = document.getElementById('clubGrid')
+    if (!grid) return
+    const sync = () => setCanSubmit(!!grid.querySelector('.cb.sel'))
+    const observer = new MutationObserver(sync)
+    observer.observe(grid, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true })
     return () => observer.disconnect()
   }, [])
 
@@ -139,7 +152,15 @@ export default function ShotPanel() {
 
       <div className="sp-btns sp-btns-main">
         <button type="button" className="sp-cancel" onClick={cancelShot}>キャンセル</button>
-        <button id="spOkBtn" className="sp-ok" onClick={confirmShot} disabled>登録する</button>
+        <button
+          id="spOkBtn"
+          className="sp-ok"
+          type="button"
+          onClick={confirmShot}
+          disabled={!canSubmit}
+        >
+          登録する
+        </button>
       </div>
     </div>
   )

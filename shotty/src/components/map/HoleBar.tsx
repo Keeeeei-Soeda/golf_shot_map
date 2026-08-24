@@ -1,7 +1,7 @@
 'use client'
 
 import {
-  activeTee, course, curShots, hasData, hole, isPairRound, nextHole, prevHole, totalHoles,
+  activeTee, course, curShots, hasData, hole, isMapPlayActive, isPairRound, nextHole, prevHole, totalHoles,
 } from '@/app/golf/logic'
 import { st } from '@/app/golf/state'
 import { useTick } from '@/hooks/useTick'
@@ -78,7 +78,7 @@ export default function HoleBar() {
       <div
         id="holeNavBtns"
         className="hole-nav"
-        style={{ display: hasCourse ? 'flex' : 'none' }}
+        style={{ display: hasCourse && isMapPlayActive() ? 'flex' : 'none' }}
       >
         <button
           id="prevHoleBtn"

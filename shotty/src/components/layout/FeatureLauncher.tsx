@@ -9,7 +9,7 @@ import {
   openScorecard,
   toggleReview,
 } from '@/app/golf/logic'
-import { LAUNCHER_ITEMS, type LauncherActionId } from '@/lib/launcher-items'
+import { LAUNCHER_GROUPS, type LauncherActionId } from '@/lib/launcher-items'
 
 /**
  * Googleアプリ風の9ドットランチャー。
@@ -46,7 +46,7 @@ export default function FeatureLauncher() {
         toggleReview()
         break
       case 'clearHole':
-        if (!confirm('このホールのショットをすべて削除しますか？')) return
+        if (!confirm('このホールの記録を消去しますか？')) return
         clearHoleShots()
         break
     }
@@ -84,27 +84,37 @@ export default function FeatureLauncher() {
             role="dialog"
             aria-label="ラウンド機能"
           >
-            <div className="launcher-grid">
-              {LAUNCHER_ITEMS.map(item => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`launcher-tile${item.destructive ? ' is-danger' : ''}`}
-                  onClick={() => run(item.id)}
-                  aria-label={item.ariaLabel}
-                >
-                  <span className="launcher-tile-icon" aria-hidden>
-                    {item.iconSrc ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={item.iconSrc} alt="" width={28} height={28} />
-                    ) : (
-                      item.icon
-                    )}
-                  </span>
-                  <span className="launcher-tile-label">{item.label}</span>
-                </button>
-              ))}
-            </div>
+            {LAUNCHER_GROUPS.map(group => (
+              <div key={group.id} className="launcher-group">
+                {group.separatorBefore && (
+                  <hr className="launcher-separator" aria-hidden />
+                )}
+                {group.label && (
+                  <div className="launcher-group-label">{group.label}</div>
+                )}
+                <div className="launcher-grid">
+                  {group.items.map(item => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`launcher-tile${item.destructive ? ' is-danger' : ''}`}
+                      onClick={() => run(item.id)}
+                      aria-label={item.ariaLabel}
+                    >
+                      <span className="launcher-tile-icon" aria-hidden>
+                        {item.iconSrc ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={item.iconSrc} alt="" width={28} height={28} />
+                        ) : (
+                          item.icon
+                        )}
+                      </span>
+                      <span className="launcher-tile-label">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </>
       )}

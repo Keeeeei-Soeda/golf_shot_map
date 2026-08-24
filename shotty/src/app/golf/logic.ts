@@ -285,6 +285,7 @@ export function loadHole() {
   if(!gs.map){
     gs.map=new G.Map(document.getElementById('map'),{center:{lat:midLat,lng:midLng},zoom,mapTypeId:'hybrid',mapId:'c041c97b58243474e5cf18cb',disableDefaultUI:true,zoomControl:false,gestureHandling:'greedy',rotateControl:false})
     gs.map.addListener('click',onMapClick)
+    bindMapLongPress(gs.map)
   } else { gs.map.setZoom(zoom); gs.map.panTo({lat:midLat,lng:midLng}) }
   window._currentBearing=bearing
   placePins(h); renderShotLayer(); renderStrategyLayer(); updateInfo(); updateRecBanner(); updateGpsRecordBtn()
@@ -338,15 +339,74 @@ export function rotateToHole(){
 }
 
 // ============================================================
-// 地図タップ
+// 地図タップ / 長押し
 // ============================================================
+/** 長押し判定（ms）。短すぎると誤発火、長すぎると操作が重い。 */
+const LONG_PRESS_MS = 550
+/** 長押し中にこの距離(m)以上動いたらキャンセル（ドラッグと区別）。 */
+const LONG_PRESS_MOVE_M = 8
+
+type MapLatLng = { lat(): number; lng(): number }
+
+let longPressTimer: ReturnType<typeof setTimeout> | null = null
+let longPressStart: MapLatLng | null = null
+/** 長押し成功直後の click を無視する期限（ms epoch）。未設定は 0。 */
+let suppressMapClickUntil = 0
+
+function clearLongPressTimer(){
+  if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null}
+  longPressStart=null
+}
+
+/**
+ * Google Maps に longpress はないため、mousedown + タイマーで実装する。
+ * 通常の短いタップは click → 測距のまま。
+ */
+function bindMapLongPress(map: { addListener: (eventName: string, handler: (e: { latLng?: MapLatLng | null }) => void) => void; getDiv: () => HTMLElement }){
+  map.addListener('mousedown',e=>{
+    clearLongPressTimer()
+    if(!e.latLng) return
+    longPressStart=e.latLng
+    const start=e.latLng
+    longPressTimer=setTimeout(()=>{
+      longPressTimer=null
+      longPressStart=null
+      // click が続く場合のみ抑止。来なくても約0.5秒で自然解除。
+      suppressMapClickUntil=Date.now()+500
+      recordAtMapPosition(start)
+    },LONG_PRESS_MS)
+  })
+  map.addListener('mousemove',e=>{
+    if(!longPressTimer||!longPressStart||!e.latLng) return
+    const moved=haversine(longPressStart.lat(),longPressStart.lng(),e.latLng.lat(),e.latLng.lng())
+    if(moved>LONG_PRESS_MOVE_M) clearLongPressTimer()
+  })
+  map.addListener('mouseup',()=>{clearLongPressTimer()})
+  map.addListener('dragstart',()=>{clearLongPressTimer()})
+  // モバイル長押しのコンテキストメニューを抑止
+  map.getDiv().addEventListener('contextmenu',ev=>{ev.preventDefault()})
+}
+
+/**
+ * 地図上の指定地点を打点としてショットパネルを開く（長押し用）。
+ */
+export function recordAtMapPosition(latLng: MapLatLng){
+  const h=hole();if(!h||!hasData(h))return
+  hideLegend()
+  clearMeasure()
+  updatePendingPos(latLng)
+  const sp=document.getElementById('shotPanel')
+  if(sp&&!sp.classList.contains('open')) openShotPanelUI()
+}
+
 /**
  * 地図タップは常に測距。記録はGPSまたは長押しから入るため、
  * ここに記録機能は持たせない。
  */
-export function onMapClick(e:any){
+export function onMapClick(e: { latLng?: MapLatLng | null }){
+  if(Date.now()<suppressMapClickUntil){suppressMapClickUntil=0;return}
   hideLegend()
-  handleMeasure(e.latLng)
+  if(e.latLng) handleMeasure(e.latLng)
 }
 
 // ============================================================
@@ -842,11 +902,12 @@ export function onGpsBtn(){
 export type GpsRecordStatus = 'pending'|'done'|'error'
 /** 現在地でショットを記録する。onStatus で取得中・成功・失敗を呼び出し側へ通知する。 */
 export function recordCurrentGps(onStatus?:(status:GpsRecordStatus,message?:string)=>void){
-  if(!navigator.geolocation){onStatus?.('error','この端末は位置情報に対応していません');return}
+  const longPressHint='地図を長押しして記録できます'
+  if(!navigator.geolocation){onStatus?.('error',`この端末は位置情報に対応していません。${longPressHint}`);return}
   onStatus?.('pending')
   navigator.geolocation.getCurrentPosition(pos=>{
     const ll={lat:pos.coords.latitude,lng:pos.coords.longitude}
-    if(!gs.map){onStatus?.('error','地図がまだ読み込まれていません');return}
+    if(!gs.map){onStatus?.('error',`地図がまだ読み込まれていません。${longPressHint}`);return}
     const G=(window as any).google.maps
     if(!gs.gpsMarker)gs.gpsMarker=new G.Marker({position:ll,map:gs.map,title:'現在地',icon:{path:G.SymbolPath.CIRCLE,scale:9,fillColor:'#4a9fd4',fillOpacity:.9,strokeColor:'#fff',strokeWeight:2.5}})
     else gs.gpsMarker.setPosition(ll)
@@ -854,7 +915,10 @@ export function recordCurrentGps(onStatus?:(status:GpsRecordStatus,message?:stri
     updatePendingPos(gs.gpsMarker.getPosition())
     const sp=document.getElementById('shotPanel');if(sp&&!sp.classList.contains('open'))openShotPanelUI()
     onStatus?.('done')
-  },err=>{onStatus?.('error',err.message)},{enableHighAccuracy:true,timeout:10000})
+  },err=>{
+    const detail=err.message||'位置情報を取得できませんでした'
+    onStatus?.('error',`${detail}。${longPressHint}`)
+  },{enableHighAccuracy:true,timeout:10000})
 }
 export function updateGpsRecordBtn(){
   const btn=document.getElementById('gpsRecBtn');if(!btn)return

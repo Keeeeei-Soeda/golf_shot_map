@@ -34,7 +34,7 @@ export default function SideActions() {
     if (status === 'pending') {
       giveUpTimer.current = setTimeout(() => {
         setGpsStatus('error')
-        setGpsError('位置情報が応答しません。ブラウザの位置情報を許可してください')
+        setGpsError('位置情報が応答しません。地図を長押しして記録できます')
       }, GPS_GIVE_UP_MS)
     }
   }

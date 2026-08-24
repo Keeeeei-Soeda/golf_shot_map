@@ -466,7 +466,7 @@ export function showDists(pos:any){
 }
 /**
  * ティー→センターの距離を地図上に示す。
- * 測定機能の説明を兼ねた初期表示で、地図をタップすれば通常の測距に置き換わる。
+ * ラベルは T/C 文字ではなく既存のティー／ピンアイコンを使う。
  */
 export function showTeeToCenter(){
   const h=hole();if(!h||!hasData(h))return
@@ -475,7 +475,43 @@ export function showTeeToCenter(){
   const yd=Math.round(haversine(origin.lat,origin.lng,target.lat,target.lng)*1.09361)
   const G=(window as any).google.maps
   gs.teeLine=new G.Polyline({path:[origin,target],map:gs.map,strokeColor:'#4a9fd4',strokeOpacity:.7,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
-  gs.measureFromLabel=makeLabel({lat:(origin.lat+target.lat)/2,lng:(origin.lng+target.lng)/2},`T→C ${yd}yd`,'#000','#4a9fd4')
+  gs.measureFromLabel=makeTeeToCenterLabel(
+    {lat:(origin.lat+target.lat)/2,lng:(origin.lng+target.lng)/2},
+    yd,
+  )
+}
+
+/** ティーアイコン → ピンアイコン + ヤード の青ラベル */
+function makeTeeToCenterLabel(pos:{lat:number,lng:number},yd:number){
+  const icon=14,pad=8,gap=4,arrowW=10
+  const ydText=`${yd}yd`
+  const textW=Array.from(ydText).length*7.2
+  const w=Math.ceil(pad+icon+gap+arrowW+gap+icon+gap+textW+pad)
+  const h=22
+  const yIcon=4
+  const teeX=pad
+  const arrowX=teeX+icon+gap
+  const pinX=arrowX+arrowW+gap
+  const textX=pinX+icon+gap
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h}">`
+    +`<rect width="${w}" height="${h}" rx="6" fill="#4a9fd4" fill-opacity=".9"/>`
+    +`<image href="${TEE_ICON_DATA_URL}" x="${teeX}" y="${yIcon}" width="${icon}" height="${icon}" preserveAspectRatio="xMidYMid meet"/>`
+    +`<path d="M${arrowX+1},${h/2-3.5} L${arrowX+arrowW-1},${h/2} L${arrowX+1},${h/2+3.5} Z" fill="#0a160a"/>`
+    +`<image href="${PIN_ICON_DATA_URL}" x="${pinX}" y="${yIcon}" width="${icon}" height="${icon}" preserveAspectRatio="xMidYMid meet"/>`
+    +`<text x="${textX}" y="15" font-size="11" font-weight="700" fill="#0a160a" font-family="sans-serif">${ydText}</text>`
+    +`</svg>`
+  const G=(window as any).google.maps
+  return new G.Marker({
+    position:pos,
+    map:gs.map,
+    icon:{
+      url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),
+      scaledSize:new G.Size(w,h),
+      anchor:new G.Point(w/2,h/2),
+    },
+    zIndex:55,
+    clickable:false,
+  })
 }
 export function clearMeasure(){
   if(gs.measureClick){gs.measureClick.setMap(null);gs.measureClick=null}

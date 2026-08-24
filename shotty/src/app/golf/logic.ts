@@ -643,25 +643,44 @@ export function openCupPanel(){
   const recPen=shots.filter((s:any)=>s.isPenalty).reduce((sum:number,s:any)=>sum+Math.max(0,(s.penaltyTarget||0)-s.no-1),0)
   const badge=document.getElementById('cpRecordedPenaltyBadge')
   if(badge){badge.textContent=recPen>0?'ラウンド中: '+recPen+'打罰記録済み（打数に含む）':'';badge.style.display=recPen>0?'inline':'none'}
-  const defaultTotal=shots.length+1+holeOff,diff=defaultTotal-h.par
-  gs.cpSelectedDiff=diff; const sd=scoreDef(diff)
+
+  const hasShots=shots.length>0
+  // ショット未記録時は「1打」自動算出をしない（パー差の手選択が必須）
+  if(hasShots){
+    const defaultTotal=shots.length+1+holeOff,diff=defaultTotal-h.par
+    gs.cpSelectedDiff=diff; gs.cpScoreChosen=true
+    const sd=scoreDef(diff)
+    const cs=document.getElementById('cpShots');if(cs)cs.textContent=String(defaultTotal)
+    const lbl=document.getElementById('cpScoreLabel')
+    if(lbl){lbl.textContent=`${sd.name}（${diff>0?'+':''}${diff}）`;lbl.className=`cup-score-label ${sd.cls}`;lbl.style.background=''}
+  } else {
+    gs.cpSelectedDiff=0; gs.cpScoreChosen=false
+    const cs=document.getElementById('cpShots');if(cs)cs.textContent='—'
+    const lbl=document.getElementById('cpScoreLabel')
+    if(lbl){lbl.textContent='スコアを選んでください';lbl.className='cup-score-label';lbl.style.background='transparent'}
+  }
+
   const hi=document.getElementById('cpHoleInfo');if(hi)hi.textContent=`H${h.no} PAR${h.par}`
-  const cs=document.getElementById('cpShots');if(cs)cs.textContent=shots.length>0?String(defaultTotal):'—'
-  const lbl=document.getElementById('cpScoreLabel')
-  if(lbl){lbl.textContent=shots.length>0?`${sd.name}（${diff>0?'+':''}${diff}）`:'（打数未記録）';lbl.className=`cup-score-label ${sd.cls}`;lbl.style.background=shots.length>0?'':'transparent'}
+  const ok=document.getElementById('cpOkBtn') as HTMLButtonElement|null
+  if(ok)ok.disabled=!gs.cpScoreChosen
+
   const cb=document.getElementById('cpScoreBtns')
   if(cb){
     const mainRow=SCORE_DEFS.map(d=>{const l=d.diff===0?'E':d.diff>0?'+'+d.diff:String(d.diff);return `<button class="score-btn ${d.cls}" data-diff="${d.diff}" onclick="selectCupScore(${d.diff})">${d.name}<br><small>${l}</small></button>`}).join('')
     const extRow=[8,9,10,11,12,13].map(n=>{const diff=n-h.par;const l=diff>0?'+'+diff:String(diff);return `<button class="score-btn score-btn-ext other" data-diff="${diff}" onclick="selectCupScore(${diff})">${n}打<br><small>${l}</small></button>`}).join('')
     cb.innerHTML=mainRow+`<div class="score-btn-ext-row">${extRow}</div>`
+    if(hasShots){
+      document.querySelectorAll('.score-btn').forEach(b=>(b as HTMLElement).classList.toggle('sel',(b as HTMLElement).dataset.diff===String(gs.cpSelectedDiff)))
+    }
   }
   const cp=document.getElementById('cupPanel');if(cp)cp.classList.add('open')
   const rb=document.getElementById('recBanner');if(rb)rb.style.display='none'
 }
 export function selectCupScore(diff:number){
-  gs.cpSelectedDiff=diff; const h=hole()
-  if(h){const cs=document.getElementById('cpShots');if(cs)cs.textContent=String(h.par+diff);const sd=scoreDef(diff);const lbl=document.getElementById('cpScoreLabel');if(lbl){lbl.textContent=`${sd.name}（${diff>0?'+':''}${diff}）`;lbl.className=`cup-score-label ${sd.cls}`}}
+  gs.cpSelectedDiff=diff; gs.cpScoreChosen=true; const h=hole()
+  if(h){const cs=document.getElementById('cpShots');if(cs)cs.textContent=String(h.par+diff);const sd=scoreDef(diff);const lbl=document.getElementById('cpScoreLabel');if(lbl){lbl.textContent=`${sd.name}（${diff>0?'+':''}${diff}）`;lbl.className=`cup-score-label ${sd.cls}`;lbl.style.background=''}}
   document.querySelectorAll('.score-btn').forEach(b=>(b as HTMLElement).classList.toggle('sel',(b as HTMLElement).dataset.diff===String(diff)))
+  const ok=document.getElementById('cpOkBtn') as HTMLButtonElement|null;if(ok)ok.disabled=false
 }
 export function selectCupStrokePenalty(btn:HTMLElement,n:number){
   gs.cpStrokePenalty=n
@@ -682,6 +701,8 @@ export function selectCupPutts(btn:HTMLElement,n:number){
 }
 export function confirmCupIn(){
   const h=hole();if(!h)return
+  // ショット未記録でスコア未選択のまま確定すると「1打」になる事故を防ぐ
+  if(!gs.cpScoreChosen){alert('スコア（パー・ボギーなど）を選んでください');return}
   const key=holeKey()
   if(!gs.roundShots[key])gs.roundShots[key]=[]
   const totalShots=h.par+gs.cpSelectedDiff

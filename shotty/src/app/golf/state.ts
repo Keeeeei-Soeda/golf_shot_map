@@ -87,6 +87,7 @@ export const gs = {
 
   // カップインパネル
   cpSelectedDiff:      0,
+  cpScoreChosen:       false, // ショット未記録時はスコア手選択が必須
   cpStrokePenalty:     0,
   cpObType:            null as string|null,
   cpPutts:             null as number|null,

@@ -320,7 +320,8 @@ export function placePins(h:any){
   window._pins=[
     mkIconCircle(activeTee(h),TEE_ICON_DATA_URL,'#4a9fd4','ティー',null),
     mkCircle(h.front,'#e05252','F','フロント','front',true),
-    mkIconCircle(h.center,PIN_ICON_DATA_URL,'#a78bfa','センター','center'),
+    // ピンは緑のイラストが主役なので、薄い紫ではなく暗い緑で下地を作る
+    mkIconCircle(h.center,PIN_ICON_DATA_URL,'#1a3320','センター','center'),
     mkCircle(h.back,'#e8c84a','B','バック','back',true),
   ].filter(Boolean)
 }

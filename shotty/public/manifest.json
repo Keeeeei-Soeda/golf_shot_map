@@ -1,23 +1,30 @@
 {
-  "name": "Shotty Golf",
-  "short_name": "Shotty",
+  "name": "SHOTTY",
+  "short_name": "SHOTTY",
   "description": "自分専用のキャディを、ポケットに。",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0d1f0d",
-  "theme_color": "#0d1f0d",
+  "background_color": "#0f1f0f",
+  "theme_color": "#0a160a",
   "orientation": "portrait",
   "icons": [
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

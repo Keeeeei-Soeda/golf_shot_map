@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { COURSES } from '@/data/courses'
+import { PIN_ICON_DATA_URL, TEE_ICON_DATA_URL } from '@/lib/map-pin-icons'
 import {
   gs, st,
   DEFAULT_CLUBS, SCORE_DEFS, CLUB_PRESETS, CLUB_ORDER, TEE_TYPES,
@@ -38,6 +39,12 @@ export function clearActiveRound() {
   updateResumeBanner()
 }
 
+/** 再開バナーから記録中ラウンドを破棄する。履歴に保存済みのデータは残る。 */
+export function discardActiveRound() {
+  if (!confirm('記録中のラウンドを中止しますか？\n（スコアカードに保存済みのデータは残ります）')) return
+  clearActiveRound()
+}
+
 export function updateResumeBanner() {
   const b = document.getElementById('resumeBanner')
   if (!b) return
@@ -48,7 +55,7 @@ export function updateResumeBanner() {
     const gcName = d.gcIdx != null ? COURSES[d.gcIdx]?.name || '' : ''
     const cName  = (d.gcIdx != null && d.cIdx != null) ? COURSES[d.gcIdx]?.courses[d.cIdx]?.name || '' : ''
     const hNo    = (d.hIdx ?? 0) + 1
-    b.innerHTML = `<span>🔄 記録中のラウンドがあります — ${gcName} ${cName} H${hNo}</span><button onclick="resumeActiveRound()">▶ 再開する</button>`
+    b.innerHTML = `<span>🔄 記録中のラウンドがあります — ${gcName} ${cName} H${hNo}</span><button onclick="resumeActiveRound()">▶ 再開する</button><button class="resume-abort" onclick="discardActiveRound()">中止する</button>`
     b.style.display = 'flex'
   } catch { b.style.display = 'none' }
 }
@@ -151,6 +158,13 @@ export function activeTee(h: any) {
   return h.tee
 }
 export const hasData = (h: any) => h&&activeTee(h)&&h.front
+
+/** マップが実際に表示されている＝プレー中。ティー種別選択中など emptyMap 表示時は false */
+export function isMapPlayActive() {
+  if (typeof document === 'undefined') return false
+  const mapEl = document.getElementById('map')
+  return !!mapEl && mapEl.style.display !== 'none'
+}
 export const holeKey = () => {
   const pair=isPairRound()
   const eCIdx=pair&&st.hIdx>=9?st.cIdx2:st.cIdx
@@ -158,6 +172,10 @@ export const holeKey = () => {
   return `${st.gcIdx}_${eCIdx}_${eHIdx}`
 }
 export const curShots = () => gs.roundShots[holeKey()]||[]
+/** プレ3/4/5 などで飛ばした打数分。次打番号 = 記録数 + 1 + offset */
+export const holeOffset = () => Number(gs.roundShots[holeKey()+'_offset'])||0
+/** これから打つ／測る打数（プレN反映済み） */
+export const nextShotNo = () => curShots().length+1+holeOffset()
 export function haversine(la1:number,lo1:number,la2:number,lo2:number) {
   const R=6371000,r=Math.PI/180,dL=(la2-la1)*r,dN=(lo2-lo1)*r
   const a=Math.sin(dL/2)**2+Math.cos(la1*r)*Math.cos(la2*r)*Math.sin(dN/2)**2
@@ -227,22 +245,28 @@ export function toggleYardageInfo() {
 export function showLegend(){const el=document.getElementById('legend');if(el)el.style.display='block'}
 export function hideLegend(){const el=document.getElementById('legend');if(el)el.style.display='none'}
 export function renderYardageInfo(h:any){
+  // 旧マップ上の方位磁石／Tボタン・ヤードパネルは廃止。下部 HoleBar に →C のみ表示。
   const el=document.getElementById('yardageInfo'),mapBtns=document.getElementById('mapBtns')
-  if(!h||!hasData(h)){if(el)el.style.display='none';if(mapBtns)mapBtns.style.display='none';return}
-  if(mapBtns)mapBtns.style.display='flex'; showLegend(); updateYardagePanel(h)
-  if(el) el.style.display=gs.yardageInfoOpen?'block':'none'
+  if(el) el.style.display='none'
+  if(mapBtns) mapBtns.style.display='none'
+  if(!h||!hasData(h)) return
+  updateYardagePanel(h)
 }
 export function updateYardagePanel(h?:any) {
   if(!h) h=hole(); if(!h||!hasData(h)) return
-  const shots=curShots(),nextNo=shots.length+1
-  let fromLat:number,fromLng:number
-  if(shots.length===0){const tee=activeTee(h);fromLat=tee.lat;fromLng=tee.lng}
-  else{fromLat=shots[shots.length-1].lat;fromLng=shots[shots.length-1].lng}
-  const tF=Math.round(haversine(fromLat,fromLng,h.front.lat,h.front.lng)*1.09361)
-  const tC=Math.round(haversine(fromLat,fromLng,h.center.lat,h.center.lng)*1.09361)
-  const tB=Math.round(haversine(fromLat,fromLng,h.back.lat,h.back.lng)*1.09361)
+  // フッター距離は常にティー→センター固定（打点連動にしない）
+  // React の HoleBar が本体。ここは互換の DOM 同期のみ。
+  const tee=activeTee(h)
+  let showYd=Math.round(haversine(tee.lat,tee.lng,h.center.lat,h.center.lng)*1.09361)
+  if(h.yards){
+    const key=st.teeType==='ladies'?'ladies':st.teeType==='back'?'back':'reg'
+    if(typeof h.yards[key]==='number') showYd=h.yards[key]
+  }
+  const holeYd=document.getElementById('holeYardage')
+  if(holeYd) holeYd.textContent=`${showYd} yd`
+  // 旧 #yardageInfo は非表示のまま互換用に最小更新
   const el=document.getElementById('yardageInfo')
-  if(el) el.innerHTML=`<div class="yi-horiz"><span class="yi-badge">H${h.no}</span><span class="yi-par">PAR${h.par}</span><span class="yi-sep">|</span><div class="yi-item"><div class="yi-label">第${nextNo}打→F</div><div class="yi-val blue">${tF}<span>yd</span></div></div><span class="yi-sep">|</span><div class="yi-item"><div class="yi-label">→C</div><div class="yi-val green">${tC}<span>yd</span></div></div><span class="yi-sep">|</span><div class="yi-item"><div class="yi-label">→B</div><div class="yi-val yellow">${tB}<span>yd</span></div></div></div><div id="yiMeasure" class="yi-measure-row"></div>`
+  if(el) el.innerHTML=''
 }
 export function updateYardageMeasure(fromLabel:string,fromYd:number,toName:string,toYd:number){
   const el=document.getElementById('yiMeasure')
@@ -276,9 +300,17 @@ export function loadHole() {
   const zoom=holeDistM>400?16:holeDistM>250?17:18
   const G=(window as any).google.maps
   if(!gs.map){
-    gs.map=new G.Map(document.getElementById('map'),{center:{lat:midLat,lng:midLng},zoom,mapTypeId:'hybrid',mapId:'c041c97b58243474e5cf18cb',disableDefaultUI:true,zoomControl:true,gestureHandling:'greedy',rotateControl:false,zoomControlOptions:{position:G.ControlPosition.RIGHT_CENTER}})
+    gs.map=new G.Map(document.getElementById('map'),{center:{lat:midLat,lng:midLng},zoom,mapTypeId:'hybrid',mapId:'c041c97b58243474e5cf18cb',disableDefaultUI:true,zoomControl:false,gestureHandling:'greedy',rotateControl:false})
     gs.map.addListener('click',onMapClick)
+    bindMapLongPress(gs.map)
   } else { gs.map.setZoom(zoom); gs.map.panTo({lat:midLat,lng:midLng}) }
+  // レイアウト変更後にタイルが空白になることがあるため、表示サイズを再通知する
+  requestAnimationFrame(()=>{
+    try{
+      G.event.trigger(gs.map,'resize')
+      gs.map!.setCenter({lat:midLat,lng:midLng})
+    }catch{ /* ignore */ }
+  })
   window._currentBearing=bearing
   placePins(h); renderShotLayer(); renderStrategyLayer(); updateInfo(); updateRecBanner(); updateGpsRecordBtn()
 }
@@ -288,15 +320,27 @@ export function loadHole() {
 // ============================================================
 export function placePins(h:any){
   if(window._pins) window._pins.forEach((m:any)=>m.setMap(null)); window._pins=[]
-  const showFB=curShots().length>=1
   const G=(window as any).google.maps
-  const mk=(pos:any,color:string,lbl:string,title:string,pinKey:string|null,fbPin:boolean)=>{
-    if(fbPin&&!showFB) return null
-    const m=new G.Marker({position:pos,map:gs.map,title,icon:{path:G.SymbolPath.CIRCLE,scale:11,fillColor:color,fillOpacity:1,strokeColor:'#fff',strokeWeight:2},label:{text:lbl,color:'#fff',fontSize:'11px',fontWeight:'bold'}})
+  /**
+   * 旧T/C文字マーカーと同型：白縁の色丸の中に小さなアイコンを置く。
+   * F/B はマップに出さない（ティーとセンターのみ）。
+   */
+  const mkIconCircle=(pos:any,imgDataUrl:string,fill:string,title:string,pinKey:string|null,size=22,icon=12)=>{
+    const pad=(size-icon)/2
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${size}" height="${size}">`
+      +`<circle cx="${size/2}" cy="${size/2}" r="${size/2-1.5}" fill="${fill}" stroke="#fff" stroke-width="2"/>`
+      +`<image href="${imgDataUrl}" x="${pad}" y="${pad}" width="${icon}" height="${icon}" preserveAspectRatio="xMidYMid meet"/>`
+      +`</svg>`
+    const url='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg)
+    const m=new G.Marker({position:pos,map:gs.map,title,icon:{url,scaledSize:new G.Size(size,size),anchor:new G.Point(size/2,size/2)},zIndex:40})
     m.addListener('click',()=>{if(gs.appMode==='measure'&&pinKey){gs.measureSelectedPin=pinKey;if(gs.measureClick)showDists(gs.measureClick.getPosition())}})
     return m
   }
-  window._pins=[mk(activeTee(h),'#4a9fd4','T','ティー',null,false),mk(h.front,'#e05252','F','フロント','front',true),mk(h.center,'#a78bfa','C','センター','center',false),mk(h.back,'#e8c84a','B','バック','back',true)].filter(Boolean)
+  window._pins=[
+    mkIconCircle(activeTee(h),TEE_ICON_DATA_URL,'#4a9fd4','ティー',null),
+    // ピンだけ少し大きく（緑の旗が見やすいサイズ）
+    mkIconCircle(h.center,PIN_ICON_DATA_URL,'#1a3320','センター','center',28,16),
+  ].filter(Boolean)
 }
 
 // ============================================================
@@ -306,26 +350,118 @@ export function rotateToHole(){
   if(!gs.map||window._currentBearing===undefined) return
   const btn=document.getElementById('rotateBtn'),cur=gs.map.getHeading()||0,tgt=window._currentBearing
   const diff=Math.min(Math.abs(cur-tgt),360-Math.abs(cur-tgt))
-  if(diff<10){gs.map.setHeading(0);if(btn){btn.textContent='⛳↑';btn.title='ホール方向に回転'}}
-  else{gs.map.setHeading(tgt);if(btn){btn.textContent='🧭N';btn.title='北向きに戻す'}}
+  if(diff<10){
+    gs.map.setHeading(0)
+    if(btn){btn.title='ホール方向に回転';btn.classList.remove('is-north')}
+  } else {
+    gs.map.setHeading(tgt)
+    if(btn){btn.title='北向きに戻す';btn.classList.add('is-north')}
+  }
 }
 
 // ============================================================
-// 地図タップ
+// 地図タップ / 長押し
 // ============================================================
-export function onMapClick(e:any){
+/** 長押し判定（ms）。短すぎると誤発火、長すぎると操作が重い。 */
+const LONG_PRESS_MS = 550
+/** 長押し中にこの距離(m)以上動いたらキャンセル（ドラッグと区別）。 */
+const LONG_PRESS_MOVE_M = 8
+
+type MapLatLng = { lat(): number; lng(): number } | { lat: number; lng: number }
+
+function latOf(p: any): number {
+  return typeof p?.lat === 'function' ? p.lat() : Number(p?.lat)
+}
+function lngOf(p: any): number {
+  return typeof p?.lng === 'function' ? p.lng() : Number(p?.lng)
+}
+
+/** MapMouseEvent の latLng を安定した LatLng にコピー（イベントオブジェクト再利用対策） */
+function toStableLatLng(latLng: any): any {
+  if (!latLng) return null
+  const lat = latOf(latLng)
+  const lng = lngOf(latLng)
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+  const G = (window as any).google?.maps
+  if (!G?.LatLng) return null
+  return new G.LatLng(lat, lng)
+}
+
+let longPressTimer: ReturnType<typeof setTimeout> | null = null
+let longPressStart: { lat: number; lng: number } | null = null
+/** 長押し成功直後の click を無視する期限（ms epoch）。未設定は 0。 */
+let suppressMapClickUntil = 0
+
+function clearLongPressTimer(){
+  if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null}
+  longPressStart=null
+}
+
+/**
+ * Google Maps に longpress はないため、mousedown + タイマーで実装する。
+ * 通常の短いタップは click → 測距のまま。
+ */
+function bindMapLongPress(map: { addListener: (eventName: string, handler: (e: { latLng?: MapLatLng | null }) => void) => void; getDiv: () => HTMLElement }){
+  map.addListener('mousedown',e=>{
+    clearLongPressTimer()
+    if(!e.latLng) return
+    const lat=latOf(e.latLng), lng=lngOf(e.latLng)
+    if(!Number.isFinite(lat)||!Number.isFinite(lng)) return
+    longPressStart={lat,lng}
+    longPressTimer=setTimeout(()=>{
+      longPressTimer=null
+      longPressStart=null
+      // click が続く場合のみ抑止。来なくても約0.5秒で自然解除。
+      suppressMapClickUntil=Date.now()+500
+      recordAtMapPosition({lat,lng})
+    },LONG_PRESS_MS)
+  })
+  map.addListener('mousemove',e=>{
+    if(!longPressTimer||!longPressStart||!e.latLng) return
+    const moved=haversine(longPressStart.lat,longPressStart.lng,latOf(e.latLng),lngOf(e.latLng))
+    if(moved>LONG_PRESS_MOVE_M) clearLongPressTimer()
+  })
+  map.addListener('mouseup',()=>{clearLongPressTimer()})
+  map.addListener('dragstart',()=>{clearLongPressTimer()})
+  // モバイル長押しのコンテキストメニューを抑止
+  map.getDiv().addEventListener('contextmenu',ev=>{ev.preventDefault()})
+}
+
+/**
+ * 地図上の指定地点を打点としてショットパネルを開く（長押し用）。
+ */
+export function recordAtMapPosition(latLng: MapLatLng){
+  const h=hole();if(!h||!hasData(h))return
+  const pos=toStableLatLng(latLng)
+  if(!pos) return
   hideLegend()
-  if(gs.appMode==='measure'){handleMeasure(e.latLng);return}
-  updatePendingPos(e.latLng)
-  const sp=document.getElementById('shotPanel');if(sp&&!sp.classList.contains('open'))openShotPanelUI()
+  clearMeasure()
+  updatePendingPos(pos)
+  const sp=document.getElementById('shotPanel')
+  if(sp&&!sp.classList.contains('open')) openShotPanelUI()
+}
+
+/**
+ * 地図タップは常に測距。記録はGPSまたは長押しから入るため、
+ * ここに記録機能は持たせない。
+ */
+export function onMapClick(e: { latLng?: MapLatLng | null }){
+  if(Date.now()<suppressMapClickUntil){suppressMapClickUntil=0;return}
+  hideLegend()
+  if(e.latLng) handleMeasure(e.latLng)
 }
 
 // ============================================================
 // 測定モード
 // ============================================================
 export function handleMeasure(pos:any){
-  if(gs.measureClick)gs.measureClick.setMap(null)
-  if(gs.teeLine){gs.teeLine.setMap(null);gs.teeLine=null};if(gs.pinLine){gs.pinLine.setMap(null);gs.pinLine=null}
+  // T→C の線・ラベルも含め、直前の測距表示をすべて消してから描き直す
+  if(gs.measureClick){gs.measureClick.setMap(null);gs.measureClick=null}
+  if(gs.teeLine){gs.teeLine.setMap(null);gs.teeLine=null}
+  if(gs.pinLine){gs.pinLine.setMap(null);gs.pinLine=null}
+  if(gs.measureFromLabel){gs.measureFromLabel.setMap(null);gs.measureFromLabel=null}
+  if(gs.measureToLabel){gs.measureToLabel.setMap(null);gs.measureToLabel=null}
+  if(gs.measureBubble){gs.measureBubble.setMap(null);gs.measureBubble=null}
   const G=(window as any).google.maps
   gs.measureClick=new G.Marker({position:pos,map:gs.map,icon:{path:G.SymbolPath.CIRCLE,scale:8,fillColor:'#fff',fillOpacity:.9,strokeColor:'#4a9fd4',strokeWeight:2.5},zIndex:99})
   showDists(pos)
@@ -334,29 +470,85 @@ export function showDists(pos:any){
   const h=hole();if(!h||!hasData(h))return
   const shots=curShots(),prevIsTee=shots.length===0
   const origin=prevIsTee?activeTee(h):{lat:shots[shots.length-1].lat,lng:shots[shots.length-1].lng}
-  const originLabel=prevIsTee?'ティーから':`第${shots.length+1}打から`
   const originYd=Math.round(haversine(origin.lat,origin.lng,pos.lat(),pos.lng())*1.09361)
   const pinMap:Record<string,any>={front:h.front,center:h.center,back:h.back}
-  const pinNameMap:Record<string,string>={front:'フロント',center:'センター',back:'バック'}
+  // ピンまでの残りは C ではなく ⛳。F/B 切替時は文字で示す
+  const pinNameMap:Record<string,string>={front:'F',center:'⛳',back:'B'}
   const targetKey=gs.measureSelectedPin&&pinMap[gs.measureSelectedPin]?gs.measureSelectedPin:'center'
   const targetPos=pinMap[targetKey],targetName=pinNameMap[targetKey]
   const pinYd=Math.round(haversine(pos.lat(),pos.lng(),targetPos.lat,targetPos.lng)*1.09361)
+  // プレ3/4/5 の offset を含め、記録側と同じ次打番号にする
+  const n=nextShotNo()
+  const originLabel=prevIsTee?'ティーから':`第${n}打から`
   updateYardageMeasure(originLabel,originYd,targetName,pinYd)
   const G=(window as any).google.maps
   if(gs.teeLine)gs.teeLine.setMap(null)
   gs.teeLine=new G.Polyline({path:[origin,pos],map:gs.map,strokeColor:'#4a9fd4',strokeOpacity:.7,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
   if(gs.pinLine)gs.pinLine.setMap(null)
   gs.pinLine=new G.Polyline({path:[pos,{lat:targetPos.lat,lng:targetPos.lng}],map:gs.map,strokeColor:'#e8c84a',strokeOpacity:.85,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
-  if(gs.measureFromLabel)gs.measureFromLabel.setMap(null)
-  gs.measureFromLabel=makeLabel({lat:(origin.lat+pos.lat())/2,lng:(origin.lng+pos.lng())/2},`${originYd}yd`,'#000','#4a9fd4')
-  if(gs.measureToLabel)gs.measureToLabel.setMap(null)
-  gs.measureToLabel=makeLabel({lat:(pos.lat()+targetPos.lat)/2,lng:(pos.lng()+targetPos.lng)/2},`残${pinYd}yd`,'#000','#e8c84a')
+  if(gs.measureBubble)gs.measureBubble.setMap(null)
+  // 吹き出し: ティー起点は小さなティーアイコン＋「から」。ピン行は「⛳まで」に簡略化
+  gs.measureBubble=makeBubble(pos,{
+    fromTee: prevIsTee,
+    line1Text: prevIsTee ? `から ${originYd}yd` : `第${n}打から ${originYd}yd`,
+    line2Text: `${targetName}まで ${pinYd}yd`,
+  })
+}
+/**
+ * ティー→センターの距離を地図上に示す。
+ * ラベルは T/C 文字ではなく既存のティー／ピンアイコンを使う。
+ */
+export function showTeeToCenter(){
+  const h=hole();if(!h||!hasData(h))return
+  clearMeasure()
+  const origin=activeTee(h),target=h.center
+  const yd=Math.round(haversine(origin.lat,origin.lng,target.lat,target.lng)*1.09361)
+  const G=(window as any).google.maps
+  gs.teeLine=new G.Polyline({path:[origin,target],map:gs.map,strokeColor:'#4a9fd4',strokeOpacity:.7,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
+  gs.measureFromLabel=makeTeeToCenterLabel(
+    {lat:(origin.lat+target.lat)/2,lng:(origin.lng+target.lng)/2},
+    yd,
+  )
+}
+
+/** ティーアイコン → ピンアイコン + ヤード の青ラベル */
+function makeTeeToCenterLabel(pos:{lat:number,lng:number},yd:number){
+  const icon=14,pad=8,gap=4,arrowW=10
+  const ydText=`${yd}yd`
+  const textW=Array.from(ydText).length*7.2
+  const w=Math.ceil(pad+icon+gap+arrowW+gap+icon+gap+textW+pad)
+  const h=22
+  const yIcon=4
+  const teeX=pad
+  const arrowX=teeX+icon+gap
+  const pinX=arrowX+arrowW+gap
+  const textX=pinX+icon+gap
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h}">`
+    +`<rect width="${w}" height="${h}" rx="6" fill="#4a9fd4" fill-opacity=".9"/>`
+    +`<image href="${TEE_ICON_DATA_URL}" x="${teeX}" y="${yIcon}" width="${icon}" height="${icon}" preserveAspectRatio="xMidYMid meet"/>`
+    +`<path d="M${arrowX+1},${h/2-3.5} L${arrowX+arrowW-1},${h/2} L${arrowX+1},${h/2+3.5} Z" fill="#0a160a"/>`
+    +`<image href="${PIN_ICON_DATA_URL}" x="${pinX}" y="${yIcon}" width="${icon}" height="${icon}" preserveAspectRatio="xMidYMid meet"/>`
+    +`<text x="${textX}" y="15" font-size="11" font-weight="700" fill="#0a160a" font-family="sans-serif">${ydText}</text>`
+    +`</svg>`
+  const G=(window as any).google.maps
+  return new G.Marker({
+    position:pos,
+    map:gs.map,
+    icon:{
+      url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),
+      scaledSize:new G.Size(w,h),
+      anchor:new G.Point(w/2,h/2),
+    },
+    zIndex:55,
+    clickable:false,
+  })
 }
 export function clearMeasure(){
   if(gs.measureClick){gs.measureClick.setMap(null);gs.measureClick=null}
   if(gs.teeLine){gs.teeLine.setMap(null);gs.teeLine=null};if(gs.pinLine){gs.pinLine.setMap(null);gs.pinLine=null}
   if(gs.measureFromLabel){gs.measureFromLabel.setMap(null);gs.measureFromLabel=null}
   if(gs.measureToLabel){gs.measureToLabel.setMap(null);gs.measureToLabel=null}
+  if(gs.measureBubble){gs.measureBubble.setMap(null);gs.measureBubble=null}
   gs.measureSelectedPin=null
   const mEl=document.getElementById('yiMeasure');if(mEl)mEl.innerHTML=''
 }
@@ -370,34 +562,64 @@ export function makeLabel(pos:any,text:string,tc:string,bg:string){
   const G=(window as any).google.maps
   return new G.Marker({position:pos,map:gs.map,icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new G.Size(w,20),anchor:new G.Point(w/2,10)},zIndex:55,clickable:false})
 }
+/**
+ * タップ地点の上に2行の吹き出しを立てる。
+ * 1行目＝打点からの距離（青）／2行目＝ピンまで（黄）。
+ * 文字マーカー時代と同程度の小さいインラインアイコンにする。
+ */
+export function makeBubble(pos:any,opts:{fromTee:boolean,line1Text:string,line2Text:string}){
+  const {fromTee,line1Text,line2Text}=opts
+  const iconSize=14
+  const pad=10
+  const line1W=(fromTee?iconSize+4:0)+Array.from(line1Text).length*7.5
+  const line2W=Array.from(line2Text).length*7.5+8
+  const w=Math.max(line1W,line2W)+pad*2
+  const h=42,tail=8
+  const textX=fromTee?pad+iconSize+4:pad
+  const teeImg=fromTee
+    ?`<image href="${TEE_ICON_DATA_URL}" x="${pad}" y="4" width="${iconSize}" height="${iconSize}" preserveAspectRatio="xMidYMid meet"/>`
+    :''
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h+tail}">`
+    +`<rect width="${w}" height="${h}" rx="7" fill="#0a160a" fill-opacity=".95" stroke="#4a9fd4" stroke-width="1.5"/>`
+    +`<polygon points="${w/2-6},${h-1} ${w/2+6},${h-1} ${w/2},${h+tail}" fill="#0a160a" fill-opacity=".95"/>`
+    +teeImg
+    +`<text x="${textX}" y="17" font-size="11.5" fill="#7ec8f0" font-family="sans-serif,Apple Color Emoji,Segoe UI Emoji">${line1Text}</text>`
+    +`<text x="${pad}" y="33" font-size="11.5" fill="#e8c84a" font-family="sans-serif,Apple Color Emoji,Segoe UI Emoji">${line2Text}</text>`
+    +`</svg>`
+  const G=(window as any).google.maps
+  return new G.Marker({position:pos,map:gs.map,icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new G.Size(w,h+tail),anchor:new G.Point(w/2,h+tail+6)},zIndex:60,clickable:false})
+}
 export function updatePendingPos(pos:any){
   const h=hole();if(!h||!hasData(h))return
-  gs.pendingPos=pos
-  const shots=curShots(),holeOff=gs.roundShots[holeKey()+'_offset']||0,prevIsTee=shots.length===0
+  const stable=toStableLatLng(pos)||pos
+  const plat=latOf(stable), plng=lngOf(stable)
+  if(!Number.isFinite(plat)||!Number.isFinite(plng)) return
+  gs.pendingPos=stable
+  const shots=curShots(),prevIsTee=shots.length===0
   const prevPos=prevIsTee?activeTee(h):{lat:shots[shots.length-1].lat,lng:shots[shots.length-1].lng}
-  const carryYd=Math.round(haversine(prevPos.lat,prevPos.lng,pos.lat(),pos.lng())*1.09361)
-  const remYd=Math.round(haversine(pos.lat(),pos.lng(),h.center.lat,h.center.lng)*1.09361)
+  const carryYd=Math.round(haversine(prevPos.lat,prevPos.lng,plat,plng)*1.09361)
+  const remYd=Math.round(haversine(plat,plng,h.center.lat,h.center.lng)*1.09361)
   const fromLabel=prevIsTee?'ティーから':`${shots[shots.length-1].no}打目から`
-  const nextNo=shots.length+1+holeOff
+  const nextNo=nextShotNo()
   updateSpDistTab(carryYd,remYd,fromLabel)
   const G=(window as any).google.maps
-  if(gs.pendingMarker) gs.pendingMarker.setPosition(pos)
-  else gs.pendingMarker=new G.Marker({position:pos,map:gs.map,icon:{path:G.SymbolPath.CIRCLE,scale:13,fillColor:'#f59e0b',fillOpacity:.85,strokeColor:'#fff',strokeWeight:2},label:{text:String(nextNo),color:'#000',fontSize:'11px',fontWeight:'bold'},zIndex:100})
+  if(gs.pendingMarker) gs.pendingMarker.setPosition(stable)
+  else gs.pendingMarker=new G.Marker({position:stable,map:gs.map,icon:{path:G.SymbolPath.CIRCLE,scale:13,fillColor:'#f59e0b',fillOpacity:.85,strokeColor:'#fff',strokeWeight:2},label:{text:String(nextNo),color:'#000',fontSize:'11px',fontWeight:'bold'},zIndex:100})
   if(gs.pendingCarryLine)gs.pendingCarryLine.setMap(null)
-  gs.pendingCarryLine=new G.Polyline({path:[prevPos,{lat:pos.lat(),lng:pos.lng()}],map:gs.map,strokeColor:'#4a9fd4',strokeOpacity:.75,strokeWeight:2.5,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:3},offset:'100%'}]})
+  gs.pendingCarryLine=new G.Polyline({path:[prevPos,{lat:plat,lng:plng}],map:gs.map,strokeColor:'#4a9fd4',strokeOpacity:.75,strokeWeight:2.5,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:3},offset:'100%'}]})
   if(gs.pendingPinLine)gs.pendingPinLine.setMap(null)
-  gs.pendingPinLine=new G.Polyline({path:[{lat:pos.lat(),lng:pos.lng()},{lat:h.center.lat,lng:h.center.lng}],map:gs.map,strokeColor:'#e8c84a',strokeOpacity:.8,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
+  gs.pendingPinLine=new G.Polyline({path:[{lat:plat,lng:plng},{lat:h.center.lat,lng:h.center.lng}],map:gs.map,strokeColor:'#e8c84a',strokeOpacity:.8,strokeWeight:2,icons:[{icon:{path:G.SymbolPath.FORWARD_CLOSED_ARROW,scale:2.5},offset:'100%'}]})
   if(gs.pendingCarryLabel)gs.pendingCarryLabel.setMap(null)
-  gs.pendingCarryLabel=makeLabel({lat:(prevPos.lat+pos.lat())/2,lng:(prevPos.lng+pos.lng())/2},`${carryYd}yd`,'#000','#4a9fd4')
+  gs.pendingCarryLabel=makeLabel({lat:(prevPos.lat+plat)/2,lng:(prevPos.lng+plng)/2},`${carryYd}yd`,'#000','#4a9fd4')
   if(gs.pendingPinLabel)gs.pendingPinLabel.setMap(null)
-  gs.pendingPinLabel=makeLabel({lat:(pos.lat()+h.center.lat)/2,lng:(pos.lng()+h.center.lng)/2},`残${remYd}yd`,'#000','#e8c84a')
+  gs.pendingPinLabel=makeLabel({lat:(plat+h.center.lat)/2,lng:(plng+h.center.lng)/2},`残${remYd}yd`,'#000','#e8c84a')
 }
 export function clearPending(){
   [gs.pendingMarker,gs.pendingCarryLine,gs.pendingPinLine,gs.pendingCarryLabel,gs.pendingPinLabel].forEach(x=>{if(x)x.setMap(null)})
   gs.pendingMarker=gs.pendingCarryLine=gs.pendingPinLine=gs.pendingCarryLabel=gs.pendingPinLabel=null
 }
 export function openShotPanelUI(){
-  const key=holeKey(),shots=curShots(),holeOff=gs.roundShots[key+'_offset']||0,n=shots.length+1+holeOff
+  const shots=curShots(),n=nextShotNo()
   const el=document.getElementById('spShotNo');if(el)el.textContent=n+'打目を登録'
   const cg=document.getElementById('clubGrid')
   if(cg) cg.innerHTML=gs.CLUBS.map(c=>c?`<button class="cb" onclick="selectClub('${c}')">${c}</button>`:`<span class="cb-empty"></span>`).join('')
@@ -422,16 +644,19 @@ export function selectShotObType(btn:any,type:string){
   else{gs.shotObType=type;document.querySelectorAll('.sp-ob-btn').forEach(b=>{(b as HTMLElement).classList.toggle('sel',(b as HTMLElement).dataset.type===type)})}
 }
 export function switchSpTab(tab:string){
+  // タブUIは廃止。ペナルティ折りたたみとの互換のため id の有無だけ見る
   ['record','dist','penalty'].forEach(t=>{
     const tabEl=document.getElementById('spTab'+t.charAt(0).toUpperCase()+t.slice(1))
     const bodyEl=document.getElementById('spBody'+t.charAt(0).toUpperCase()+t.slice(1))
     if(tabEl)tabEl.classList.toggle('active',t===tab)
-    if(bodyEl)bodyEl.style.display=t===tab?'block':'none'
+    // ペナルティ本体は React の折りたたみで表示制御するため、ここでは触らない
+    if(bodyEl&&t!=='penalty') bodyEl.style.display=t===tab?'block':'none'
   })
 }
-export function updateSpDistTab(carryYd:number,remYd:number,fromLabel:string){
-  const el=document.getElementById('spBodyDist')
-  if(el) el.innerHTML=`<div class="sp-dists"><div class="sp-dist-card carry"><div class="sdc-label">carry</div><div class="sdc-from">${fromLabel}</div><div class="sdc-val blue">${carryYd}<span>yd</span></div></div><div class="sp-dist-card remain"><div class="sdc-label">remaining</div><div class="sdc-from">センターまで</div><div class="sdc-val yellow">${remYd}<span>yd</span></div></div></div>`
+/** ショットパネル上段に「打点からの距離」を表示する（進んだ距離）。 */
+export function updateSpDistTab(carryYd:number,_remYd:number,fromLabel:string){
+  const from=document.getElementById('spCarryFrom');if(from)from.textContent=fromLabel
+  const yd=document.getElementById('spCarryYd');if(yd)yd.innerHTML=`${carryYd}<span>yd</span>`
 }
 export function selectClub(c:string){
   console.log('[selectClub]', c)
@@ -445,8 +670,9 @@ export function selectResult(r:string){
 }
 export function selectPenalty(n:number){
   console.log('[selectPenalty]', n)
-  const key=holeKey(),shots=curShots(),holeOff=gs.roundShots[key+'_offset']||0,cur=shots.length+1+holeOff
+  const cur=nextShotNo()
   if(n<cur){ console.warn('[selectPenalty] n < cur, ignored', n, cur); return }
+  const key=holeKey()
   gs.roundShots[key+'_pendingPenalty']=n
   const el=document.getElementById('spShotNo');if(el)el.textContent='プレ'+n+' → 次は'+n+'打目から'
   const st2=document.getElementById('spPenaltyStatus');if(st2)st2.textContent='✅ プレ'+n+' 選択済 → 「ここに登録する」を押してください'
@@ -502,7 +728,7 @@ export function cancelPenalty(){
   saveRound(); gs.shotObType=null
   document.querySelectorAll('.sp-ob-btn').forEach(b=>b.classList.remove('sel'))
   document.querySelectorAll('.pb').forEach(b=>b.classList.remove('sel'))
-  const el=document.getElementById('spShotNo');if(el)el.textContent=(curShots().length+1)+'打目を登録'
+  const el=document.getElementById('spShotNo');if(el)el.textContent=nextShotNo()+'打目を登録'
   const ob=document.getElementById('spPenaltyOkBtn') as HTMLButtonElement;if(ob)ob.disabled=true
   switchSpTab('record')
 }
@@ -530,11 +756,12 @@ export function confirmShot(){
     const holeOff=gs.roundShots[key+'_offset']||0,prevIsTee=shots.length===0
     const prevPos=prevIsTee?activeTee(h):{lat:shots[shots.length-1].lat,lng:shots[shots.length-1].lng}
     const no=shots.length+1+holeOff
-    const carryYd=Math.round(haversine(prevPos.lat,prevPos.lng,gs.pendingPos.lat(),gs.pendingPos.lng())*1.09361)
-    const remYd=Math.round(haversine(gs.pendingPos.lat(),gs.pendingPos.lng(),h.center.lat,h.center.lng)*1.09361)
+    const plat=latOf(gs.pendingPos), plng=lngOf(gs.pendingPos)
+    const carryYd=Math.round(haversine(prevPos.lat,prevPos.lng,plat,plng)*1.09361)
+    const remYd=Math.round(haversine(plat,plng,h.center.lat,h.center.lng)*1.09361)
     const fromLabel=prevIsTee?'ティー':`${shots[shots.length-1].no}打目地点`
     const tags=(window as any).__shotTags||{}
-    shots.push({no,lat:gs.pendingPos.lat(),lng:gs.pendingPos.lng(),club:gs.selectedClub,carry:carryYd,remaining:remYd,fromLabel,result:gs.selectedResult||null,isOB:tags.isOB||false,shotType:tags.shotType||null,shotFeel:tags.shotFeel||null})
+    shots.push({no,lat:plat,lng:plng,club:gs.selectedClub,carry:carryYd,remaining:remYd,fromLabel,result:gs.selectedResult||null,isOB:tags.isOB||false,shotType:tags.shotType||null,shotFeel:tags.shotFeel||null})
     saveRound();saveActiveRound();cancelShot();renderShotLayer();renderStrip();updateInfo();updateRecBanner();updateYardagePanel();placePins(hole())
     console.log('[confirmShot] success, shots:', gs.roundShots[key]?.length)
   } catch(e) {
@@ -561,25 +788,44 @@ export function openCupPanel(){
   const recPen=shots.filter((s:any)=>s.isPenalty).reduce((sum:number,s:any)=>sum+Math.max(0,(s.penaltyTarget||0)-s.no-1),0)
   const badge=document.getElementById('cpRecordedPenaltyBadge')
   if(badge){badge.textContent=recPen>0?'ラウンド中: '+recPen+'打罰記録済み（打数に含む）':'';badge.style.display=recPen>0?'inline':'none'}
-  const defaultTotal=shots.length+1+holeOff,diff=defaultTotal-h.par
-  gs.cpSelectedDiff=diff; const sd=scoreDef(diff)
+
+  const hasShots=shots.length>0
+  // ショット未記録時は「1打」自動算出をしない（パー差の手選択が必須）
+  if(hasShots){
+    const defaultTotal=shots.length+1+holeOff,diff=defaultTotal-h.par
+    gs.cpSelectedDiff=diff; gs.cpScoreChosen=true
+    const sd=scoreDef(diff)
+    const cs=document.getElementById('cpShots');if(cs)cs.textContent=String(defaultTotal)
+    const lbl=document.getElementById('cpScoreLabel')
+    if(lbl){lbl.textContent=`${sd.name}（${diff>0?'+':''}${diff}）`;lbl.className=`cup-score-label ${sd.cls}`;lbl.style.background=''}
+  } else {
+    gs.cpSelectedDiff=0; gs.cpScoreChosen=false
+    const cs=document.getElementById('cpShots');if(cs)cs.textContent='—'
+    const lbl=document.getElementById('cpScoreLabel')
+    if(lbl){lbl.textContent='スコアを選んでください';lbl.className='cup-score-label';lbl.style.background='transparent'}
+  }
+
   const hi=document.getElementById('cpHoleInfo');if(hi)hi.textContent=`H${h.no} PAR${h.par}`
-  const cs=document.getElementById('cpShots');if(cs)cs.textContent=shots.length>0?String(defaultTotal):'—'
-  const lbl=document.getElementById('cpScoreLabel')
-  if(lbl){lbl.textContent=shots.length>0?`${sd.name}（${diff>0?'+':''}${diff}）`:'（打数未記録）';lbl.className=`cup-score-label ${sd.cls}`;lbl.style.background=shots.length>0?'':'transparent'}
+  const ok=document.getElementById('cpOkBtn') as HTMLButtonElement|null
+  if(ok)ok.disabled=!gs.cpScoreChosen
+
   const cb=document.getElementById('cpScoreBtns')
   if(cb){
     const mainRow=SCORE_DEFS.map(d=>{const l=d.diff===0?'E':d.diff>0?'+'+d.diff:String(d.diff);return `<button class="score-btn ${d.cls}" data-diff="${d.diff}" onclick="selectCupScore(${d.diff})">${d.name}<br><small>${l}</small></button>`}).join('')
     const extRow=[8,9,10,11,12,13].map(n=>{const diff=n-h.par;const l=diff>0?'+'+diff:String(diff);return `<button class="score-btn score-btn-ext other" data-diff="${diff}" onclick="selectCupScore(${diff})">${n}打<br><small>${l}</small></button>`}).join('')
     cb.innerHTML=mainRow+`<div class="score-btn-ext-row">${extRow}</div>`
+    if(hasShots){
+      document.querySelectorAll('.score-btn').forEach(b=>(b as HTMLElement).classList.toggle('sel',(b as HTMLElement).dataset.diff===String(gs.cpSelectedDiff)))
+    }
   }
   const cp=document.getElementById('cupPanel');if(cp)cp.classList.add('open')
   const rb=document.getElementById('recBanner');if(rb)rb.style.display='none'
 }
 export function selectCupScore(diff:number){
-  gs.cpSelectedDiff=diff; const h=hole()
-  if(h){const cs=document.getElementById('cpShots');if(cs)cs.textContent=String(h.par+diff);const sd=scoreDef(diff);const lbl=document.getElementById('cpScoreLabel');if(lbl){lbl.textContent=`${sd.name}（${diff>0?'+':''}${diff}）`;lbl.className=`cup-score-label ${sd.cls}`}}
+  gs.cpSelectedDiff=diff; gs.cpScoreChosen=true; const h=hole()
+  if(h){const cs=document.getElementById('cpShots');if(cs)cs.textContent=String(h.par+diff);const sd=scoreDef(diff);const lbl=document.getElementById('cpScoreLabel');if(lbl){lbl.textContent=`${sd.name}（${diff>0?'+':''}${diff}）`;lbl.className=`cup-score-label ${sd.cls}`;lbl.style.background=''}}
   document.querySelectorAll('.score-btn').forEach(b=>(b as HTMLElement).classList.toggle('sel',(b as HTMLElement).dataset.diff===String(diff)))
+  const ok=document.getElementById('cpOkBtn') as HTMLButtonElement|null;if(ok)ok.disabled=false
 }
 export function selectCupStrokePenalty(btn:HTMLElement,n:number){
   gs.cpStrokePenalty=n
@@ -600,6 +846,8 @@ export function selectCupPutts(btn:HTMLElement,n:number){
 }
 export function confirmCupIn(){
   const h=hole();if(!h)return
+  // ショット未記録でスコア未選択のまま確定すると「1打」になる事故を防ぐ
+  if(!gs.cpScoreChosen){alert('スコア（パー・ボギーなど）を選んでください');return}
   const key=holeKey()
   if(!gs.roundShots[key])gs.roundShots[key]=[]
   const totalShots=h.par+gs.cpSelectedDiff
@@ -658,8 +906,17 @@ function buildScoreCard(metaKey:string){
   const g=COURSES[st.gcIdx],pairs=isPairRound()
   const coursesToShow=pairs?[{c:g.courses[st.cIdx!],ci:st.cIdx!},{c:g.courses[st.cIdx2!],ci:st.cIdx2!}]:g.courses.map((c,ci)=>({c,ci}))
   const cols=coursesToShow.map(({c,ci})=>{
-    const rows=c.holes.map((h,hi)=>{const mk=st.gcIdx+'_'+ci+'_'+hi+'_meta',meta=gs.roundShots[mk]||{};if(meta.cupIn){const sd=scoreDef(meta.scoreDiff);const lbl=meta.scoreDiff===0?'E':meta.scoreDiff>0?`+${meta.scoreDiff}`:String(meta.scoreDiff);return `<tr${mk===metaKey?' class="hs-current-hole"':''}><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell ${sd.cls}">${meta.totalShots} <small>${lbl}</small></td></tr>`}return `<tr${mk===metaKey?' class="hs-current-hole"':''}><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell empty">—</td></tr>`}).join('')
-    return `<div class="scp-course-col"><div class="scp-course-name">${c.name}</div><table class="scp-table"><thead><tr><th>H</th><th>PAR</th><th>Score</th></tr></thead><tbody>${rows}</tbody></table></div>`
+    const rows=c.holes.map((h,hi)=>{
+      const mk=st.gcIdx+'_'+ci+'_'+hi+'_meta',meta=gs.roundShots[mk]||{}
+      if(meta.cupIn){
+        const sd=scoreDef(meta.scoreDiff)
+        const lbl=meta.scoreDiff===0?'E':meta.scoreDiff>0?`+${meta.scoreDiff}`:String(meta.scoreDiff)
+        const puttsCell=meta.putts!=null?String(meta.putts):'—'
+        return `<tr${mk===metaKey?' class="hs-current-hole"':''}><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell ${sd.cls}">${meta.totalShots} <small>${lbl}</small></td><td class="scp-putts-cell">${puttsCell}</td></tr>`
+      }
+      return `<tr${mk===metaKey?' class="hs-current-hole"':''}><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell empty">—</td><td class="scp-putts-cell empty">—</td></tr>`
+    }).join('')
+    return `<div class="scp-course-col"><div class="scp-course-name">${c.name}</div><table class="scp-table"><thead><tr><th>H</th><th>PAR</th><th>Score</th><th>Putts</th></tr></thead><tbody>${rows}</tbody></table></div>`
   }).join('')
   return `<div class="scp-courses-wrap">${cols}</div>`
 }
@@ -736,19 +993,26 @@ export function clearHoleShots(){
 export function onGpsBtn(){
   if(gs.gpsActive) stopGPS(); else startGPS()
 }
-export function recordCurrentGps(){
-  if(!navigator.geolocation){alert('GPS非対応');return}
-  const btn=document.getElementById('gpsRecBtn');if(btn)btn.textContent='⌛'
+export type GpsRecordStatus = 'pending'|'done'|'error'
+/** 現在地でショットを記録する。onStatus で取得中・成功・失敗を呼び出し側へ通知する。 */
+export function recordCurrentGps(onStatus?:(status:GpsRecordStatus,message?:string)=>void){
+  const longPressHint='地図を長押しして記録できます'
+  if(!navigator.geolocation){onStatus?.('error',`この端末は位置情報に対応していません。${longPressHint}`);return}
+  onStatus?.('pending')
   navigator.geolocation.getCurrentPosition(pos=>{
-    if(btn)btn.textContent='✏️'
-    const ll={lat:pos.coords.latitude,lng:pos.coords.longitude};if(!gs.map)return
+    const ll={lat:pos.coords.latitude,lng:pos.coords.longitude}
+    if(!gs.map){onStatus?.('error',`地図がまだ読み込まれていません。${longPressHint}`);return}
     const G=(window as any).google.maps
     if(!gs.gpsMarker)gs.gpsMarker=new G.Marker({position:ll,map:gs.map,title:'現在地',icon:{path:G.SymbolPath.CIRCLE,scale:9,fillColor:'#4a9fd4',fillOpacity:.9,strokeColor:'#fff',strokeWeight:2.5}})
     else gs.gpsMarker.setPosition(ll)
     if(!gs.gpsActive)startGPS()
     updatePendingPos(gs.gpsMarker.getPosition())
     const sp=document.getElementById('shotPanel');if(sp&&!sp.classList.contains('open'))openShotPanelUI()
-  },err=>{const b=document.getElementById('gpsRecBtn');if(b)b.textContent='✏️';alert('GPS取得失敗: '+err.message)},{enableHighAccuracy:true,timeout:10000})
+    onStatus?.('done')
+  },err=>{
+    const detail=err.message||'位置情報を取得できませんでした'
+    onStatus?.('error',`${detail}。${longPressHint}`)
+  },{enableHighAccuracy:true,timeout:10000})
 }
 export function updateGpsRecordBtn(){
   const btn=document.getElementById('gpsRecBtn');if(!btn)return
@@ -976,7 +1240,7 @@ export function updateInfo(){
 export function updateRecBanner(){
   const banner=document.getElementById('recBanner');if(!banner)return
   if(gs.appMode!=='record'||!hole()||!hasData(hole())||document.getElementById('shotPanel')?.classList.contains('open')){banner.style.display='none';return}
-  const shots=curShots(),holeOff=gs.roundShots[holeKey()+'_offset']||0,n=shots.length+1+holeOff
+  const shots=curShots(),n=nextShotNo()
   const from=shots.length===0?'ティーから':shots[shots.length-1].no+'打目から'
   banner.textContent=n+'打目 — '+from+'の落下地点をタップ'; banner.style.display='block'
 }
@@ -995,23 +1259,38 @@ export function closeScorecard(){const p=document.getElementById('scorecardPanel
 export function buildFullScorecard():string{
   const g=gc()!
   const coursesToShow=isPairRound()?[{c:g.courses[st.cIdx!],ci:st.cIdx!},{c:g.courses[st.cIdx2!],ci:st.cIdx2!}]:g.courses.map((c,ci)=>({c,ci}))
-  let grandTotalPar=0,grandTotalScore=0,grandTotalDiff=0,grandAny=false
+  let grandTotalPar=0,grandTotalScore=0,grandTotalDiff=0,grandTotalPutts=0,grandAny=false,grandAnyPutts=false
   const cols=coursesToShow.map(({c,ci})=>{
-    const holes=c.holes; let totalPar=0,totalScore=0,totalDiff=0,anyScore=false
+    const holes=c.holes; let totalPar=0,totalScore=0,totalDiff=0,totalPutts=0,anyScore=false,anyPutts=false
     const rows=holes.map((h,hi)=>{
       const metaKey=st.gcIdx+'_'+ci+'_'+hi+'_meta',meta=gs.roundShots[metaKey]||{}
       totalPar+=h.par
-      if(meta.cupIn){anyScore=true;const s=meta.totalShots||(meta.par+(meta.scoreDiff||0)),diff=s-meta.par,sd=scoreDef(diff),lbl=diff===0?'E':diff>0?`+${diff}`:String(diff);totalScore+=s;totalDiff+=diff;return `<tr><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell ${sd.cls}">${s} <small>${lbl}</small></td></tr>`}
-      return `<tr><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell empty">—</td></tr>`
+      if(meta.cupIn){
+        anyScore=true
+        const s=meta.totalShots||(meta.par+(meta.scoreDiff||0))
+        const diff=s-meta.par
+        const sd=scoreDef(diff)
+        const lbl=diff===0?'E':diff>0?`+${diff}`:String(diff)
+        totalScore+=s
+        totalDiff+=diff
+        const puttsCell=meta.putts!=null?String(meta.putts):'—'
+        if(meta.putts!=null){anyPutts=true;totalPutts+=meta.putts}
+        return `<tr><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell ${sd.cls}">${s} <small>${lbl}</small></td><td class="scp-putts-cell">${puttsCell}</td></tr>`
+      }
+      return `<tr><td class="scp-hole-no">${h.no}H</td><td class="scp-par-val">${h.par}</td><td class="scp-score-cell empty">—</td><td class="scp-putts-cell empty">—</td></tr>`
     }).join('')
-    grandTotalPar+=totalPar; if(anyScore){grandAny=true;grandTotalScore+=totalScore;grandTotalDiff+=totalDiff}
+    grandTotalPar+=totalPar
+    if(anyScore){grandAny=true;grandTotalScore+=totalScore;grandTotalDiff+=totalDiff}
+    if(anyPutts){grandAnyPutts=true;grandTotalPutts+=totalPutts}
     const totLbl=totalDiff===0?'E':totalDiff>0?`+${totalDiff}`:String(totalDiff)
     const totCell=anyScore?`${totalScore} <small>${totLbl}</small>`:'—'
-    return `<div class="scp-course-col"><div class="scp-course-name">${c.name}</div><table class="scp-table"><thead><tr><th>H</th><th>PAR</th><th>Score</th></tr></thead><tbody>${rows}</tbody><tfoot><tr class="scp-total-row"><td>合計</td><td>${totalPar}</td><td>${totCell}</td></tr></tfoot></table></div>`
+    const totPutts=anyPutts?String(totalPutts):'—'
+    return `<div class="scp-course-col"><div class="scp-course-name">${c.name}</div><table class="scp-table"><thead><tr><th>H</th><th>PAR</th><th>Score</th><th>Putts</th></tr></thead><tbody>${rows}</tbody><tfoot><tr class="scp-total-row"><td>合計</td><td>${totalPar}</td><td>${totCell}</td><td>${totPutts}</td></tr></tfoot></table></div>`
   }).join('')
   const grandLbl=grandTotalDiff===0?'E':grandTotalDiff>0?`+${grandTotalDiff}`:String(grandTotalDiff)
   const diffCls=grandTotalDiff===0?'even':grandTotalDiff>0?'plus':'minus'
-  const grandHtml=coursesToShow.length>=2?`<div class="scp-grand"><div class="scp-grand-label">🏆 トータル<br>PAR ${grandTotalPar}</div><div><span class="scp-grand-val">${grandAny?grandTotalScore:'—'}</span>${grandAny?`<span class="scp-grand-diff ${diffCls}">${grandLbl}</span>`:''}</div></div>`:''
+  const grandPuttsHtml=grandAnyPutts?`<span class="scp-grand-putts">パット ${grandTotalPutts}</span>`:''
+  const grandHtml=coursesToShow.length>=2?`<div class="scp-grand"><div class="scp-grand-label">🏆 トータル<br>PAR ${grandTotalPar}</div><div><span class="scp-grand-val">${grandAny?grandTotalScore:'—'}</span>${grandAny?`<span class="scp-grand-diff ${diffCls}">${grandLbl}</span>`:''}${grandPuttsHtml}</div></div>`:''
   return `<div class="scp-gc-name">⛳ ${g.name}</div><div class="scp-courses-wrap">${cols}</div>${grandHtml}`
 }
 

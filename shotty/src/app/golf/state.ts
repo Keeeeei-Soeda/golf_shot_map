@@ -59,6 +59,7 @@ export const gs = {
   pinLine:             null as any,
   measureFromLabel:    null as any,
   measureToLabel:      null as any,
+  measureBubble:       null as any,
   measureSelectedPin:  null as string|null,
 
   // ショットレイヤー
@@ -86,6 +87,7 @@ export const gs = {
 
   // カップインパネル
   cpSelectedDiff:      0,
+  cpScoreChosen:       false, // ショット未記録時はスコア手選択が必須
   cpStrokePenalty:     0,
   cpObType:            null as string|null,
   cpPutts:             null as number|null,

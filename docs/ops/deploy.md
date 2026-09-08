@@ -10,6 +10,7 @@
 |---|---|---|
 | **GitHub Pages** | `https://keeeeei-soeda.github.io/golf_shot_map/` | バニラJS版（静的サイト） |
 | **ConoHa VPS** | `https://shotty.net` | Next.js版（pm2 + Nginx） |
+| **ConoHa VPS（beta）** | `https://beta.shotty.net` | 新UI検証用（`shotty-beta` / port 3001）。手順は `docs/ops/beta-shotty-net.md` |
 
 **どちらも `git push origin main` の1コマンドで同時にデプロイされる。**
 

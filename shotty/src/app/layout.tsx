@@ -11,13 +11,13 @@ const notoSansJP = Noto_Sans_JP({
 })
 
 export const metadata: Metadata = {
-  title: 'Shotty Golf',
+  title: 'SHOTTY',
   description: '自分専用のキャディを、ポケットに。',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Shotty',
+    title: 'SHOTTY',
   },
 }
 
@@ -26,7 +26,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#0d1f0d',
+  themeColor: '#0a160a',
 }
 
 export default function RootLayout({
@@ -37,9 +37,9 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
       </head>
-      <body className={notoSansJP.className}>
+      <body className={`${notoSansJP.className} map-bottom-bleed`}>
           <SessionProvider>
             {children}
             <SyncToast />

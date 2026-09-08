@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import {
   closeMenu, onGCSel, sidebarSelectTee, selectSidebarCourseCombo,
-  openStrategySelector, openScorecard, openClubEditor,
+  openStrategySelector, openScorecard,
   closeScorecard, closeStrategySelector, setStrategySourceTab,
   deactivateStrategy,
 } from '@/app/golf/logic'
@@ -121,12 +121,30 @@ export default function Sidebar({ roundInProgress, completedHoles, onEndRound }:
           <HoleStrip />
 
           <div className="menu-divider"></div>
+
+          {/* ===== 基準ピンの凡例 ===== */}
+          <div className="menu-label">マップの基準ピン</div>
+          <div className="menu-legend">
+            <div className="leg-r">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icons/tee.png" alt="" className="leg-icon" width={18} height={18} />
+              ティー
+            </div>
+            <div className="leg-r"><div className="leg-dot" style={{ background: '#e05252' }}></div>F = フロント</div>
+            <div className="leg-r">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icons/pin.png" alt="" className="leg-icon" width={18} height={18} />
+              センター（ピン）
+            </div>
+            <div className="leg-r"><div className="leg-dot" style={{ background: '#e8c84a' }}></div>B = バック</div>
+          </div>
+
+          <div className="menu-divider"></div>
           <button className="menu-club-btn" onClick={openStrategySelector}>📍 マップで過去記録を見る</button>
           <button className="menu-club-btn" style={{ marginTop: '6px' }} onClick={openScorecard}>📊 スコアカード</button>
           <Link className="menu-club-btn" style={{ display: 'block', marginTop: '6px', textDecoration: 'none' }} href="/mypage" onClick={closeMenu}>📖 ラウンド振り返り</Link>
           <a className="menu-club-btn" style={{ display: 'block', marginTop: '6px', textDecoration: 'none' }} href="/ai" target="_blank" rel="noopener noreferrer">🤖 AI相談モード</a>
           <Link className="menu-club-btn" style={{ display: 'block', marginTop: '6px', textDecoration: 'none' }} href="/swing" prefetch={false} target="_blank" rel="noopener noreferrer">🎥 スイング解析</Link>
-          <button className="menu-club-btn" style={{ marginTop: '6px' }} onClick={openClubEditor}>🏌️ クラブセット編集</button>
           <div className="menu-divider"></div>
 
           {/* ===== 途中終了ボタン（進行中のみ） ===== */}

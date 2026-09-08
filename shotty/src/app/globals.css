@@ -12,18 +12,44 @@
   --acc:#e8c84a; --red:#e05252; --blue:#4a9fd4; --pur:#a78bfa; --org:#f59e0b;
   --eagle:#f472b6; --birdie:#60a5fa; --par:#4caf50;
   --bogey:#fb923c; --dbl:#ef4444; --tpl:#991b1b;
+  /* 下部バー本体の目安高さ（safe-area は別加算） */
+  --bottom-bar-content-h: 50px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --bottom-bar-offset: calc(var(--bottom-bar-content-h) + var(--safe-bottom));
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;}
-body{font-family:'Noto Sans JP',sans-serif;background:var(--gd);color:var(--w);
-  display:flex;flex-direction:column;}
+/*
+ * ステップ1: ルート高さを実画面下端まで届かせる
+ * - 100vh は使わない（指示書どおり 100dvh）
+ * - 外枠全体に safe-area 余白は付けない（黒帯の原因になる）
+ */
+html{
+  height:100%;
+  height:100dvh;
+  width:100%;
+  overflow:hidden;
+  background:var(--gd);
+}
+html,body{overflow:hidden;}
+body{
+  height:100%;
+  height:100dvh;
+  width:100%;
+  font-family:'Noto Sans JP',sans-serif;background:var(--gd);color:var(--w);
+  display:flex;flex-direction:column;
+}
 
 /* ===== HEADER ===== */
 header{
-  height:48px;flex-shrink:0;
+  min-height:48px;flex-shrink:0;
   background:linear-gradient(135deg,#0a160a,var(--g1));
   border-bottom:2px solid var(--gv);
-  display:flex;align-items:center;padding:0 10px;gap:8px;
+  display:flex;align-items:center;gap:8px;
+  /* standalone 起動時はステータスバーの下にヘッダー内容を逃がす */
+  padding:env(safe-area-inset-top, 0px)
+          calc(10px + env(safe-area-inset-right, 0px))
+          0
+          calc(10px + env(safe-area-inset-left, 0px));
 }
 .hbg-btn{
   flex-shrink:0;width:36px;height:36px;border-radius:8px;
@@ -42,7 +68,6 @@ header{
   font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;
   color:var(--acc);flex:1;line-height:1;
 }
-.logo small{font-size:9px;letter-spacing:2px;color:var(--gv);margin-left:6px;font-family:'Noto Sans JP',sans-serif;}
 .hdr-right{display:flex;gap:6px;align-items:center;}
 .hdr-btn{
   flex-shrink:0;padding:5px 9px;border-radius:6px;border:1px solid var(--g4);
@@ -56,6 +81,70 @@ header{
 .hist-badge{
   position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;
   font-size:9px;font-weight:700;border-radius:8px;padding:1px 4px;display:none;
+}
+
+/* ===== 機能ランチャー（9ドット） ===== */
+.feature-launcher{position:relative;flex-shrink:0;}
+.launcher-gps-proxy{
+  position:absolute;width:0;height:0;opacity:0;pointer-events:none;overflow:hidden;border:0;padding:0;
+}
+.launcher-hist-badge{
+  top:-2px;right:-2px;z-index:2;pointer-events:none;
+}
+.launcher-trigger{width:36px;height:36px;padding:0;justify-content:center;}
+.launcher-trigger.open{background:rgba(255,255,255,.12);color:var(--w);}
+.launcher-dots{
+  display:grid;grid-template-columns:repeat(3,5px);grid-template-rows:repeat(3,5px);
+  gap:3px;width:21px;height:21px;
+}
+.launcher-dots i{
+  display:block;width:5px;height:5px;border-radius:50%;background:currentColor;
+}
+.launcher-backdrop{
+  position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.35);
+}
+.launcher-panel{
+  position:absolute;top:calc(100% + 8px);right:0;z-index:91;
+  width:min(280px, calc(100vw - 24px));
+  padding:12px;border-radius:14px;
+  background:var(--g1);border:1px solid var(--g4);
+  box-shadow:0 8px 28px rgba(0,0,0,.55);
+  display:flex;flex-direction:column;gap:10px;
+}
+.launcher-group{display:flex;flex-direction:column;gap:6px;}
+.launcher-group-label{
+  font-size:10px;font-weight:700;letter-spacing:.04em;
+  color:var(--gr);padding:0 2px;
+}
+.launcher-separator{
+  margin:2px 0 0;border:none;border-top:1px solid rgba(224,138,138,.35);
+}
+.launcher-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+}
+.launcher-tile{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:10px 4px 8px;border-radius:12px;border:none;
+  background:transparent;color:var(--w);cursor:pointer;font-family:inherit;
+}
+.launcher-tile:hover{background:rgba(255,255,255,.08);}
+.launcher-tile.is-danger{
+  background:#3A1F1F;
+}
+.launcher-tile.is-danger:hover{background:#4a2828;}
+.launcher-tile.is-danger .launcher-tile-icon{
+  background:rgba(224,138,138,.12);
+}
+.launcher-tile.is-danger .launcher-tile-label{color:#E08A8A;}
+.launcher-tile-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.08);font-size:22px;line-height:1;
+}
+.launcher-tile-icon img{width:28px;height:28px;object-fit:contain;}
+.launcher-tile-label{
+  font-size:10px;font-weight:700;line-height:1.2;text-align:center;
+  color:var(--gr);
 }
 
 /* ===== ハンバーガーメニュー ===== */
@@ -141,18 +230,110 @@ header{
 .sbadge.cupin {background:var(--gv);    color:#fff;}
 
 /* ===== MAP ===== */
-#mapWrap{flex:1;position:relative;overflow:hidden;}
-#map{width:100%;height:100%;display:none;}
+#mapWrap{flex:1;min-height:0;position:relative;overflow:hidden;}
+#map{
+  position:absolute;inset:0;width:100%;height:100%;
+  display:none;
+}
 #emptyMap{
   width:100%;height:100%;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:10px;color:var(--gr);
 }
 #emptyMap .ico{font-size:46px;}
 
-#legend{
-  position:absolute;top:8px;left:8px;z-index:5;
-  background:rgba(10,22,10,.88);border:1px solid var(--g4);
-  border-radius:8px;padding:6px 10px;pointer-events:none;
+/* 基準ピンの凡例（サイドパネル内。マップ上には置かない） */
+.menu-legend{
+  background:rgba(10,22,10,.6);border:1px solid var(--g3);
+  border-radius:8px;padding:8px 10px;
+}
+.leg-icon{width:18px;height:18px;object-fit:contain;flex-shrink:0;}
+
+/* ===== 残り距離カード（左上・常時表示） ===== */
+.dist-card{
+  position:absolute;top:8px;
+  left:calc(8px + env(safe-area-inset-left, 0px));
+  z-index:6;
+  display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+  background:rgba(10,22,10,.92);border:1px solid var(--g4);
+  border-left:3px solid var(--pur);
+  border-radius:10px;padding:7px 13px 8px;
+  font-family:inherit;color:var(--w);text-align:left;
+  cursor:pointer;transition:border-color .15s;
+}
+.dist-card:hover{border-color:var(--gv);}
+.dist-card-label{font-size:10px;font-weight:700;color:var(--gr);letter-spacing:.5px;}
+.dist-card-value{
+  font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:1;
+  color:var(--acc);display:flex;align-items:baseline;gap:3px;
+}
+.dist-card-empty{color:var(--gr);}
+.dist-card-unit{font-family:'Noto Sans JP',sans-serif;font-size:12px;color:var(--gr);}
+.dist-card-hint{font-size:9px;color:var(--gv);}
+.dist-card-pin{
+  display:inline-block;width:14px;height:14px;vertical-align:-2px;
+  object-fit:contain;
+}
+
+/* ===== 右サイド操作ボタン（アクション群 / マップ操作） =====
+   コンテナ全体でタップを受け止め、ボタン周辺で測距ピンが
+   誤って立たないようにする（左側に余白を取って判定を手前で切る）。 */
+.side-actions{
+  position:absolute;z-index:7;
+  right:calc(10px + env(safe-area-inset-right, 0px));
+  bottom:16px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding-left:16px;
+}
+.side-actions-group{
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+}
+.side-actions-divider{
+  width:28px;height:0;
+  border:none;border-top:1.5px dashed rgba(255,255,255,.35);
+  margin:2px 0;
+}
+.side-action{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.side-action-btn:disabled{opacity:.6;cursor:default;}
+/* GPS 取得失敗の理由をその場に出す */
+.side-action-error{
+  max-width:190px;padding:6px 9px;border-radius:8px;
+  background:rgba(224,82,82,.95);border:1px solid var(--red);
+  color:#fff;font-size:10px;line-height:1.4;text-align:right;
+  pointer-events:none;
+}
+.side-action-btn{
+  width:60px;height:60px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;line-height:1;cursor:pointer;
+  font-family:inherit;padding:0;
+  transition:transform .12s, box-shadow .15s;
+}
+.side-action-btn:active{transform:scale(.93);}
+.side-action-icon{
+  width:30px;height:30px;object-fit:contain;display:block;pointer-events:none;
+}
+/* ラベルは円の外に置き、押下対象にはしない */
+.side-action-label{
+  font-size:10px;font-weight:700;color:var(--w);white-space:nowrap;
+  text-shadow:0 1px 3px rgba(0,0,0,.9);pointer-events:none;
+}
+
+/* 仕様色：記録 / パット / 測定 / 地図回転（ティールでマップ操作と区別） */
+.side-action-btn.is-record{
+  background:#1F9E52;border:2px solid #6FE0A0;color:#FFFFFF;
+  box-shadow:0 3px 10px rgba(0,0,0,.45);
+}
+.side-action-btn.is-putt{
+  background:#E0A51F;border:2px solid #F5CF6A;color:#3A2A02;
+  box-shadow:0 3px 10px rgba(0,0,0,.45);
+}
+.side-action-btn.is-measure{
+  background:#414C58;border:2px solid #6A7784;color:#CDD6E0;
+  box-shadow:0 3px 10px rgba(0,0,0,.45);
+}
+.side-action-btn.is-rotate{
+  background:#274A52;border:2px solid #5AA6B0;color:#BFE6EC;
+  box-shadow:0 3px 10px rgba(0,0,0,.45);font-size:22px;
 }
 .leg-r{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--w);margin-bottom:3px;}
 .leg-r:last-child{margin-bottom:0;}
@@ -237,12 +418,59 @@ header{
   background:#fff;color:#065f46;border:none;border-radius:8px;
   padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
 }
-
-/* ===== BOTTOM BAR ===== */
-#bottomBar{
-  height:50px;flex-shrink:0;background:var(--g1);border-top:1px solid var(--g3);
-  display:flex;align-items:center;gap:6px;padding:0 10px;
+.resume-banner button.resume-abort{
+  background:transparent;color:#fff;border:1px solid rgba(255,255,255,.7);
 }
+
+/* ===== BOTTOM BAR（デフォルト＝フロー内。bleed 時は下の上書きブロック参照） ===== */
+#bottomBar{
+  flex-shrink:0;background:var(--g1);border-top:1px solid var(--g3);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  min-height:var(--bottom-bar-content-h);
+  padding:0 10px;
+  padding-bottom:calc(6px + constant(safe-area-inset-bottom));
+  padding-bottom:calc(6px + env(safe-area-inset-bottom, 0px));
+}
+
+/*
+ * ============================================================
+ * PWA_MAP_BOTTOM_BLEED（マップ最下端フルブリード）
+ * ------------------------------------------------------------
+ * 有効: body に class "map-bottom-bleed"（layout.tsx）
+ * 無効に戻す方法（どれか1つ）:
+ *   1) layout.tsx の body から "map-bottom-bleed" を外す
+ *   2) このブロック全体をコメントアウト
+ *   3) git revert <この変更のコミット>
+ * 方針: マップ背景は端まで / safe-area は操作要素のみ
+ * ============================================================
+ */
+body.map-bottom-bleed #mapWrap{
+  /* 下部バーをフローから外すので、マップが画面下端まで伸びる */
+  flex:1;
+  min-height:0;
+}
+body.map-bottom-bleed #map,
+body.map-bottom-bleed #emptyMap{
+  /* 背景レイヤーは inset:0（safe-area を背景に載せない） */
+  inset:0;
+}
+body.map-bottom-bleed #bottomBar{
+  /* 操作バーはマップの上に被せ、ホームバー分だけ中身を退避 */
+  position:fixed;
+  left:0;right:0;bottom:0;
+  z-index:20;
+  flex-shrink:0;
+}
+body.map-bottom-bleed .side-actions{
+  /* 右レール: 下部バー＋ホームバーの上に置く */
+  bottom:calc(16px + var(--bottom-bar-offset));
+  right:calc(10px + env(safe-area-inset-right, 0px));
+}
+body.map-bottom-bleed #recBanner{
+  bottom:calc(8px + var(--bottom-bar-offset));
+}
+/* ===== PWA_MAP_BOTTOM_BLEED end ===== */
+
 .mode-tabs{display:flex;gap:4px;flex-shrink:0;}
 .mtab{
   padding:5px 10px;border-radius:6px;border:1px solid var(--g3);
@@ -273,16 +501,47 @@ header{
 
 /* ===== ショットパネル ===== */
 #shotPanel{
-  position:fixed;bottom:0;left:0;right:0;z-index:60;
-  background:var(--g1);border-top:2px solid var(--org);
-  border-radius:16px 16px 0 0;padding:10px 12px 16px;
+  position:fixed;inset:0;z-index:60;
+  background:var(--g1);
+  border:none;border-radius:0;
+  padding:12px 14px 20px;
+  padding-top:calc(12px + env(safe-area-inset-top, 0px));
   transform:translateY(100%);transition:transform .25s ease;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  display:flex;flex-direction:column;gap:8px;
 }
 #shotPanel.open{transform:translateY(0);}
-.sp-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;}
-.sp-shotno{font-size:12px;font-weight:700;color:var(--org);}
+.sp-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px;gap:8px;}
+.sp-shotno{font-size:15px;font-weight:700;color:var(--org);}
 .sp-hint{font-size:10px;color:var(--gr);margin-top:2px;}
-.sp-close{background:none;border:none;color:var(--gr);font-size:18px;cursor:pointer;padding:0 4px;}
+.sp-header-tools{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.sp-tool-btn{
+  width:36px;height:36px;border-radius:8px;border:1px solid var(--g4);
+  background:var(--g2);color:var(--w);font-size:16px;cursor:pointer;
+  font-family:inherit;display:flex;align-items:center;justify-content:center;
+}
+.sp-close{
+  width:36px;height:36px;border-radius:8px;border:1px solid var(--g4);
+  background:var(--g2);color:var(--gr);font-size:18px;cursor:pointer;padding:0;
+  font-family:inherit;
+}
+
+/* 打点からの距離（進んだ距離）— 残り距離と取り違えないよう明示 */
+.sp-carry-summary{
+  background:rgba(74,159,212,.12);border:1px solid rgba(74,159,212,.35);
+  border-radius:12px;padding:10px 14px;text-align:center;
+}
+.sp-carry-label{font-size:10px;font-weight:700;color:var(--gr);letter-spacing:.5px;}
+.sp-carry-from{font-size:11px;color:var(--blue);margin-top:2px;}
+.sp-carry-yd{
+  font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1;color:var(--blue);margin-top:2px;
+}
+.sp-carry-yd span{font-size:14px;color:var(--gr);margin-left:2px;font-family:'Noto Sans JP',sans-serif;}
+
+.sp-section-label{
+  font-size:11px;font-weight:700;color:var(--gr);letter-spacing:.5px;margin-top:4px;
+}
+
 .sp-dists{display:flex;gap:6px;margin-bottom:8px;}
 .sp-dist-card{flex:1;border-radius:8px;padding:6px 8px;text-align:center;}
 .sp-dist-card.carry{background:rgba(74,159,212,.15);border:1px solid rgba(74,159,212,.4);}
@@ -294,31 +553,25 @@ header{
 .sdc-val.blue{color:var(--blue);}
 .sdc-val.yellow{color:var(--acc);}
 
-.club-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px;}
+.club-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:4px;}
 .cb{
-  padding:8px 4px;border-radius:6px;background:var(--g3);border:1px solid var(--g4);
-  color:var(--w);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
-  transition:all .15s;text-align:center;
+  padding:14px 4px;border-radius:10px;background:var(--g3);border:1px solid var(--g4);
+  color:var(--w);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:all .15s;text-align:center;min-height:48px;
 }
 .cb:hover{background:var(--g4);}
 .cb.sel{background:var(--org);border-color:var(--org);color:#000;}
 .cb-empty{
-  border-radius:6px;border:1px dashed var(--g3);
-  background:transparent;min-height:34px;
+  border-radius:10px;border:1px dashed var(--g3);
+  background:transparent;min-height:48px;
 }
-.sp-tabs{
-  display:flex;gap:4px;margin-bottom:8px;
-  background:var(--g2);border-radius:8px;padding:3px;
+.sp-tabs{display:none;} /* タブ廃止 */
+
+.sp-penalty-body{
+  border:1px solid var(--g3);border-radius:10px;padding:10px 12px 12px;
+  background:rgba(0,0,0,.15);
 }
-.sp-tab{
-  flex:1;padding:7px 4px;border-radius:6px;border:none;
-  background:transparent;color:var(--gr);font-size:11px;font-weight:700;
-  cursor:pointer;font-family:inherit;transition:all .15s;
-}
-.sp-tab.active{background:var(--g1);color:var(--w);}
-#spTabRecord.active{color:var(--org);}
-#spTabDist.active{color:var(--blue);}
-#spTabPenalty.active{color:var(--red);}
+.sp-penalty-fold{display:none;} /* 折りたたみUIは廃止 */
 
 .sp-result-section{margin-bottom:8px;}
 .sp-result-label{font-size:9px;color:var(--gr);letter-spacing:1px;margin-bottom:5px;}
@@ -380,15 +633,16 @@ header{
   padding:6px 0 2px;
 }
 .sp-btns{display:flex;gap:6px;}
+.sp-btns-main{margin-top:auto;padding-top:8px;position:sticky;bottom:0;background:var(--g1);padding-bottom:env(safe-area-inset-bottom, 0px);}
 .sp-ok{
-  flex:1;padding:8px;border-radius:7px;background:var(--gv);border:none;
-  color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;
+  flex:1;padding:12px;border-radius:10px;background:var(--gv);border:none;
+  color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;
 }
 .sp-ok:hover{background:var(--gvd);}
 .sp-ok:disabled{background:var(--g3);color:var(--gr);cursor:default;}
 .sp-cancel{
-  padding:8px 10px;border-radius:7px;background:var(--g3);border:1px solid var(--g4);
-  color:var(--gr);font-size:11px;cursor:pointer;font-family:inherit;
+  padding:12px 14px;border-radius:10px;background:var(--g3);border:1px solid var(--g4);
+  color:var(--gr);font-size:13px;cursor:pointer;font-family:inherit;
 }
 
 /* ===== ペナルティ追加 ===== */
@@ -413,14 +667,18 @@ header{
 
 /* ===== カップインパネル ===== */
 #cupPanel{
-  position:fixed;bottom:0;left:0;right:0;z-index:65;
-  background:var(--g1);border-top:2px solid var(--gv);
-  border-radius:16px 16px 0 0;padding:14px 14px 24px;
+  position:fixed;inset:0;z-index:65;
+  background:var(--g1);border:none;border-radius:0;
+  padding:14px 14px 24px;
+  padding-top:calc(14px + env(safe-area-inset-top, 0px));
+  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
   transform:translateY(100%);transition:transform .25s ease;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  display:flex;flex-direction:column;gap:8px;
 }
 #cupPanel.open{transform:translateY(0);}
-.cup-title{font-size:15px;font-weight:700;color:var(--gv);margin-bottom:10px;text-align:center;}
-.cup-score-area{background:var(--g2);border-radius:10px;padding:12px;margin-bottom:12px;text-align:center;}
+.cup-title{font-size:16px;font-weight:700;color:var(--acc);margin-bottom:4px;text-align:center;}
+.cup-score-area{background:var(--g2);border-radius:12px;padding:14px;margin-bottom:4px;text-align:center;}
 .cup-hole-info{font-size:12px;color:var(--gr);margin-bottom:5px;}
 .cup-shots{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--acc);line-height:1;}
 .cup-shots span{font-size:17px;color:var(--gr);margin-left:4px;}
@@ -428,8 +686,8 @@ header{
   display:inline-block;margin-top:6px;padding:4px 14px;border-radius:20px;
   font-size:13px;font-weight:700;
 }
-.cup-manual{margin-bottom:12px;}
-.cup-manual-title{font-size:11px;color:var(--gr);margin-bottom:6px;}
+.cup-manual{margin-bottom:8px;}
+.cup-manual-title{font-size:11px;color:var(--gr);margin-bottom:6px;font-weight:700;}
 .cup-manual-btns{display:flex;gap:5px;flex-wrap:wrap;}
 .score-btn{
   flex:1;min-width:52px;padding:8px 4px;border-radius:8px;border:1px solid var(--g4);
@@ -479,33 +737,34 @@ header{
 }
 .cup-ob-btn.sel{border-color:var(--org);background:rgba(245,158,11,.15);color:var(--org);}
 
-.cup-putts-area{padding:0 0 10px;}
-.cup-putts-label{font-size:10px;color:var(--gr);margin-bottom:5px;letter-spacing:1px;}
-.cup-putts-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px;}
+.cup-putts-area{padding:0 0 6px;}
+.cup-putts-label{font-size:11px;color:var(--gr);margin-bottom:6px;letter-spacing:1px;font-weight:700;}
+.cup-putts-btns{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:6px;}
 .cup-putts-btn{
-  padding:7px 4px;border-radius:8px;border:1px solid var(--g3);
-  background:rgba(255,255,255,.04);color:var(--gr);font-size:11px;
+  padding:12px 4px;border-radius:10px;border:1px solid var(--g3);
+  background:rgba(255,255,255,.04);color:var(--gr);font-size:14px;font-weight:700;
   cursor:pointer;font-family:inherit;transition:all .15s;
 }
 .cup-putts-btn.sel{border-color:var(--blue);background:rgba(74,159,212,.15);color:var(--blue);}
 .sc-putts{font-size:9px;opacity:.65;margin-top:1px;}
 
-.cup-btns{display:flex;gap:8px;}
+.cup-btns{display:flex;gap:8px;margin-top:auto;padding-top:8px;position:sticky;bottom:0;background:var(--g1);}
 .cup-ok{
-  flex:1;padding:11px;border-radius:8px;background:var(--gv);border:none;
-  color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
+  flex:1;padding:14px;border-radius:10px;background:var(--gv);border:none;
+  color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;
 }
 .cup-ok:hover{background:var(--gvd);}
+.cup-ok:disabled{background:var(--g3);color:var(--gr);cursor:default;}
 .cup-cancel{
-  padding:11px 14px;border-radius:8px;background:var(--g3);border:1px solid var(--g4);
-  color:var(--gr);font-size:12px;cursor:pointer;font-family:inherit;
+  padding:14px 16px;border-radius:10px;background:var(--g3);border:1px solid var(--g4);
+  color:var(--gr);font-size:13px;cursor:pointer;font-family:inherit;
 }
 
 /* ===== レビューパネル ===== */
-#reviewOverlay{position:fixed;inset:0;z-index:54;display:none;background:rgba(0,0,0,.35);}
+#reviewOverlay{position:fixed;inset:0;z-index:70;display:none;background:rgba(0,0,0,.35);}
 #reviewOverlay.show{display:block;}
 #reviewPanel{
-  position:fixed;bottom:0;left:0;right:0;z-index:55;
+  position:fixed;bottom:0;left:0;right:0;z-index:71;
   background:var(--g1);border-top:2px solid var(--acc);
   border-radius:16px 16px 0 0;padding:12px 14px 24px;
   max-height:70%;overflow-y:auto;
@@ -670,7 +929,6 @@ header{
 
 /* ===== iPhone safe area ===== */
 @supports (padding:env(safe-area-inset-bottom)){
-  #bottomBar{padding-bottom:calc(6px + env(safe-area-inset-bottom));height:auto;min-height:50px;}
   #shotPanel,#cupPanel,#reviewPanel{
     padding-bottom:calc(16px + env(safe-area-inset-bottom));
   }
@@ -679,7 +937,13 @@ header{
 
 /* ===== スマホ対応（〜480px） ===== */
 @media(max-width:480px){
-  header{height:46px;padding:0 8px;}
+  header{
+    min-height:46px;
+    padding:env(safe-area-inset-top, 0px)
+            calc(8px + env(safe-area-inset-right, 0px))
+            0
+            calc(8px + env(safe-area-inset-left, 0px));
+  }
   .logo{font-size:16px;}
   .hdr-btn{padding:6px 8px;font-size:14px;}
   #mapWrap{flex:1;}
@@ -688,7 +952,15 @@ header{
   .yi-val{font-size:20px;}
   .yi-horiz{gap:10px;}
   .yi-label{font-size:9px;}
-  #bottomBar{padding:6px 8px;gap:4px;}
+  #bottomBar{
+    padding:6px 8px;
+    padding-bottom:calc(6px + constant(safe-area-inset-bottom));
+    padding-bottom:calc(6px + env(safe-area-inset-bottom, 0px));
+    gap:4px;
+  }
+  body.map-bottom-bleed .side-actions{
+    bottom:calc(12px + var(--bottom-bar-offset));
+  }
   .mtab{padding:7px 8px;font-size:11px;}
   .mode-info{font-size:10px;}
   #cupBtn{padding:7px 8px;font-size:12px;}
@@ -711,14 +983,30 @@ header{
 }
 .menu-club-btn:hover{background:rgba(232,200,74,.15);}
 
-.hole-nav{display:flex;gap:4px;flex-shrink:0;}
+.hole-nav{display:flex;gap:10px;flex-shrink:0;align-items:center;}
 .hole-nav-btn{
-  padding:5px 9px;border-radius:6px;border:1px solid var(--g4);
-  background:var(--g2);color:var(--w);font-size:11px;font-weight:700;
+  width:42px;height:38px;border-radius:8px;border:1px solid var(--g4);
+  background:var(--g2);color:var(--w);font-size:14px;font-weight:700;
   cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;
+  display:flex;align-items:center;justify-content:center;
 }
 .hole-nav-btn:hover{background:var(--g4);}
 .hole-nav-btn:disabled{opacity:.35;cursor:default;}
+
+/* ホール番号・PAR・ヤードは同一行（同じレベル） */
+.hole-label{
+  display:flex;flex-direction:row;align-items:baseline;justify-content:center;gap:8px;
+  min-width:140px;flex-wrap:nowrap;
+}
+.hole-label-no{
+  font-family:'Bebas Neue',sans-serif;font-size:16px;line-height:1;
+  letter-spacing:1px;color:var(--w);
+}
+.hole-label-par{font-size:12px;font-weight:700;color:var(--gr);white-space:nowrap;}
+.hole-label-yd{
+  font-size:12px;font-weight:800;color:var(--acc);letter-spacing:.2px;
+  line-height:1;white-space:nowrap;
+}
 
 /* ===== スコアカードパネル（全画面） ===== */
 #scorecardPanel{
@@ -764,6 +1052,8 @@ header{
 .scp-score-cell.dbl{background:rgba(239,68,68,.2);}
 .scp-score-cell.tpl{background:rgba(153,27,27,.35);}
 .scp-score-cell.other{background:rgba(122,149,122,.2);}
+.scp-putts-cell{color:var(--w);font-weight:600;}
+.scp-putts-cell.empty{color:var(--gr);font-weight:400;}
 .scp-total-row td{font-weight:700;background:var(--g3);}
 .scp-grand{
   display:flex;align-items:center;justify-content:center;gap:16px;
@@ -776,6 +1066,7 @@ header{
 .scp-grand-diff.even{color:var(--par);}
 .scp-grand-diff.plus{color:var(--bogey);}
 .scp-grand-diff.minus{color:var(--birdie);}
+.scp-grand-putts{display:block;margin-top:6px;font-size:12px;font-weight:700;color:var(--gr);text-align:center;}
 
 /* ===== クラブエディタ ===== */
 #clubEditorPanel{

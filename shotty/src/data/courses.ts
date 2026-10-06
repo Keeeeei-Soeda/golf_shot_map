@@ -8712,7 +8712,7 @@ export const COURSES: GolfCourse[] = [
           },
           {
             "no": 3,
-            "par": 4,
+            "par": 3,
             "tee": {
               "lat": 34.951405,
               "lng": 139.805695

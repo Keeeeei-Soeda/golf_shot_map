@@ -33,6 +33,7 @@ function loadOrderedCourses() {
     kansai[11],
     kanto[2],
     kansai[12],
+    kansai[13],
   ];
 }
 
